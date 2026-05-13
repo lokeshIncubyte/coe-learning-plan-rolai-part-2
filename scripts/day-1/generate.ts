@@ -4,6 +4,7 @@ config({ path: resolve(__dirname, "../../.env") });
 import OpenAI from "openai";
 import { metaDirectives } from "./meta-directives";
 import { styleGuide } from "./style-guide";
+import { classifyApiError, withRetry } from "./error-handling";
 
 const client = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -53,15 +54,18 @@ async function generateNarrative() {
   console.log("=".repeat(60));
 
   for (let i = 0; i < beatPrompts.length; i++) {
-    const response = await client.chat.completions.create({
-      model: "openai/gpt-4o-mini",
-      temperature: 0.8,
-      max_tokens: 200,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: beatPrompts[i] },
-      ],
-    });
+    const response = await withRetry(
+      () => client.chat.completions.create({
+        model: "openai/gpt-4o-mini",
+        temperature: 0.8,
+        max_tokens: 200,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: beatPrompts[i] },
+        ],
+      }),
+      { maxRetries: 3, baseDelayMs: 1000 }
+    );
 
     const beat = response.choices[0].message.content ?? "";
     const usage = response.usage!;
@@ -80,10 +84,6 @@ async function generateNarrative() {
 }
 
 generateNarrative().catch((err) => {
-  if (err instanceof OpenAI.APIError) {
-    console.error(`OpenAI API error ${err.status}: ${err.message}`);
-  } else {
-    console.error("Unexpected error:", err);
-  }
+  console.error(classifyApiError(err));
   process.exit(1);
 });
