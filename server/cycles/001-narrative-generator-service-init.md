@@ -1,7 +1,7 @@
 ---
 id: cycle-001
 slug: narrative-generator-service-init
-status: pending
+status: done
 source: "Day-2 Setup — Verify environment variable loads correctly inside the NestJS app"
 covers: happy-path + error-path
 ---
