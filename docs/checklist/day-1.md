@@ -4,16 +4,16 @@
 
 ---
 
-## Setup
+## 1. Setup
 
-- [ ] Get OpenAI API key from platform.openai.com
-- [ ] Store API key in `.env` file (`OPENAI_API_KEY=...`)
-- [ ] Install OpenAI SDK (`npm install openai` or equivalent)
-- [ ] Verify environment loads the key correctly
+- [x] Get OpenAI API key from platform.openai.com
+- [x] Store API key in `.env` file (`OPENAI_API_KEY=...`)
+- [x] Install OpenAI SDK (`npm install openai` or equivalent)
+- [x] Verify environment loads the key correctly
 
 ---
 
-## Core Learning
+## 2. Core Learning
 
 - [ ] Learn OpenAI API fundamentals and authentication flow
 - [ ] Make first successful API call to Chat Completions endpoint
@@ -24,15 +24,15 @@
 
 ---
 
-## Config Files
+## 3. Config Files
 
-- [ ] Create a Meta Directives config file (theme, core principles, world rules)
-- [ ] Create a Style Guide config file (voice, tone, format rules)
-- [ ] Ensure both config files are importable/readable at runtime
+- [x] Create a Meta Directives config file (theme, core principles, world rules)
+- [x] Create a Style Guide config file (voice, tone, format rules)
+- [x] Ensure both config files are importable/readable at runtime
 
 ---
 
-## Narrative Generator
+## 4. Narrative Generator
 
 - [ ] Build a simple narrative generator script in TypeScript
 - [ ] Inject meta directives config into the system prompt
@@ -42,7 +42,7 @@
 
 ---
 
-## Error Handling & Cost
+## 5. Error Handling & Cost
 
 - [ ] Handle API errors (network failures, invalid key, bad request)
 - [ ] Handle rate limit errors with basic retry or backoff
@@ -51,7 +51,7 @@
 
 ---
 
-## Success Criteria
+## 6. Success Criteria
 
 - [ ] Gets OpenAI API key successfully
 - [ ] Makes first successful API call
