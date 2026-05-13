@@ -44,8 +44,8 @@
 
 ## 5. Error Handling & Cost
 
-- [ ] Handle API errors (network failures, invalid key, bad request)
-- [ ] Handle rate limit errors with basic retry or backoff
+- [x] Handle API errors (network failures, invalid key, bad request)
+- [x] Handle rate limit errors with basic retry or backoff
 - [x] Learn how to read token usage from API response (`usage` field)
 - [x] Understand cost estimation (prompt tokens vs completion tokens)
 
@@ -53,13 +53,13 @@
 
 ## 6. Success Criteria
 
-- [ ] Gets OpenAI API key successfully
-- [ ] Makes first successful API call
-- [ ] Understands Chat Completions API
-- [ ] Creates meta directives config
-- [ ] Creates style guide config
-- [ ] Injects always-loaded layer into system prompt
-- [ ] Generates consistent narrative beats across runs
-- [ ] Handles API errors properly
-- [ ] Understands token usage and costs
-- [ ] Knows message role structure
+- [x] Gets OpenAI API key successfully
+- [x] Makes first successful API call
+- [x] Understands Chat Completions API
+- [x] Creates meta directives config
+- [x] Creates style guide config
+- [x] Injects always-loaded layer into system prompt
+- [x] Generates consistent narrative beats across runs
+- [x] Handles API errors properly
+- [x] Understands token usage and costs
+- [x] Knows message role structure
