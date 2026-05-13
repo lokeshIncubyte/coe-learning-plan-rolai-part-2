@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, UseFilters, UseInterceptors } from '@nestjs/common';
 import { NarrativeGeneratorService } from './narrative-generator.service';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
 import { LoggingInterceptor } from './logging.interceptor';
@@ -14,6 +14,7 @@ export class GenerateController {
   constructor(private readonly narrativeService: NarrativeGeneratorService) {}
 
   @Post()
+  @HttpCode(HttpStatus.OK)
   async generate(@Body() body: GenerateRequestDto) {
     const narrative = await this.narrativeService.generate(body.prompt);
     return {
