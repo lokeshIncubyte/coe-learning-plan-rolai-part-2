@@ -6,7 +6,7 @@
 
 ## 1. Setup
 
-- [ ] Install OpenAI SDK in NestJS project (`npm install openai`)
+- [x] Install OpenAI SDK in NestJS project (`npm install openai`)
 - [ ] Add `OPENAI_API_KEY` to `.env` and NestJS `ConfigModule`
 - [ ] Verify environment variable loads correctly inside the NestJS app
 - [ ] Learn OpenAI SDK for Node.js API and usage patterns
