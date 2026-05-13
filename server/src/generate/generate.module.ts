@@ -4,9 +4,11 @@ import { NarrativeGeneratorService } from './narrative-generator.service';
 import { GraphService } from './graph.service';
 import { StateService } from './state.service';
 import { EngineService } from './engine.service';
+import { GenerateController } from './generate.controller';
 
 @Module({
   imports: [ConfigModule],
+  controllers: [GenerateController],
   providers: [NarrativeGeneratorService, GraphService, StateService, EngineService],
   exports: [NarrativeGeneratorService, GraphService, StateService, EngineService],
 })
