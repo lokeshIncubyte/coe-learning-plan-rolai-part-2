@@ -17,4 +17,14 @@ describe('classifyApiError', () => {
     const err = new OpenAI.BadRequestError(400, undefined, 'Bad Request', null as any)
     expect(classifyApiError(err)).toContain('Bad request')
   })
+
+  it('returns "Network error" for APIConnectionError (real SDK network failure)', () => {
+    const err = new OpenAI.APIConnectionError({ message: 'fetch failed' })
+    expect(classifyApiError(err)).toContain('Network error')
+  })
+
+  it('returns "Network error" for non-APIError (defensive fallback)', () => {
+    const err = new TypeError('something unexpected')
+    expect(classifyApiError(err)).toContain('Network error')
+  })
 })
