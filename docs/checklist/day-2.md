@@ -35,10 +35,10 @@
 
 ## 4. Endpoint
 
-- [ ] Create `POST /api/generate` endpoint in the controller
-- [ ] Wire endpoint to call `NarrativeGeneratorService`
-- [ ] Return generated narrative text in the response payload
-- [ ] Return hardcoded `choices` array alongside the narrative
+- [x] Create `POST /api/generate` endpoint in the controller
+- [x] Wire endpoint to call `NarrativeGeneratorService`
+- [x] Return generated narrative text in the response payload
+- [x] Return hardcoded `choices` array alongside the narrative
 - [ ] Verify endpoint works end-to-end from Postman
 
 ---
@@ -57,7 +57,7 @@
 
 - [x] OpenAI SDK installed and working inside NestJS
 - [x] `NarrativeGeneratorService` created with OpenAI integration
-- [ ] `/api/generate` endpoint implemented and reachable
+- [x] `/api/generate` endpoint implemented and reachable
 - [x] Stub services created for graph and engine pipeline
 - [x] API key managed securely via environment variables
 - [ ] Response returns both narrative text and choices array
