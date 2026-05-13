@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 @Catch(OpenAI.APIError)
 export class OpenAiExceptionFilter implements ExceptionFilter {
-  catch(exception: OpenAI.APIError, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
