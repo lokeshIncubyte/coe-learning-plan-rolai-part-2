@@ -39,7 +39,7 @@
 - [x] Wire endpoint to call `NarrativeGeneratorService`
 - [x] Return generated narrative text in the response payload
 - [x] Return hardcoded `choices` array alongside the narrative
-- [ ] Verify endpoint works end-to-end from Postman
+- [x] Verify endpoint works end-to-end from Postman
 
 ---
 
