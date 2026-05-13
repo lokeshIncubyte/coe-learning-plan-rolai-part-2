@@ -1,6 +1,6 @@
 import OpenAI from 'openai'
-import { describe, it, expect } from 'vitest'
-import { classifyApiError } from './error-handling'
+import { describe, it, expect, vi } from 'vitest'
+import { classifyApiError, withRetry } from './error-handling'
 
 describe('classifyApiError', () => {
   it('returns "Invalid API key" for 401', () => {
@@ -26,5 +26,30 @@ describe('classifyApiError', () => {
   it('returns "Network error" for non-APIError (defensive fallback)', () => {
     const err = new TypeError('something unexpected')
     expect(classifyApiError(err)).toContain('Network error')
+  })
+})
+
+describe('withRetry', () => {
+  it('retries up to maxRetries times and resolves on eventual success', async () => {
+    const rateLimitErr = new OpenAI.RateLimitError(429, undefined, 'Too Many Requests', null as any)
+    const supplier = vi.fn()
+      .mockRejectedValueOnce(rateLimitErr)
+      .mockResolvedValueOnce('ok')
+
+    const result = await withRetry(supplier, { maxRetries: 1, baseDelayMs: 0 })
+
+    expect(supplier).toHaveBeenCalledTimes(2)
+    expect(result).toBe('ok')
+  })
+
+  it('re-throws after maxRetries exhausted', async () => {
+    const rateLimitErr = new OpenAI.RateLimitError(429, undefined, 'Too Many Requests', null as any)
+    const supplier = vi.fn().mockRejectedValue(rateLimitErr)
+
+    await expect(
+      withRetry(supplier, { maxRetries: 2, baseDelayMs: 0 })
+    ).rejects.toThrow('Too Many Requests')
+
+    expect(supplier).toHaveBeenCalledTimes(3)
   })
 })
