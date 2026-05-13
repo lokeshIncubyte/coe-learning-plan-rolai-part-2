@@ -7,8 +7,8 @@
 ## 1. Setup
 
 - [x] Install OpenAI SDK in NestJS project (`npm install openai`)
-- [ ] Add `OPENAI_API_KEY` to `.env` and NestJS `ConfigModule`
-- [ ] Verify environment variable loads correctly inside the NestJS app
+- [x] Add `OPENAI_API_KEY` to `.env` and NestJS `ConfigModule`
+- [x] Verify environment variable loads correctly inside the NestJS app
 - [ ] Learn OpenAI SDK for Node.js API and usage patterns
 
 ---
@@ -55,11 +55,11 @@
 
 ## 6. Success Criteria
 
-- [ ] OpenAI SDK installed and working inside NestJS
+- [x] OpenAI SDK installed and working inside NestJS
 - [ ] `NarrativeGeneratorService` created with OpenAI integration
 - [ ] `/api/generate` endpoint implemented and reachable
 - [ ] Stub services created for graph and engine pipeline
-- [ ] API key managed securely via environment variables
+- [x] API key managed securely via environment variables
 - [ ] Response returns both narrative text and choices array
 - [ ] OpenAI errors handled gracefully with proper status codes
 - [ ] Rate limiting applied to the generation endpoint
