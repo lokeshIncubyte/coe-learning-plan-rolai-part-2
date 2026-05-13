@@ -1,6 +1,7 @@
-import { Body, Controller, Post, UseFilters } from '@nestjs/common';
+import { Body, Controller, Post, UseFilters, UseInterceptors } from '@nestjs/common';
 import { NarrativeGeneratorService } from './narrative-generator.service';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
+import { LoggingInterceptor } from './logging.interceptor';
 
 export class GenerateRequestDto {
   prompt: string;
@@ -8,6 +9,7 @@ export class GenerateRequestDto {
 
 @Controller('generate')
 @UseFilters(new OpenAiExceptionFilter())
+@UseInterceptors(new LoggingInterceptor())
 export class GenerateController {
   constructor(private readonly narrativeService: NarrativeGeneratorService) {}
 
