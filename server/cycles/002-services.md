@@ -1,7 +1,7 @@
 ---
 id: cycle-002-004
 slug: services
-status: pending
+status: done
 source: "Day-2 Section 3 — Services: generate(), stub services, GenerateModule"
 covers: happy-path
 group: day2-services

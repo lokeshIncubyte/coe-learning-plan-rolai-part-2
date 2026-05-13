@@ -24,12 +24,12 @@
 
 ## 3. Services
 
-- [ ] Create `NarrativeGeneratorService`  with OpenAI integration
-- [ ] Create stub `GraphService` (loads graph/meta data)
-- [ ] Create stub `StateService` (manages session/state)
-- [ ] Create stub `EngineService` (orchestrates pipeline)
-- [ ] Wire `NarrativeGeneratorService` to load meta directives + style guide at runtime
-- [ ] Register all services in the appropriate NestJS module
+- [x] Create `NarrativeGeneratorService`  with OpenAI integration
+- [x] Create stub `GraphService` (loads graph/meta data)
+- [x] Create stub `StateService` (manages session/state)
+- [x] Create stub `EngineService` (orchestrates pipeline)
+- [x] Wire `NarrativeGeneratorService` to load meta directives + style guide at runtime
+- [x] Register all services in the appropriate NestJS module
 
 ---
 
@@ -56,9 +56,9 @@
 ## 6. Success Criteria
 
 - [x] OpenAI SDK installed and working inside NestJS
-- [ ] `NarrativeGeneratorService` created with OpenAI integration
+- [x] `NarrativeGeneratorService` created with OpenAI integration
 - [ ] `/api/generate` endpoint implemented and reachable
-- [ ] Stub services created for graph and engine pipeline
+- [x] Stub services created for graph and engine pipeline
 - [x] API key managed securely via environment variables
 - [ ] Response returns both narrative text and choices array
 - [ ] OpenAI errors handled gracefully with proper status codes
