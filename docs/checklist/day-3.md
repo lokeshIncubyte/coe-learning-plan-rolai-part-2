@@ -6,10 +6,10 @@
 
 ## 1. Core Learning
 
-- [ ] Understand Server-Sent Events (SSE) — protocol, event format, browser vs curl behavior
-- [ ] Understand OpenAI streaming — `stream: true`, async iterables, chunk shape (`choices[0].delta.content`)
-- [ ] Understand NestJS SSE — `@Sse()` decorator, `Observable<MessageEvent>`, `EventSource` protocol
-- [ ] Understand streaming error handling — mid-stream errors, connection drops, cleanup
+- [x] Understand Server-Sent Events (SSE) — protocol, event format, browser vs curl behavior
+- [x] Understand OpenAI streaming — `stream: true`, async iterables, chunk shape (`choices[0].delta.content`)
+- [x] Understand NestJS SSE — `@Sse()` decorator, `Observable<MessageEvent>`, `EventSource` protocol
+- [x] Understand streaming error handling — mid-stream errors, connection drops, cleanup
 
 ---
 
