@@ -64,4 +64,4 @@
 - [x] OpenAI errors handled gracefully with proper status codes
 - [x] Rate limiting applied to the generation endpoint
 - [x] Requests and responses are logged
-- [ ] Endpoint verified working from Postman
+- [x] Endpoint verified working from Postman
