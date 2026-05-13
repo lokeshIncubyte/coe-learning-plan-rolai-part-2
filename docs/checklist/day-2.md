@@ -60,7 +60,7 @@
 - [x] `/api/generate` endpoint implemented and reachable
 - [x] Stub services created for graph and engine pipeline
 - [x] API key managed securely via environment variables
-- [ ] Response returns both narrative text and choices array
+- [x] Response returns both narrative text and choices array
 - [x] OpenAI errors handled gracefully with proper status codes
 - [x] Rate limiting applied to the generation endpoint
 - [x] Requests and responses are logged
