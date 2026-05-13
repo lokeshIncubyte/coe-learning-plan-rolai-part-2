@@ -8,20 +8,20 @@ export interface StyleGuide {
 }
 
 export const styleGuide: StyleGuide = {
-  voice: "Third-person limited — intimate but restrained",
-  tone: "Melancholic with flashes of grim determination",
+  voice: "Third-person warm — inviting and gently playful",
+  tone: "Cheerful and encouraging, with a sense of wonder",
   pointOfView: "Close third person, single POV character per beat",
-  sentenceStyle: "Short declarative sentences for action; longer for introspection",
+  sentenceStyle: "Flowing, rhythmic sentences with vivid sensory colour",
   formatRules: [
     "Each story beat is 3–5 sentences",
-    "End every beat with a line of tension or unresolved question",
-    "Use concrete sensory detail over abstract description",
+    "End every beat on a note of hope, curiosity, or warm resolution",
+    "Use bright, concrete sensory detail — colours, sounds, smells",
     "No chapter headers or meta-labels in the output",
   ],
   avoid: [
-    "Adverb-heavy prose",
-    "Passive voice unless deliberate",
-    "Deus ex machina resolutions",
-    "Explaining emotions — show through action instead",
+    "Dark or threatening imagery",
+    "Irreversible loss or death",
+    "Cynicism or sarcasm",
+    "Conflict that cannot be resolved through kindness or cleverness",
   ],
 };

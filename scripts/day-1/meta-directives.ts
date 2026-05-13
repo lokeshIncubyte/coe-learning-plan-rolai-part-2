@@ -7,17 +7,17 @@ export interface MetaDirectives {
 }
 
 export const metaDirectives: MetaDirectives = {
-  theme: "Redemption through sacrifice — every choice has a permanent cost",
-  genre: "Dark fantasy",
+  theme: "Courage and kindness light the way — every good deed ripples outward",
+  genre: "Upbeat safe fantasy",
   corePrinciples: [
-    "Moral ambiguity over clear heroes and villains",
-    "Consequences are irreversible; the world remembers",
-    "Hope exists, but it is fragile and hard-won",
+    "Heroes are defined by compassion, not power",
+    "Mistakes are lessons, not punishments",
+    "Friendship and community solve what strength alone cannot",
   ],
   worldRules: [
-    "Magic drains life force — using it ages the caster",
-    "The dead can speak, but only once after death",
-    "No kingdom has survived more than three generations of peace",
+    "Magic is fuelled by genuine acts of kindness",
+    "Every creature, however small, has a role to play",
+    "Peace is the natural state; conflict is a puzzle to be solved, not a war to be won",
   ],
-  setting: "A crumbling empire at the edge of an endless winter",
+  setting: "A sun-warmed kingdom of rolling meadows, talking animals, and ever-blooming gardens",
 };

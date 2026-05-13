@@ -15,12 +15,12 @@
 
 ## 2. Core Learning
 
-- [ ] Learn OpenAI API fundamentals and authentication flow
-- [ ] Make first successful API call to Chat Completions endpoint
-- [ ] Experiment with `temperature` parameter (0 vs 0.7 vs 1.0)
-- [ ] Experiment with `max_tokens` parameter
-- [ ] Understand the `messages` array structure
-- [ ] Understand `system`, `user`, and `assistant` message roles
+- [x] Learn OpenAI API fundamentals and authentication flow
+- [x] Make first successful API call to Chat Completions endpoint
+- [x] Experiment with `temperature` parameter (0 vs 0.7 vs 1.0)
+- [x] Experiment with `max_tokens` parameter
+- [x] Understand the `messages` array structure
+- [x] Understand `system`, `user`, and `assistant` message roles
 
 ---
 
@@ -34,11 +34,11 @@
 
 ## 4. Narrative Generator
 
-- [ ] Build a simple narrative generator script in TypeScript
-- [ ] Inject meta directives config into the system prompt
-- [ ] Inject style guide config into the system prompt
-- [ ] Generate 3 story beats in a single run
-- [ ] Verify consistent theme and voice across all 3 beats
+- [x] Build a simple narrative generator script in TypeScript
+- [x] Inject meta directives config into the system prompt
+- [x] Inject style guide config into the system prompt
+- [x] Generate 3 story beats in a single run
+- [x] Verify consistent theme and voice across all 3 beats
 
 ---
 
@@ -46,8 +46,8 @@
 
 - [ ] Handle API errors (network failures, invalid key, bad request)
 - [ ] Handle rate limit errors with basic retry or backoff
-- [ ] Learn how to read token usage from API response (`usage` field)
-- [ ] Understand cost estimation (prompt tokens vs completion tokens)
+- [x] Learn how to read token usage from API response (`usage` field)
+- [x] Understand cost estimation (prompt tokens vs completion tokens)
 
 ---
 
