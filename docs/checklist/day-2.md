@@ -45,11 +45,11 @@
 
 ## 5. Error Handling & Logging
 
-- [ ] Handle OpenAI API errors gracefully (network failures, auth errors, bad requests)
-- [ ] Handle rate limit errors from OpenAI with appropriate response codes
-- [ ] Add request logging (method, path, body) for the generate endpoint
-- [ ] Add response logging (status, generated text length, latency)
-- [ ] Implement rate limiting on the `/api/generate` endpoint
+- [x] Handle OpenAI API errors gracefully (network failures, auth errors, bad requests)
+- [x] Handle rate limit errors from OpenAI with appropriate response codes
+- [x] Add request logging (method, path, body) for the generate endpoint
+- [x] Add response logging (status, generated text length, latency)
+- [x] Implement rate limiting on the `/api/generate` endpoint
 
 ---
 
@@ -61,7 +61,7 @@
 - [x] Stub services created for graph and engine pipeline
 - [x] API key managed securely via environment variables
 - [ ] Response returns both narrative text and choices array
-- [ ] OpenAI errors handled gracefully with proper status codes
-- [ ] Rate limiting applied to the generation endpoint
-- [ ] Requests and responses are logged
+- [x] OpenAI errors handled gracefully with proper status codes
+- [x] Rate limiting applied to the generation endpoint
+- [x] Requests and responses are logged
 - [ ] Endpoint verified working from Postman
