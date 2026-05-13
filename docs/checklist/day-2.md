@@ -9,16 +9,16 @@
 - [x] Install OpenAI SDK in NestJS project (`npm install openai`)
 - [x] Add `OPENAI_API_KEY` to `.env` and NestJS `ConfigModule`
 - [x] Verify environment variable loads correctly inside the NestJS app
-- [ ] Learn OpenAI SDK for Node.js API and usage patterns
+- [x] Learn OpenAI SDK for Node.js API and usage patterns
 
 ---
 
 ## 2. Core Learning
 
-- [ ] Learn service composition patterns in NestJS
-- [ ] Understand how to inject `ConfigService` for API key management
-- [ ] Learn rate limiting concepts for generation endpoints
-- [ ] Understand NestJS module and provider wiring
+- [x] Learn service composition patterns in NestJS
+- [x] Understand how to inject `ConfigService` for API key management
+- [x] Learn rate limiting concepts for generation endpoints
+- [x] Understand NestJS module and provider wiring
 
 ---
 
