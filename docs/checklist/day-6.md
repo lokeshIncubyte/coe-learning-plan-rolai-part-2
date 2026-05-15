@@ -18,10 +18,10 @@
 
 > **TDD:** Use `/plan-cycle` before implementing. The narrative panel (renders text, is scrollable), streaming text display (appends chunks), and scroll-to-bottom behaviour are testable with React Testing Library.
 
-- [ ] Create narrative page in Next.js (`app/narrative/page.tsx` or similar)
-- [ ] Build narrative panel component — scrollable area displaying narrative text
-- [ ] Add streaming text display — chunks appended progressively as SSE events arrive
-- [ ] Add scroll-to-bottom behaviour on new narrative beats
+- [x] Create narrative page in Next.js (`app/narrative/page.tsx` or similar)
+- [x] Build narrative panel component — scrollable area displaying narrative text
+- [x] Add streaming text display — chunks appended progressively as SSE events arrive
+- [x] Add scroll-to-bottom behaviour on new narrative beats
 
 ---
 
