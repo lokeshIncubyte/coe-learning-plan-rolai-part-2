@@ -1,7 +1,7 @@
 ---
 id: cycle-006
 slug: action-validator-service
-status: pending
+status: done
 source: "cycle-006 spec — ActionValidatorService wrapping Mastra Agent via injection token"
 covers: happy-path
 ---

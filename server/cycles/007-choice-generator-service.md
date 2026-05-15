@@ -1,7 +1,7 @@
 ---
 id: cycle-007
 slug: choice-generator-service
-status: pending
+status: done
 source: "cycle-007 spec — ChoiceGeneratorService wrapping Mastra Agent + AgentsModule creation"
 covers: happy-path
 ---
