@@ -1,14 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { parseStreamEvents } from '../lib/parseStreamEvents'
 import type { StreamEvent } from '../lib/parseStreamEvents'
 
 export function useStream(url: string, onEvent: (event: StreamEvent) => void) {
   const [isStreaming, setIsStreaming] = useState(false)
+  const controllerRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    return () => { controllerRef.current?.abort() }
+  }, [])
 
   const start = async (body: object) => {
+    controllerRef.current = new AbortController()
     setIsStreaming(true)
     try {
-      const response = await fetch(url, { method: 'POST', body: JSON.stringify(body) })
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        signal: controllerRef.current.signal,
+      })
       const reader = response.body!.getReader()
       const decoder = new TextDecoder()
       while (true) {
@@ -20,7 +30,9 @@ export function useStream(url: string, onEvent: (event: StreamEvent) => void) {
         }
       }
     } catch (err) {
-      onEvent({ type: 'error', message: err instanceof Error ? err.message : String(err) })
+      if (err instanceof Error && err.name !== 'AbortError') {
+        onEvent({ type: 'error', message: err.message })
+      }
     } finally {
       setIsStreaming(false)
     }

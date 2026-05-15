@@ -70,3 +70,24 @@ describe('useStream — fetch error', () => {
     expect(result.current.isStreaming).toBe(false)
   })
 })
+
+describe('useStream — abort on unmount', () => {
+  it('aborts the in-flight fetch when unmounted', () => {
+    let capturedSignal: AbortSignal | undefined
+
+    global.fetch = jest.fn().mockImplementation((_url: string, opts?: RequestInit) => {
+      capturedSignal = opts?.signal
+      return new Promise(() => {}) // never resolves
+    })
+
+    const { result, unmount } = renderHook(() => useStream('http://test', jest.fn()))
+
+    act(() => { result.current.start({}) })
+    expect(capturedSignal).toBeDefined()
+    expect(capturedSignal!.aborted).toBe(false)
+
+    unmount()
+
+    expect(capturedSignal!.aborted).toBe(true)
+  })
+})
