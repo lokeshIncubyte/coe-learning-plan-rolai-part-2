@@ -6,9 +6,10 @@ import { StateService } from './state.service';
 import { EngineService } from './engine.service';
 import { GenerateController } from './generate.controller';
 import { AgentsModule } from '../agents/agents.module';
+import { PrismaModule } from '../prisma/prisma.module';
 
 @Module({
-  imports: [ConfigModule, AgentsModule],
+  imports: [ConfigModule, AgentsModule, PrismaModule],
   controllers: [GenerateController],
   providers: [NarrativeGeneratorService, GraphService, StateService, EngineService],
   exports: [NarrativeGeneratorService, GraphService, StateService, EngineService],
