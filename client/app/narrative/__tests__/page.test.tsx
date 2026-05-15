@@ -19,6 +19,16 @@ jest.mock('../hooks/useScrollToBottom', () => ({
   useScrollToBottom: () => ({ current: null }),
 }))
 
+const narrativeHistoryState = {
+  beats: [] as { narrative: string; chosenAction: string | null }[],
+  addBeat: jest.fn(),
+  setChosenAction: jest.fn(),
+}
+
+jest.mock('../hooks/useNarrativeHistory', () => ({
+  useNarrativeHistory: () => narrativeHistoryState,
+}))
+
 // Default fetch mock: non-ok response → skip validation, proceed to stream
 global.fetch = jest.fn(() => Promise.resolve({ ok: false })) as jest.Mock
 
@@ -28,6 +38,9 @@ describe('NarrativePage', () => {
     mockIsStreaming = false
     capturedOnEvent = null
     global.fetch = jest.fn(() => Promise.resolve({ ok: false })) as jest.Mock
+    narrativeHistoryState.beats = []
+    narrativeHistoryState.addBeat.mockClear()
+    narrativeHistoryState.setChosenAction.mockClear()
   })
 
   it('renders an ActionInput (text input) on initial mount', () => {
@@ -87,5 +100,20 @@ describe('NarrativePage', () => {
 
     // Choices must be gone immediately
     expect(screen.queryByRole('button', { name: 'Option A' })).not.toBeInTheDocument()
+  })
+
+  it('records the chosen action on the current beat when a choice is clicked', async () => {
+    const user = userEvent.setup()
+    // Seed one beat so setChosenAction has a valid index to target
+    narrativeHistoryState.beats = [{ narrative: 'You stand at a crossroads.', chosenAction: null }]
+    render(<NarrativePage />)
+
+    act(() => {
+      capturedOnEvent!({ type: 'choices', choices: [{ label: 'Go north' }, { label: 'Go south' }] })
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Go north' }))
+
+    expect(narrativeHistoryState.setChosenAction).toHaveBeenCalledWith(0, 'Go north')
   })
 })
