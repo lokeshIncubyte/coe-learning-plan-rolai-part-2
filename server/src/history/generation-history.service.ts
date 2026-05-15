@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class GenerationHistoryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async saveGeneration(sessionId: string, narrative: string, anchor: string, deltas: unknown[]) {
+  async saveGeneration(sessionId: string, narrative: string, anchor: string, deltas: object[]) {
     return this.prisma.generationHistory.create({ data: { sessionId, narrative, anchor, deltas } });
   }
 
