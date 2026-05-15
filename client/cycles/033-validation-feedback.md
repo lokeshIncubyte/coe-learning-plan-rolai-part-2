@@ -1,7 +1,7 @@
 ---
 id: cycle-033
 slug: validation-feedback
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "ValidationFeedback component — renders nothing when status is null; renders reason text with color indicator per status"
 covers: happy-path

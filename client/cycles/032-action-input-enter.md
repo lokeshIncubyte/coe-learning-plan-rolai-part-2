@@ -1,7 +1,7 @@
 ---
 id: cycle-032
 slug: action-input-enter
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "ActionInput component — pressing Enter in the text input triggers onSubmit with trimmed value and clears the field"
 covers: happy-path

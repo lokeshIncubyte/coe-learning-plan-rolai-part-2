@@ -1,7 +1,7 @@
 ---
 id: cycle-031
 slug: action-input-click
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "ActionInput component — renders text input and submit button; click submits trimmed value and clears field; disabled prop disables both elements"
 covers: happy-path

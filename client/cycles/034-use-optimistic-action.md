@@ -1,7 +1,7 @@
 ---
 id: cycle-034
 slug: use-optimistic-action
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "useOptimisticAction hook — addAction sets pendingAction immediately; confirmAction clears on accepted/modified or reverts to null on rejected"
 covers: happy-path
