@@ -5,13 +5,12 @@ import { GraphService } from './graph.service';
 import { StateService } from './state.service';
 import { EngineService } from './engine.service';
 import { GenerateController } from './generate.controller';
-import { ActionValidatorService } from '../agents/action-validator.service';
-import { ChoiceGeneratorService } from '../agents/choice-generator.service';
+import { AgentsModule } from '../agents/agents.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, AgentsModule],
   controllers: [GenerateController],
-  providers: [NarrativeGeneratorService, GraphService, StateService, EngineService, ActionValidatorService, ChoiceGeneratorService],
-  exports: [NarrativeGeneratorService, GraphService, StateService, EngineService, ActionValidatorService, ChoiceGeneratorService],
+  providers: [NarrativeGeneratorService, GraphService, StateService, EngineService],
+  exports: [NarrativeGeneratorService, GraphService, StateService, EngineService],
 })
 export class GenerateModule {}

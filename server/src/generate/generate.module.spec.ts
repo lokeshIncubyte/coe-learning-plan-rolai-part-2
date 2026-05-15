@@ -1,3 +1,5 @@
+jest.mock('@mastra/core/agent', () => ({ Agent: class {} }))
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { GenerateModule } from './generate.module';
