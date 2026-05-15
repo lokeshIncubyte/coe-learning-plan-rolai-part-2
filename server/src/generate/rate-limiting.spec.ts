@@ -5,6 +5,9 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { GenerateController } from './generate.controller';
 import { NarrativeGeneratorService } from './narrative-generator.service';
+import { ActionValidatorService } from '../agents/action-validator.service';
+import { ChoiceGeneratorService } from '../agents/choice-generator.service';
+import { GraphService } from './graph.service';
 
 describe('Rate limiting', () => {
   let app: INestApplication;
@@ -14,7 +17,10 @@ describe('Rate limiting', () => {
       imports: [ThrottlerModule.forRoot([{ ttl: 60000, limit: 1 }])],
       controllers: [GenerateController],
       providers: [
-        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('ok') } },
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('ok'), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'approved' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue(['Investigate', 'Flee', 'Negotiate']) } },
+        { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockReturnValue([]) } },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
       ],
     }).compile();

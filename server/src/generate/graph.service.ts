@@ -6,4 +6,8 @@ export class GraphService {
   getEntities(): { id: string; type: string; name: string }[] {
     return [];
   }
+
+  getEntitiesByType(_type: string): { id: string; type: string; name: string; facts?: Record<string, unknown> }[] {
+    return [];
+  }
 }

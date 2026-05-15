@@ -28,6 +28,26 @@ export class NarrativeGeneratorService {
     return response.choices[0].message.content ?? '';
   }
 
+  async *stream(prompt: string, signal?: AbortSignal): AsyncGenerator<string> {
+    const response = await this.client.chat.completions.create(
+      {
+        model: 'openai/gpt-4o-mini',
+        temperature: 0.8,
+        max_tokens: 200,
+        stream: true,
+        messages: [
+          { role: 'system', content: this.buildSystemPrompt() },
+          { role: 'user', content: prompt },
+        ],
+      },
+      { signal },
+    );
+    for await (const chunk of response) {
+      const token = chunk.choices[0]?.delta?.content;
+      if (token) yield token;
+    }
+  }
+
   private buildSystemPrompt(): string {
     return `
 You are a narrative engine for a ${metaDirectives.genre} story.

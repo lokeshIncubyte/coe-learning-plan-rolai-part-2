@@ -71,5 +71,62 @@ describe('NarrativeGeneratorService', () => {
       }).compile(),
     ).rejects.toThrow('OPENROUTER_API_KEY')
   })
+
+  describe('stream', () => {
+    let module: TestingModule;
+
+    afterEach(async () => {
+      await module.close();
+    });
+
+    it('yields content tokens from OpenAI async iterable', async () => {
+      module = await Test.createTestingModule({
+        providers: [
+          NarrativeGeneratorService,
+          { provide: ConfigService, useValue: makeConfigMock(() => 'test-key') },
+        ],
+      }).compile();
+
+      const service = module.get(NarrativeGeneratorService);
+      async function* mockStream() {
+        yield { choices: [{ delta: { content: 'Hello' }, finish_reason: null }] };
+        yield { choices: [{ delta: { content: ' world' }, finish_reason: 'stop' }] };
+      }
+      jest
+        .spyOn((service as any).client.chat.completions, 'create')
+        .mockResolvedValueOnce(mockStream() as any);
+
+      const tokens: string[] = [];
+      for await (const token of service.stream('test prompt')) {
+        tokens.push(token);
+      }
+      expect(tokens).toEqual(['Hello', ' world']);
+    });
+
+    it('skips chunks with no content (role/finish events)', async () => {
+      module = await Test.createTestingModule({
+        providers: [
+          NarrativeGeneratorService,
+          { provide: ConfigService, useValue: makeConfigMock(() => 'test-key') },
+        ],
+      }).compile();
+
+      const service = module.get(NarrativeGeneratorService);
+      async function* mockStream() {
+        yield { choices: [{ delta: {}, finish_reason: null }] };
+        yield { choices: [{ delta: { content: 'Hi' }, finish_reason: null }] };
+        yield { choices: [{ delta: { content: null }, finish_reason: 'stop' }] };
+      }
+      jest
+        .spyOn((service as any).client.chat.completions, 'create')
+        .mockResolvedValueOnce(mockStream() as any);
+
+      const tokens: string[] = [];
+      for await (const token of service.stream('test prompt')) {
+        tokens.push(token);
+      }
+      expect(tokens).toEqual(['Hi']);
+    });
+  });
 })
 
