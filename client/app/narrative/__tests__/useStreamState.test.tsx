@@ -47,3 +47,13 @@ describe('useStreamState — choices', () => {
     expect(result.current.choices).toEqual([{ label: 'Fight' }, { label: 'Flee' }])
   })
 })
+
+describe('useStreamState — error', () => {
+  it('transitions to error status and sets errorMessage on error event', () => {
+    const { result } = renderHook(() => useStreamState())
+    act(() => { result.current.dispatch({ type: 'start' }) })
+    act(() => { result.current.dispatch({ type: 'error', message: 'Something went wrong' }) })
+    expect(result.current.status).toBe('error')
+    expect(result.current.errorMessage).toBe('Something went wrong')
+  })
+})
