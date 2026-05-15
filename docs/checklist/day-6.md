@@ -82,13 +82,13 @@
 
 ## 8. Success Criteria
 
-- [ ] Narrative page created in Next.js
-- [ ] Narrative panel displays streaming text chunk by chunk
-- [ ] 2–4 dynamic choice buttons rendered from API response
-- [ ] Custom action input field submits free-text prompts
-- [ ] Validation feedback shown inline (accepted/modified/rejected)
-- [ ] Narrative history scrollback renders previous beats
-- [ ] Streaming endpoint connected and working end-to-end
-- [ ] Errors handled with retry mechanism
-- [ ] Smooth choice → narrative → choice loop
-- [ ] UI works end-to-end with the running backend
+- [x] Narrative page created in Next.js
+- [x] Narrative panel displays streaming text chunk by chunk
+- [x] 2–4 dynamic choice buttons rendered from API response
+- [x] Custom action input field submits free-text prompts
+- [x] Validation feedback shown inline (accepted/modified/rejected)
+- [x] Narrative history scrollback renders previous beats
+- [x] Streaming endpoint connected and working end-to-end
+- [x] Errors handled with retry mechanism
+- [x] Smooth choice → narrative → choice loop
+- [x] UI works end-to-end with the running backend
