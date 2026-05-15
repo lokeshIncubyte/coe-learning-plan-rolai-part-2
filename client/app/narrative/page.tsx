@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useStreamState } from './hooks/useStreamState'
 import { useStream } from './hooks/useStream'
 import { useNarrativeHistory } from './hooks/useNarrativeHistory'
@@ -8,11 +8,14 @@ import { ActionInput } from './components/ActionInput'
 import { StreamingText } from './components/StreamingText'
 import { ChoiceList } from './components/ChoiceList'
 import { BeatHistory } from './components/BeatHistory'
+import { ValidationFeedback } from './components/ValidationFeedback'
 
 export default function NarrativePage() {
   const { status, narrativeText, choices, dispatch } = useStreamState()
   const { beats, addBeat, setChosenAction } = useNarrativeHistory()
   const narrativeAccumRef = useRef<string>('')
+  const [validationStatus, setValidationStatus] = useState<'accepted' | 'modified' | 'rejected' | null>(null)
+  const [rejectionReason, setRejectionReason] = useState('')
 
   const onEvent = (event: { type: string; [key: string]: unknown }) => {
     if (event.type === 'chunk') {
@@ -41,7 +44,12 @@ export default function NarrativePage() {
       })
       if (res.ok) {
         const data = await res.json()
-        if (data.rejected) return
+        if (data.rejected) {
+          setValidationStatus('rejected')
+          setRejectionReason(data.reason ?? '')
+          return
+        }
+        setValidationStatus('accepted')
       }
     } catch {
       // validation unavailable — proceed to stream
@@ -57,6 +65,7 @@ export default function NarrativePage() {
         {choices.length > 0 && <ChoiceList choices={choices} onSelect={handleChoice} />}
       </div>
       <div data-testid="input-area" className="flex-shrink-0">
+        <ValidationFeedback status={validationStatus} reason={rejectionReason} />
         <ActionInput onSubmit={handleSubmit} disabled={isStreaming} />
       </div>
     </div>

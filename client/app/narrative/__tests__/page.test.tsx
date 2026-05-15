@@ -144,4 +144,22 @@ describe('NarrativePage', () => {
 
     expect(narrativeHistoryState.setChosenAction).toHaveBeenCalledWith(0, 'Go north')
   })
+
+  it('shows accepted feedback indicator after a non-rejected validation response', async () => {
+    const user = userEvent.setup()
+
+    // Override fetch to return an accepted (non-rejected) response
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ narrative: 'ok', choices: [] }),
+    })
+
+    render(<NarrativePage />)
+    await user.type(screen.getByRole('textbox'), 'go north')
+    await user.click(screen.getByRole('button', { name: 'Submit' }))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('feedback-indicator')).toHaveAttribute('data-status', 'accepted')
+    })
+  })
 })
