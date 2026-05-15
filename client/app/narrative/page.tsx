@@ -8,7 +8,10 @@ import { ChoiceList } from './components/ChoiceList'
 
 export default function NarrativePage() {
   const { status, narrativeText, choices, dispatch } = useStreamState()
-  const handleChoice = (_label: string) => {}
+  const handleChoice = (label: string) => {
+    dispatch({ type: 'start' })
+    start({ prompt: label })
+  }
   const { start, isStreaming } = useStream('/api/generate/stream', dispatch)
 
   const handleSubmit = async (text: string) => {

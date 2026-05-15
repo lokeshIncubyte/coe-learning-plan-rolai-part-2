@@ -71,4 +71,21 @@ describe('NarrativePage', () => {
     render(<NarrativePage />)
     expect(screen.getByRole('textbox')).toBeDisabled()
   })
+
+  it('clears choices immediately when a choice is clicked', async () => {
+    const user = userEvent.setup()
+    render(<NarrativePage />)
+
+    // Inject choices
+    act(() => {
+      capturedOnEvent!({ type: 'choices', choices: [{ label: 'Option A' }, { label: 'Option B' }] })
+    })
+    expect(screen.getByRole('button', { name: 'Option A' })).toBeInTheDocument()
+
+    // Click a choice
+    await user.click(screen.getByRole('button', { name: 'Option A' }))
+
+    // Choices must be gone immediately
+    expect(screen.queryByRole('button', { name: 'Option A' })).not.toBeInTheDocument()
+  })
 })
