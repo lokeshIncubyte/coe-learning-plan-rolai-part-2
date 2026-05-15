@@ -1,7 +1,7 @@
 ---
 id: cycle-005
 slug: narrative-generator-stream
-status: pending
+status: done
 source: "Modify NarrativeGeneratorService to expose a stream(prompt) method using stream: true"
 covers: happy-path
 group: day3-streaming-endpoint
@@ -58,7 +58,7 @@ none
 ---
 id: cycle-006
 slug: generate-stream-sse-endpoint
-status: pending
+status: done
 source: "Add a GET /api/generate/stream SSE endpoint to GenerateController"
 covers: happy-path
 group: day3-streaming-endpoint
