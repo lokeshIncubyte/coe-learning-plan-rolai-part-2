@@ -112,6 +112,24 @@ describe('NarrativePage', () => {
     expect(narrativeHistoryState.addBeat).toHaveBeenCalledWith('Round one text.')
   })
 
+  it('does not call start when the validation endpoint rejects the prompt', async () => {
+    const user = userEvent.setup()
+
+    // Override fetch to return a rejection
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ rejected: true, reason: 'Not allowed' }),
+    })
+
+    render(<NarrativePage />)
+    await user.type(screen.getByRole('textbox'), 'bad input')
+    await user.click(screen.getByRole('button', { name: 'Submit' }))
+
+    await waitFor(() => {
+      expect(mockStart).not.toHaveBeenCalled()
+    })
+  })
+
   it('records the chosen action on the current beat when a choice is clicked', async () => {
     const user = userEvent.setup()
     // Seed one beat so setChosenAction has a valid index to target
