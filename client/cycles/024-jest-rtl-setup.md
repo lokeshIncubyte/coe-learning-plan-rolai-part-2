@@ -1,7 +1,7 @@
 ---
 id: cycle-024
 slug: jest-rtl-setup
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "prerequisite — Jest + React Testing Library required before all client component cycles"
 covers: atomic
