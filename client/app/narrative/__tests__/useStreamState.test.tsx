@@ -19,3 +19,12 @@ describe('useStreamState — start', () => {
     expect(result.current.errorMessage).toBe('')
   })
 })
+
+describe('useStreamState — chunk', () => {
+  it('appends content to narrativeText on chunk event', () => {
+    const { result } = renderHook(() => useStreamState())
+    act(() => { result.current.dispatch({ type: 'chunk', content: 'Hello' }) })
+    act(() => { result.current.dispatch({ type: 'chunk', content: ' World' }) })
+    expect(result.current.narrativeText).toBe('Hello World')
+  })
+})
