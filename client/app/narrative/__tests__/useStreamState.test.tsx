@@ -37,3 +37,13 @@ describe('useStreamState — done', () => {
     expect(result.current.status).toBe('done')
   })
 })
+
+describe('useStreamState — choices', () => {
+  it('sets choices array on choices event', () => {
+    const { result } = renderHook(() => useStreamState())
+    act(() => {
+      result.current.dispatch({ type: 'choices', choices: [{ label: 'Fight' }, { label: 'Flee' }] })
+    })
+    expect(result.current.choices).toEqual([{ label: 'Fight' }, { label: 'Flee' }])
+  })
+})

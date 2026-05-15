@@ -25,6 +25,8 @@ function reducer(state: State, action: StreamEvent): State {
       return { ...state, narrativeText: state.narrativeText + (action.content as string) }
     case 'done':
       return { ...state, status: 'done' }
+    case 'choices':
+      return { ...state, choices: action.choices as { label: string }[] }
     default:
       return state
   }
