@@ -1,7 +1,7 @@
 ---
 id: cycle-010
 slug: controller-choices-sse
-status: pending
+status: skip
 source: "cycle-010 spec — SSE stream() accumulates tokens, calls generateChoices, emits structured choices"
 covers: happy-path
 ---

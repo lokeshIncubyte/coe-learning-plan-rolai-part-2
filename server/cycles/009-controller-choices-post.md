@@ -1,7 +1,7 @@
 ---
 id: cycle-009
 slug: controller-choices-post
-status: pending
+status: skip
 source: "cycle-009 spec — GenerateController.generate() uses ChoiceGeneratorService instead of hardcoded choices"
 covers: happy-path
 ---

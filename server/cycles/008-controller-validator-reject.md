@@ -1,7 +1,7 @@
 ---
 id: cycle-008
 slug: controller-validator-reject
-status: pending
+status: skip
 source: "cycle-008 spec — GenerateController.generate() early-returns when ActionValidatorService rejects"
 covers: error-path
 ---
