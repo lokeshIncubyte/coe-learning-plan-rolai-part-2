@@ -1,7 +1,7 @@
 ---
 id: cycle-018
 slug: graph-update-edge-weight
-status: pending
+status: done
 source: "cycle-018 spec — GraphService.updateEdgeWeight calls prisma.edge.update and returns updated edge"
 covers: happy-path
 ---

@@ -1,7 +1,7 @@
 ---
 id: cycle-015
 slug: graph-get-by-tag
-status: pending
+status: done
 source: "cycle-015 spec — GraphService.getEntitiesByTag calls findMany with tags has filter"
 covers: happy-path
 ---

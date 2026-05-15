@@ -1,7 +1,7 @@
 ---
 id: cycle-017
 slug: graph-update-entity-state
-status: pending
+status: done
 source: "cycle-017 spec — GraphService.updateEntityState uses $transaction to read-merge-write state"
 covers: happy-path
 ---

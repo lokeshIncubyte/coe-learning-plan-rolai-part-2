@@ -1,7 +1,7 @@
 ---
 id: cycle-019
 slug: history-save-generation
-status: pending
+status: done
 source: "cycle-019 spec — GenerationHistoryService.saveGeneration calls prisma.generationHistory.create"
 covers: happy-path
 ---

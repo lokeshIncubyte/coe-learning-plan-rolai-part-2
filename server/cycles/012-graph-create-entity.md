@@ -1,7 +1,7 @@
 ---
 id: cycle-012
 slug: graph-create-entity
-status: pending
+status: done
 source: "cycle-012 spec — GraphService.createEntity calls prisma.entity.create, returns created record"
 covers: happy-path
 ---

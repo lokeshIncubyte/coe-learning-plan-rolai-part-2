@@ -1,7 +1,7 @@
 ---
 id: cycle-014
 slug: graph-get-by-type
-status: pending
+status: done
 source: "cycle-014 spec — GraphService.getEntitiesByType calls findMany with where type filter"
 covers: happy-path
 ---

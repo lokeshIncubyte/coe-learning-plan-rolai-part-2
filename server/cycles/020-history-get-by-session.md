@@ -1,7 +1,7 @@
 ---
 id: cycle-020
 slug: history-get-by-session
-status: pending
+status: done
 source: "cycle-020 spec — GenerationHistoryService.getHistoryBySession paginates findMany by session"
 covers: happy-path
 ---

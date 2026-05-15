@@ -1,7 +1,7 @@
 ---
 id: cycle-016
 slug: graph-create-edge
-status: pending
+status: done
 source: "cycle-016 spec — GraphService.createEdge calls prisma.edge.create and returns created edge"
 covers: happy-path
 ---

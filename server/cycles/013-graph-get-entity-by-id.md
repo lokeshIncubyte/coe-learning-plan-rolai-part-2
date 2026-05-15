@@ -1,7 +1,7 @@
 ---
 id: cycle-013
 slug: graph-get-entity-by-id
-status: pending
+status: done
 source: "cycle-013 spec — GraphService.getEntityById returns entity or throws NotFoundException"
 covers: error-path
 ---

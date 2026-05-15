@@ -1,7 +1,7 @@
 ---
 id: cycle-023
 slug: controller-passes-entity-context
-status: pending
+status: skip
 source: "GenerateController.generate() — injects GraphService, fetches rule entities via getEntitiesByType('rule'), formats them as a RULES: block, passes to validatorService.validate; fetches entities by type, formats as WORLD: block, passes to choiceGeneratorService.generateChoices"
 covers: happy-path
 ---

@@ -1,7 +1,7 @@
 ---
 id: cycle-021
 slug: action-validator-with-context
-status: pending
+status: skip
 source: "ActionValidatorService.validate(action, ruleContext?) — accepts optional pre-formatted rule context string, prepends it to the action before calling agent.generate"
 covers: happy-path
 ---

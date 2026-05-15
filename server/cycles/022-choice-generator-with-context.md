@@ -1,7 +1,7 @@
 ---
 id: cycle-022
 slug: choice-generator-with-context
-status: pending
+status: skip
 source: "ChoiceGeneratorService.generateChoices(narrative, worldContext?) — accepts optional pre-formatted world context string, prepends it to the narrative before calling agent.generate"
 covers: happy-path
 ---
