@@ -23,6 +23,7 @@ export function ActionInput({
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') handleSubmit() }}
         disabled={disabled}
       />
       <button onClick={handleSubmit} disabled={disabled}>

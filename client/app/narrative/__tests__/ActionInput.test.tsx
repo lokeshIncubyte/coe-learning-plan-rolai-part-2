@@ -36,4 +36,15 @@ describe('ActionInput', () => {
 
     expect(onSubmit).not.toHaveBeenCalled()
   })
+
+  it('calls onSubmit and clears field when Enter is pressed', async () => {
+    const user = userEvent.setup()
+    const onSubmit = jest.fn()
+    render(<ActionInput onSubmit={onSubmit} disabled={false} />)
+
+    await user.type(screen.getByRole('textbox'), 'flee the dungeon{Enter}')
+
+    expect(onSubmit).toHaveBeenCalledWith('flee the dungeon')
+    expect(screen.getByRole('textbox')).toHaveValue('')
+  })
 })
