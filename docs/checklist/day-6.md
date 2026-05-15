@@ -6,10 +6,11 @@
 
 ## 1. Core Learning
 
-- [ ] Understand Next.js App Router — pages, layouts, server vs client components
-- [ ] Understand SSE client consumption — `EventSource` API, `fetch` with streaming response body
-- [ ] Understand optimistic UI updates — show narrative immediately, rollback on rejection
-- [ ] Understand scroll-to-bottom patterns for streaming text
+- [x] Understand Next.js App Router — pages, layouts, server vs client components
+- [x] Understand SSE client consumption — `EventSource` API, `fetch` with streaming response body
+- [x] Understand optimistic UI updates — show narrative immediately, rollback on rejection
+- [x] Understand scroll-to-bottom patterns for streaming text
+- [x] Scaffold Next.js app (`client/`) with App Router, TypeScript, and Tailwind
 
 ---
 
@@ -38,6 +39,8 @@
 - [ ] Show validation feedback inline (accepted / modified / rejected + reason)
 - [ ] Optimistic UI — show action immediately, rollback display on rejection
 
+> **TDD:** Use `/plan-cycle` for the optimistic UI logic — `useOptimistic` rollback behaviour on rejection is testable in isolation.
+
 ---
 
 ## 5. Narrative History
@@ -46,9 +49,13 @@
 - [ ] Highlight the user's past chosen action for each beat
 - [ ] History persists across beats within the session
 
+> **TDD:** Use `/plan-cycle` for `useNarrativeHistory` hook — appending beats, tracking chosen actions, and pagination are unit-testable state transitions.
+
 ---
 
 ## 6. Streaming Integration
+
+> **TDD:** Use `/plan-cycle` before implementing. The `useStream` hook (SSE fetch → buffer → parse → dispatch events) and the SSE event parser utility are the core testable units. Test each event type (`start`, `chunk`, `done`, `choices`, `error`) in isolation with a mocked `ReadableStream`.
 
 - [ ] Connect frontend to the `GET /generate/stream` SSE endpoint
 - [ ] Handle `{ type: 'start' }` — show typing indicator
@@ -64,6 +71,8 @@
 - [ ] Show error state with retry button when stream fails
 - [ ] Disable input and choices while stream is in progress
 - [ ] Handle network disconnect gracefully
+
+> **TDD:** Use `/plan-cycle` for the `useStream` error path — abort on unmount and error event emission are testable without a real network.
 
 ---
 
