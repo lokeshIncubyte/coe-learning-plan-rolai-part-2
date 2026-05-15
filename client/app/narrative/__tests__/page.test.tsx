@@ -49,4 +49,13 @@ describe('NarrativePage', () => {
     act(() => { capturedOnEvent!({ type: 'chunk', content: 'hello world' }) })
     expect(screen.getByTestId('narrative-panel')).toHaveTextContent('hello world')
   })
+
+  it('hides the streaming cursor after the done event', () => {
+    mockIsStreaming = true
+    render(<NarrativePage />)
+    act(() => { capturedOnEvent!({ type: 'start' }) })
+    expect(screen.getByTestId('cursor')).toBeInTheDocument()
+    act(() => { capturedOnEvent!({ type: 'done' }) })
+    expect(screen.queryByTestId('cursor')).not.toBeInTheDocument()
+  })
 })
