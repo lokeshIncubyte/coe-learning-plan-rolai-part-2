@@ -29,10 +29,10 @@
 
 > **TDD:** Use `/plan-cycle` before implementing. Choice buttons (renders correct labels, fires callback on click, clears on new beat) are testable with React Testing Library.
 
-- [ ] Display 2–4 dynamic choice buttons below the narrative panel
-- [ ] Choices populated from `{ type: 'choices', choices: [...] }` SSE event
-- [ ] Clicking a choice submits it as the next action prompt
-- [ ] Clear and re-render choices on each new narrative beat
+- [x] Display 2–4 dynamic choice buttons below the narrative panel
+- [x] Choices populated from `{ type: 'choices', choices: [...] }` SSE event
+- [x] Clicking a choice submits it as the next action prompt
+- [x] Clear and re-render choices on each new narrative beat
 
 ---
 
