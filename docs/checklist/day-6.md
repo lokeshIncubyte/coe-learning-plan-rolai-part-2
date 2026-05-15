@@ -49,9 +49,9 @@
 
 ## 5. Narrative History
 
-- [ ] Display previous narrative beats in a scrollable history above the current beat
-- [ ] Highlight the user's past chosen action for each beat
-- [ ] History persists across beats within the session
+- [x] Display previous narrative beats in a scrollable history above the current beat
+- [x] Highlight the user's past chosen action for each beat
+- [x] History persists across beats within the session
 
 > **TDD:** Use `/plan-cycle` for `useNarrativeHistory` hook — appending beats, tracking chosen actions, and pagination are unit-testable state transitions.
 
@@ -61,20 +61,20 @@
 
 > **TDD:** Use `/plan-cycle` before implementing. The `useStream` hook (SSE fetch → buffer → parse → dispatch events) and the SSE event parser utility are the core testable units. Test each event type (`start`, `chunk`, `done`, `choices`, `error`) in isolation with a mocked `ReadableStream`.
 
-- [ ] Connect frontend to the `GET /generate/stream` SSE endpoint
-- [ ] Handle `{ type: 'start' }` — show typing indicator
-- [ ] Handle `{ type: 'chunk', content }` — append text progressively
-- [ ] Handle `{ type: 'done' }` — hide typing indicator
-- [ ] Handle `{ type: 'choices', choices }` — render choice buttons
-- [ ] Handle `{ type: 'error', message }` — display error with retry option
+- [x] Connect frontend to the `GET /generate/stream` SSE endpoint
+- [x] Handle `{ type: 'start' }` — show typing indicator
+- [x] Handle `{ type: 'chunk', content }` — append text progressively
+- [x] Handle `{ type: 'done' }` — hide typing indicator
+- [x] Handle `{ type: 'choices', choices }` — render choice buttons
+- [x] Handle `{ type: 'error', message }` — display error with retry option
 
 ---
 
 ## 7. Error Handling & UX
 
-- [ ] Show error state with retry button when stream fails
-- [ ] Disable input and choices while stream is in progress
-- [ ] Handle network disconnect gracefully
+- [x] Show error state with retry button when stream fails
+- [x] Disable input and choices while stream is in progress
+- [x] Handle network disconnect gracefully
 
 > **TDD:** Use `/plan-cycle` for the `useStream` error path — abort on unmount and error event emission are testable without a real network.
 
