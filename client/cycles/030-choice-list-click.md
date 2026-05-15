@@ -56,3 +56,7 @@ When a user clicks a choice button in `ChoiceList`, the `onSelect` callback is c
 
 ## REFACTOR
 none
+
+---
+
+> **Status: skip** — behavior covered by cycle-029. No `/exec-cycle` needed.

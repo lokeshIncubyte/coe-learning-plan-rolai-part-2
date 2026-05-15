@@ -93,3 +93,7 @@ group: choice-list
 
 ## REFACTOR
 none
+
+---
+
+> **Execute:** Run `/exec-cycle` to execute this cycle (RED → GREEN → squash merge).

@@ -52,3 +52,7 @@ covers: happy-path
 
 ## REFACTOR
 none
+
+---
+
+> **Status: done** — already executed.

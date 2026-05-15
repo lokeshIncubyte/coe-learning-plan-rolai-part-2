@@ -45,3 +45,7 @@ Jest and React Testing Library are installed and configured in the Next.js clien
 
 ## REFACTOR
 none
+
+---
+
+> **Status: done** — already executed.
