@@ -15,6 +15,7 @@ export default function NarrativePage() {
   const { status, narrativeText, choices, errorMessage, dispatch } = useStreamState()
   const { beats, addBeat, setChosenAction } = useNarrativeHistory()
   const narrativeAccumRef = useRef<string>('')
+  const lastPromptRef = useRef<string>('')
   const [validationStatus, setValidationStatus] = useState<'accepted' | 'modified' | 'rejected' | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
 
@@ -30,7 +31,7 @@ export default function NarrativePage() {
 
   const { start, isStreaming } = useStream('/api/generate/stream', onEvent)
 
-  const handleRetry = () => {}
+  const handleRetry = () => { start({ prompt: lastPromptRef.current }) }
 
   const handleChoice = (label: string) => {
     setChosenAction(beats.length - 1, label)
@@ -39,6 +40,7 @@ export default function NarrativePage() {
   }
 
   const handleSubmit = async (text: string) => {
+    lastPromptRef.current = text
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',

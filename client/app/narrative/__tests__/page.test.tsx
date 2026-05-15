@@ -173,4 +173,29 @@ describe('NarrativePage', () => {
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
     expect(screen.getByText('Connection lost')).toBeInTheDocument()
   })
+
+  it('calls start with the last prompt when Retry is clicked', async () => {
+    const user = userEvent.setup()
+    render(<NarrativePage />)
+
+    // Submit a prompt (fetch returns non-ok by default → no validation, goes to start)
+    await user.type(screen.getByRole('textbox'), 'hello')
+    await user.click(screen.getByRole('button', { name: 'Submit' }))
+
+    // Simulate a stream error
+    act(() => {
+      capturedOnEvent!({ type: 'error', message: 'Network failure' })
+    })
+
+    // The Retry button should now be visible
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+
+    // Clear mock call count from the initial submit
+    mockStart.mockClear()
+
+    // Click Retry
+    await user.click(screen.getByRole('button', { name: 'Retry' }))
+
+    expect(mockStart).toHaveBeenLastCalledWith({ prompt: 'hello' })
+  })
 })
