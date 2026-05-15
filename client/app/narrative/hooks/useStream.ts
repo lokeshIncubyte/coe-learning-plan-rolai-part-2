@@ -19,6 +19,8 @@ export function useStream(url: string, onEvent: (event: StreamEvent) => void) {
           onEvent(event)
         }
       }
+    } catch (err) {
+      onEvent({ type: 'error', message: err instanceof Error ? err.message : String(err) })
     } finally {
       setIsStreaming(false)
     }

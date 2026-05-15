@@ -54,3 +54,19 @@ describe('useStream — event dispatch', () => {
     expect(result.current.isStreaming).toBe(false)
   })
 })
+
+describe('useStream — fetch error', () => {
+  it('calls onEvent with error event and resets isStreaming when fetch rejects', async () => {
+    const onEvent = jest.fn()
+    global.fetch = jest.fn().mockRejectedValue(new Error('Network failure'))
+
+    const { result } = renderHook(() => useStream('http://test', onEvent))
+
+    await act(async () => {
+      await result.current.start({})
+    })
+
+    expect(onEvent).toHaveBeenCalledWith({ type: 'error', message: 'Network failure' })
+    expect(result.current.isStreaming).toBe(false)
+  })
+})
