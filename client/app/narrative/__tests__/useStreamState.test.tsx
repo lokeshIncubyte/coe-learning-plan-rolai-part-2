@@ -28,3 +28,12 @@ describe('useStreamState — chunk', () => {
     expect(result.current.narrativeText).toBe('Hello World')
   })
 })
+
+describe('useStreamState — done', () => {
+  it('transitions to done status on done event', () => {
+    const { result } = renderHook(() => useStreamState())
+    act(() => { result.current.dispatch({ type: 'start' }) })
+    act(() => { result.current.dispatch({ type: 'done' }) })
+    expect(result.current.status).toBe('done')
+  })
+})

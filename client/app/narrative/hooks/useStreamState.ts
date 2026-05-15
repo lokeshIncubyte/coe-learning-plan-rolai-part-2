@@ -23,6 +23,8 @@ function reducer(state: State, action: StreamEvent): State {
       return { status: 'streaming', narrativeText: '', choices: [], errorMessage: '' }
     case 'chunk':
       return { ...state, narrativeText: state.narrativeText + (action.content as string) }
+    case 'done':
+      return { ...state, status: 'done' }
     default:
       return state
   }
