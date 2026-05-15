@@ -5,8 +5,9 @@ export function parseStreamEvents(chunk: string): StreamEvent[] {
     .split('\n')
     .filter((line) => line.trim() !== '')
     .flatMap((line) => {
+      const jsonLine = line.startsWith('data: ') ? line.slice(6) : line
       try {
-        return [JSON.parse(line) as StreamEvent]
+        return [JSON.parse(jsonLine) as StreamEvent]
       } catch {
         return []
       }

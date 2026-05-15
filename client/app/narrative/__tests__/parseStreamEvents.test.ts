@@ -32,4 +32,11 @@ describe('parseStreamEvents', () => {
     expect(parseStreamEvents('')).toEqual([])
     expect(parseStreamEvents('\n\n')).toEqual([])
   })
+
+  it('strips SSE data: prefix before parsing', () => {
+    expect(parseStreamEvents('data: {"type":"start"}\n\ndata: {"type":"done"}')).toEqual([
+      { type: 'start' },
+      { type: 'done' },
+    ])
+  })
 })
