@@ -102,6 +102,16 @@ describe('NarrativePage', () => {
     expect(screen.queryByRole('button', { name: 'Option A' })).not.toBeInTheDocument()
   })
 
+  it('calls addBeat with the accumulated narrative text when done fires', () => {
+    render(<NarrativePage />)
+
+    act(() => { capturedOnEvent!({ type: 'start' }) })
+    act(() => { capturedOnEvent!({ type: 'chunk', content: 'Round one text.' }) })
+    act(() => { capturedOnEvent!({ type: 'done' }) })
+
+    expect(narrativeHistoryState.addBeat).toHaveBeenCalledWith('Round one text.')
+  })
+
   it('records the chosen action on the current beat when a choice is clicked', async () => {
     const user = userEvent.setup()
     // Seed one beat so setChosenAction has a valid index to target

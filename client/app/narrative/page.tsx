@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useStreamState } from './hooks/useStreamState'
 import { useStream } from './hooks/useStream'
 import { useNarrativeHistory } from './hooks/useNarrativeHistory'
@@ -11,7 +12,19 @@ import { BeatHistory } from './components/BeatHistory'
 export default function NarrativePage() {
   const { status, narrativeText, choices, dispatch } = useStreamState()
   const { beats, addBeat, setChosenAction } = useNarrativeHistory()
-  const { start, isStreaming } = useStream('/api/generate/stream', dispatch)
+  const narrativeAccumRef = useRef<string>('')
+
+  const onEvent = (event: { type: string; [key: string]: unknown }) => {
+    if (event.type === 'chunk') {
+      narrativeAccumRef.current += (event.content as string) ?? ''
+    } else if (event.type === 'done') {
+      addBeat(narrativeAccumRef.current)
+      narrativeAccumRef.current = ''
+    }
+    dispatch(event as Parameters<typeof dispatch>[0])
+  }
+
+  const { start, isStreaming } = useStream('/api/generate/stream', onEvent)
 
   const handleChoice = (label: string) => {
     setChosenAction(beats.length - 1, label)
