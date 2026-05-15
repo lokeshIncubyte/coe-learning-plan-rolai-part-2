@@ -8,4 +8,13 @@ export class GenerationHistoryService {
   async saveGeneration(sessionId: string, narrative: string, anchor: string, deltas: unknown[]) {
     return this.prisma.generationHistory.create({ data: { sessionId, narrative, anchor, deltas } });
   }
+
+  async getHistoryBySession(sessionId: string, page: number, limit: number) {
+    return this.prisma.generationHistory.findMany({
+      where: { sessionId },
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

@@ -40,4 +40,34 @@ describe('GenerationHistoryService', () => {
       expect(result).toEqual(created);
     });
   });
+
+  describe('getHistoryBySession', () => {
+    it('calls findMany with correct where, skip, take, and orderBy params and returns results', async () => {
+      const records = [{ id: 'h2', sessionId: 's1', narrative: 'Later...' }];
+      (mockPrisma.generationHistory.findMany as jest.Mock).mockResolvedValueOnce(records);
+
+      const result = await service.getHistoryBySession('s1', 2, 5);
+
+      expect(mockPrisma.generationHistory.findMany).toHaveBeenCalledWith({
+        where: { sessionId: 's1' },
+        skip: 5,
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+      });
+      expect(result).toEqual(records);
+    });
+
+    it('skips 0 records when page is 1', async () => {
+      (mockPrisma.generationHistory.findMany as jest.Mock).mockResolvedValueOnce([]);
+
+      await service.getHistoryBySession('s1', 1, 10);
+
+      expect(mockPrisma.generationHistory.findMany).toHaveBeenCalledWith({
+        where: { sessionId: 's1' },
+        skip: 0,
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+      });
+    });
+  });
 });
