@@ -9,9 +9,10 @@ import { StreamingText } from './components/StreamingText'
 import { ChoiceList } from './components/ChoiceList'
 import { BeatHistory } from './components/BeatHistory'
 import { ValidationFeedback } from './components/ValidationFeedback'
+import { RetryButton } from './components/RetryButton'
 
 export default function NarrativePage() {
-  const { status, narrativeText, choices, dispatch } = useStreamState()
+  const { status, narrativeText, choices, errorMessage, dispatch } = useStreamState()
   const { beats, addBeat, setChosenAction } = useNarrativeHistory()
   const narrativeAccumRef = useRef<string>('')
   const [validationStatus, setValidationStatus] = useState<'accepted' | 'modified' | 'rejected' | null>(null)
@@ -28,6 +29,8 @@ export default function NarrativePage() {
   }
 
   const { start, isStreaming } = useStream('/api/generate/stream', onEvent)
+
+  const handleRetry = () => {}
 
   const handleChoice = (label: string) => {
     setChosenAction(beats.length - 1, label)
@@ -63,6 +66,12 @@ export default function NarrativePage() {
         <BeatHistory beats={beats} />
         {status === 'streaming' && <StreamingText text={narrativeText} isStreaming={isStreaming} />}
         {choices.length > 0 && <ChoiceList choices={choices} onSelect={handleChoice} />}
+        {status === 'error' && (
+          <>
+            <p>{errorMessage}</p>
+            <RetryButton onRetry={handleRetry} />
+          </>
+        )}
       </div>
       <div data-testid="input-area" className="flex-shrink-0">
         <ValidationFeedback status={validationStatus} reason={rejectionReason} />

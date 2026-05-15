@@ -162,4 +162,15 @@ describe('NarrativePage', () => {
       expect(screen.getByTestId('feedback-indicator')).toHaveAttribute('data-status', 'accepted')
     })
   })
+
+  it('shows error message and Retry button after an error event', () => {
+    render(<NarrativePage />)
+
+    act(() => {
+      capturedOnEvent!({ type: 'error', message: 'Connection lost' })
+    })
+
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+    expect(screen.getByText('Connection lost')).toBeInTheDocument()
+  })
 })
