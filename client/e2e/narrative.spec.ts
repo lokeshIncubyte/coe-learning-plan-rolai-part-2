@@ -26,10 +26,11 @@ async function submitAction(page: Page, text: string) {
   await page.getByRole('button', { name: 'Submit' }).click()
 }
 
-/** Mock the SSE stream endpoint for one request then restore. */
+/** Mock the SSE stream endpoint. Replaces any prior handler for this URL. */
 async function mockStream(page: Page, events: object[]) {
-  await page.route('**/generate/stream**', (route) => {
-    route.fulfill({
+  await page.unroute('**/generate/stream**').catch(() => {})
+  await page.route('**/generate/stream**', async (route) => {
+    await route.fulfill({
       status: 200,
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',
@@ -40,13 +41,20 @@ async function mockStream(page: Page, events: object[]) {
   })
 }
 
-/** Mock the validation / non-streaming generate endpoint. */
+/** Mock the validation / non-streaming generate endpoint.
+ *  Uses a RegExp so we match `/api/generate` exactly (not `/generate/stream`)
+ *  while still tolerating an optional query string. */
 async function mockGenerate(page: Page, body: object) {
-  await page.route('**/generate', (route) => {
+  await page.unroute(/\/api\/generate(\?.*)?$/).catch(() => {})
+  await page.route(/\/api\/generate(\?.*)?$/, async (route) => {
     if (route.request().method() === 'POST') {
-      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) })
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(body),
+      })
     } else {
-      route.continue()
+      await route.fallback()
     }
   })
 }
@@ -57,6 +65,9 @@ async function mockGenerate(page: Page, body: object) {
 
 test.describe('Narrative page — success criteria', () => {
   test.beforeEach(async ({ page }) => {
+    // Default: validation endpoint accepts all actions. Tests that need
+    // specific validation behaviour (S6b) override this with mockGenerate().
+    await mockGenerate(page, {})
     await page.goto('/narrative')
   })
 
@@ -79,7 +90,10 @@ test.describe('Narrative page — success criteria', () => {
 
     await submitAction(page, 'Begin the adventure')
 
-    await expect(page.getByText('You stand at a crossroads. The path forks ahead.')).toBeVisible()
+    // Use a regex so a trailing cursor span or whitespace doesn't break the match.
+    await expect(
+      page.getByTestId('narrative-panel').getByText(/You stand at a crossroads\.\s*The path forks ahead\./),
+    ).toBeVisible()
   })
 
   // S3a ────────────────────────────────────────────────────────────────────
@@ -93,7 +107,8 @@ test.describe('Narrative page — success criteria', () => {
 
     await submitAction(page, 'Begin')
     await expect(page.getByText('Once upon a time.')).toBeVisible()
-    await expect(page.getByTestId('cursor')).not.toBeVisible()
+    // After 'done', no cursor should remain anywhere on the page.
+    await expect(page.getByTestId('cursor')).toHaveCount(0)
   })
 
   // S3b ────────────────────────────────────────────────────────────────────
@@ -116,10 +131,23 @@ test.describe('Narrative page — success criteria', () => {
   test('S4: custom action input submits the typed text as the prompt', async ({ page }) => {
     let capturedPrompt: string | null = null
 
-    await page.route('**/generate/stream**', (route) => {
-      const url = new URL(route.request().url())
-      capturedPrompt = url.searchParams.get('prompt') ?? route.request().postData()
-      route.fulfill({
+    await page.route('**/generate/stream**', async (route) => {
+      const request = route.request()
+      const url = new URL(request.url())
+      // GET shape: ?prompt=...   POST shape: body { prompt: ... } (raw JSON or form)
+      const queryPrompt = url.searchParams.get('prompt')
+      const postBody = request.postData()
+      let bodyPrompt: string | null = null
+      if (postBody) {
+        try {
+          const parsed = JSON.parse(postBody)
+          bodyPrompt = typeof parsed?.prompt === 'string' ? parsed.prompt : postBody
+        } catch {
+          bodyPrompt = postBody
+        }
+      }
+      capturedPrompt = queryPrompt ?? bodyPrompt
+      await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
         body: sse({ type: 'start' }, { type: 'done' }, { type: 'choices', choices: [{ label: 'Go' }] }),
@@ -128,6 +156,8 @@ test.describe('Narrative page — success criteria', () => {
 
     await submitAction(page, 'I pick up the ancient sword')
 
+    // Wait for the streamed beat to render so we know the request landed.
+    await expect(page.getByRole('button', { name: 'Go' })).toBeVisible()
     expect(capturedPrompt).toContain('I pick up the ancient sword')
   })
 
@@ -138,7 +168,7 @@ test.describe('Narrative page — success criteria', () => {
 
     await page.route('**/generate/stream**', async (route) => {
       await streamDone
-      route.fulfill({
+      await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
         body: sse({ type: 'start' }, { type: 'done' }, { type: 'choices', choices: [{ label: 'Go' }] }),
@@ -173,9 +203,10 @@ test.describe('Narrative page — success criteria', () => {
     // Second beat: hold stream open while clicking the choice
     let resolveStream2!: () => void
     const streamDone2 = new Promise<void>((resolve) => { resolveStream2 = resolve })
+    await page.unroute('**/generate/stream**')
     await page.route('**/generate/stream**', async (route) => {
       await streamDone2
-      route.fulfill({
+      await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
         body: sse({ type: 'start' }, { type: 'done' }, { type: 'choices', choices: [{ label: 'Option B' }] }),
@@ -183,14 +214,21 @@ test.describe('Narrative page — success criteria', () => {
     })
 
     await page.getByRole('button', { name: 'Option A' }).click()
-    // Old choices cleared while streaming
-    await expect(page.getByRole('button', { name: 'Option A' })).not.toBeVisible()
+    // Old choices cleared while streaming (before the second beat resolves).
+    await expect(page.getByRole('button', { name: 'Option A' })).toHaveCount(0)
 
     resolveStream2()
   })
 
   // S6 ─────────────────────────────────────────────────────────────────────
   test('S6: validation feedback shown for accepted action', async ({ page }) => {
+    // Validation endpoint returns a non-rejected payload (the wired page
+    // treats absence of `rejected: true` as "accepted").
+    await mockGenerate(page, {
+      narrative: 'You swing the sword.',
+      choices: [{ label: 'Continue' }],
+    })
+    // Stream endpoint still needs to respond in case the page also opens an SSE.
     await mockStream(page, [
       { type: 'start' },
       { type: 'chunk', content: 'You swing the sword.' },
@@ -206,11 +244,23 @@ test.describe('Narrative page — success criteria', () => {
 
   test('S6b: rejected action shows rejection feedback and no narrative is generated', async ({ page }) => {
     await mockGenerate(page, { rejected: true, reason: 'That action is not permitted here.' })
+    // Defensive: if the wired page accidentally still opens an SSE, fail loudly
+    // rather than hanging on a real-server roundtrip.
+    let streamCalled = false
+    await page.route('**/generate/stream**', async (route) => {
+      streamCalled = true
+      await route.fulfill({
+        status: 200,
+        headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
+        body: sse({ type: 'start' }, { type: 'done' }),
+      })
+    })
 
     await submitAction(page, 'Use magic to teleport')
 
     await expect(page.getByTestId('feedback-indicator')).toHaveAttribute('data-status', 'rejected')
     await expect(page.getByText('That action is not permitted here.')).toBeVisible()
+    expect(streamCalled).toBe(false)
   })
 
   // S7 ─────────────────────────────────────────────────────────────────────
@@ -226,8 +276,9 @@ test.describe('Narrative page — success criteria', () => {
     await expect(page.getByText('You enter the forest.')).toBeVisible()
 
     // Beat 2
-    await page.route('**/generate/stream**', (route) => {
-      route.fulfill({
+    await page.unroute('**/generate/stream**')
+    await page.route('**/generate/stream**', async (route) => {
+      await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
         body: sse(
@@ -255,10 +306,12 @@ test.describe('Narrative page — success criteria', () => {
       { type: 'choices', choices: [{ label: 'Go north' }] },
     ])
     await submitAction(page, 'Begin')
+    await expect(page.getByRole('button', { name: 'Go north' })).toBeVisible()
 
     // Beat 2 — click choice "Go north"
-    await page.route('**/generate/stream**', (route) => {
-      route.fulfill({
+    await page.unroute('**/generate/stream**')
+    await page.route('**/generate/stream**', async (route) => {
+      await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
         body: sse(
@@ -271,6 +324,9 @@ test.describe('Narrative page — success criteria', () => {
     })
     await page.getByRole('button', { name: 'Go north' }).click()
 
+    await expect(page.getByText('Second beat.')).toBeVisible()
+    // Exactly one chosen-action should be rendered (the new beat resets, not accumulates).
+    await expect(page.getByTestId('chosen-action')).toHaveCount(1)
     await expect(page.getByTestId('chosen-action')).toHaveText('Go north')
   })
 
@@ -287,8 +343,9 @@ test.describe('Narrative page — success criteria', () => {
     await expect(page.getByText('Service unavailable')).toBeVisible()
 
     // Set up success response for the retry
-    await page.route('**/generate/stream**', (route) => {
-      route.fulfill({
+    await page.unroute('**/generate/stream**')
+    await page.route('**/generate/stream**', async (route) => {
+      await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
         body: sse(
@@ -302,7 +359,7 @@ test.describe('Narrative page — success criteria', () => {
     await page.getByRole('button', { name: 'Retry' }).click()
 
     await expect(page.getByText('Success after retry.')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Retry' })).not.toBeVisible()
+    await expect(page.getByRole('button', { name: 'Retry' })).toHaveCount(0)
   })
 
   // S9 ─────────────────────────────────────────────────────────────────────
@@ -321,8 +378,9 @@ test.describe('Narrative page — success criteria', () => {
     await expect(page.getByRole('button', { name: 'Walk away' })).toBeVisible()
 
     // Round 2
-    await page.route('**/generate/stream**', (route) => {
-      route.fulfill({
+    await page.unroute('**/generate/stream**')
+    await page.route('**/generate/stream**', async (route) => {
+      await route.fulfill({
         status: 200,
         headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
         body: sse(
@@ -337,8 +395,8 @@ test.describe('Narrative page — success criteria', () => {
 
     await expect(page.getByText('Round 2: you step inside.')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Look around' })).toBeVisible()
-    // Round 1 choices cleared
-    await expect(page.getByRole('button', { name: 'Enter' })).not.toBeVisible()
+    // Round 1 choice buttons cleared (no live button rendering 'Enter').
+    await expect(page.getByRole('button', { name: 'Enter' })).toHaveCount(0)
     // Round 1 history still present
     await expect(page.getByText('Round 1: you stand at the gate.')).toBeVisible()
   })

@@ -14,7 +14,7 @@ export function ValidationFeedback({
   if (!status) return null
 
   return (
-    <div data-testid="feedback-indicator" data-status={status} className={statusStyles[status]}>
+    <div data-testid="feedback-indicator" data-status={status} className={`${statusStyles[status]} min-h-[1rem]`}>
       {reason}
     </div>
   )
