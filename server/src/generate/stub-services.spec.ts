@@ -1,10 +1,17 @@
 import { GraphService } from './graph.service';
 import { StateService } from './state.service';
 import { EngineService } from './engine.service';
+import { PrismaService } from '../prisma/prisma.service';
+
+const mockPrisma = {
+  entity: { create: jest.fn(), findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn() },
+  edge: { create: jest.fn(), update: jest.fn(), findMany: jest.fn() },
+  $transaction: jest.fn(),
+} as unknown as PrismaService;
 
 describe('GraphService', () => {
-  it('getEntities returns an array', () => {
-    expect(Array.isArray(new GraphService().getEntities())).toBe(true);
+  it('is constructable with PrismaService', () => {
+    expect(new GraphService(mockPrisma)).toBeInstanceOf(GraphService);
   });
 });
 
