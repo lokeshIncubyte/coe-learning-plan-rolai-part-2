@@ -34,4 +34,12 @@ describe('NarrativePage', () => {
     render(<NarrativePage />)
     expect(screen.getByRole('textbox')).toBeInTheDocument()
   })
+
+  it('calls start({ prompt }) when the user submits text', async () => {
+    const user = userEvent.setup()
+    render(<NarrativePage />)
+    await user.type(screen.getByRole('textbox'), 'hello')
+    await user.click(screen.getByRole('button', { name: 'Submit' }))
+    expect(mockStart).toHaveBeenCalledWith({ prompt: 'hello' })
+  })
 })
