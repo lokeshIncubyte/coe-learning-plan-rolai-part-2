@@ -1,7 +1,7 @@
 ---
 id: cycle-011
 slug: prisma-service
-status: pending
+status: done
 source: "cycle-011 spec — PrismaService lifecycle, PrismaModule global export, GenerateModule import"
 covers: happy-path
 ---
