@@ -1,0 +1,11 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+@Injectable()
+export class GenerationHistoryService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async saveGeneration(sessionId: string, narrative: string, anchor: string, deltas: unknown[]) {
+    return this.prisma.generationHistory.create({ data: { sessionId, narrative, anchor, deltas } });
+  }
+}
