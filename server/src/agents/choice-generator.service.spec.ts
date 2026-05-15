@@ -28,4 +28,12 @@ describe('ChoiceGeneratorService', () => {
     const choices = await service.generateChoices('narrative text')
     expect(choices).toEqual([{ label: 'Investigate', entities: ['door'], rules: ['rule-1'] }])
   })
+
+  it('calls agent.generate with the narrative and a structured output schema', async () => {
+    await service.generateChoices('narrative text')
+    expect(agentMock.generate).toHaveBeenCalledWith(
+      'narrative text',
+      expect.objectContaining({ structuredOutput: expect.anything() }),
+    )
+  })
 })

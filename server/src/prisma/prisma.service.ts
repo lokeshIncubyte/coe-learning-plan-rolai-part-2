@@ -1,14 +1,12 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-// NOTE: For runtime with a PostgreSQL adapter (e.g. @prisma/adapter-pg + PrismaPg),
-// pass `{ adapter: new PrismaPg({ connectionString: process.env['DATABASE_URL'] }) }`
-// to super(). The plain super() here keeps the PrismaClient.prototype spies working
-// in the test environment and avoids a peer dependency on @prisma/adapter-pg.
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    super();
+    const adapter = new PrismaPg({ connectionString: process.env['DATABASE_URL'] });
+    super({ adapter } as any);
   }
 
   async onModuleInit(): Promise<void> {

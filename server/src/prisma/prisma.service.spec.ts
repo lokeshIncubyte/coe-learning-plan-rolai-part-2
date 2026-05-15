@@ -1,5 +1,6 @@
-// Mock @prisma/client before any imports so PrismaClient can be constructed
-// without a schema/datasource in the test environment.
+// Mock @prisma/client and @prisma/adapter-pg before any imports so PrismaClient
+// can be constructed without a schema/datasource or real Postgres in the test
+// environment.
 const mockConnect = jest.fn().mockResolvedValue(undefined);
 const mockDisconnect = jest.fn().mockResolvedValue(undefined);
 
@@ -10,6 +11,10 @@ jest.mock('@prisma/client', () => {
   }
   return { PrismaClient: MockPrismaClient };
 });
+
+jest.mock('@prisma/adapter-pg', () => ({
+  PrismaPg: jest.fn().mockImplementation(() => ({})),
+}));
 
 import { PrismaService } from './prisma.service';
 
