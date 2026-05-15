@@ -1,7 +1,7 @@
 ---
 id: cycle-058
 slug: validation-rejected-stops-stream
-status: pending
+status: done
 source: "item 6 — POST /api/generate rejected:true → start never called"
 covers: error-path
 ---
