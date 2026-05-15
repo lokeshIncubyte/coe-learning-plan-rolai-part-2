@@ -42,4 +42,11 @@ describe('NarrativePage', () => {
     await user.click(screen.getByRole('button', { name: 'Submit' }))
     expect(mockStart).toHaveBeenCalledWith({ prompt: 'hello' })
   })
+
+  it('displays chunk content in the narrative panel during streaming', () => {
+    render(<NarrativePage />)
+    act(() => { capturedOnEvent!({ type: 'start' }) })
+    act(() => { capturedOnEvent!({ type: 'chunk', content: 'hello world' }) })
+    expect(screen.getByTestId('narrative-panel')).toHaveTextContent('hello world')
+  })
 })

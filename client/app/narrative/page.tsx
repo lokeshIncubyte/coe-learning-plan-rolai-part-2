@@ -3,9 +3,10 @@
 import { useStreamState } from './hooks/useStreamState'
 import { useStream } from './hooks/useStream'
 import { ActionInput } from './components/ActionInput'
+import { StreamingText } from './components/StreamingText'
 
 export default function NarrativePage() {
-  const { dispatch } = useStreamState()
+  const { narrativeText, dispatch } = useStreamState()
   const { start, isStreaming } = useStream('/api/generate/stream', dispatch)
 
   const handleSubmit = async (text: string) => {
@@ -27,7 +28,9 @@ export default function NarrativePage() {
 
   return (
     <div className="flex flex-col h-dvh overflow-hidden">
-      <div data-testid="narrative-panel" className="flex-1 min-h-0 overflow-y-auto" />
+      <div data-testid="narrative-panel" className="flex-1 min-h-0 overflow-y-auto">
+        <StreamingText text={narrativeText} isStreaming={isStreaming} />
+      </div>
       <div data-testid="input-area" className="flex-shrink-0">
         <ActionInput onSubmit={handleSubmit} disabled={isStreaming} />
       </div>
