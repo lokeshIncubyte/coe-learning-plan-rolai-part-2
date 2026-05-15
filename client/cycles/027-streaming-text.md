@@ -1,7 +1,7 @@
 ---
 id: cycle-027
 slug: streaming-text
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "StreamingText component — accepts text: string and isStreaming: boolean props; renders the text with a blinking cursor appended when isStreaming is true"
 covers: happy-path

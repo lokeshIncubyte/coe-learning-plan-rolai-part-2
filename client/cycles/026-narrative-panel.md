@@ -1,7 +1,7 @@
 ---
 id: cycle-026
 slug: narrative-panel
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "Build NarrativePanel component — renders a scrollable div containing a list of narrative beat strings passed as props; each beat is a <p> element"
 covers: happy-path

@@ -1,7 +1,7 @@
 ---
 id: cycle-025
 slug: narrative-page-shell
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "Create narrative page at app/narrative/page.tsx — Client Component shell with fixed-height flex layout, scrollable panel placeholder, and bottom input area placeholder"
 covers: happy-path

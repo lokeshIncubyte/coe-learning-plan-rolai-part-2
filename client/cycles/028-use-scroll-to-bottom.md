@@ -1,7 +1,7 @@
 ---
 id: cycle-028
 slug: use-scroll-to-bottom
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "useScrollToBottom hook — accepts a dependency value; returns a ref to attach to the scroll container; scrolls to bottom when dependency changes only if the container is already near the bottom (within 100px)"
 covers: happy-path
