@@ -65,4 +65,10 @@ describe('NarrativePage', () => {
     act(() => { capturedOnEvent!({ type: 'done' }) })
     expect(screen.queryByTestId('cursor')).not.toBeInTheDocument()
   })
+
+  it('disables the text input while isStreaming is true', () => {
+    mockIsStreaming = true
+    render(<NarrativePage />)
+    expect(screen.getByRole('textbox')).toBeDisabled()
+  })
 })
