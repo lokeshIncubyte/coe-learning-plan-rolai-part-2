@@ -63,21 +63,25 @@ export default function NarrativePage() {
   }
 
   return (
-    <div className="flex flex-col h-dvh overflow-hidden">
-      <div data-testid="narrative-panel" className="flex-1 min-h-0 overflow-y-auto">
-        <BeatHistory beats={beats} />
-        {status === 'streaming' && <StreamingText text={narrativeText} isStreaming={isStreaming} />}
-        {choices.length > 0 && <ChoiceList choices={choices} onSelect={handleChoice} />}
-        {status === 'error' && (
-          <>
-            <p>{errorMessage}</p>
-            <RetryButton onRetry={handleRetry} />
-          </>
-        )}
+    <div className="flex flex-col h-dvh overflow-hidden bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+      <div data-testid="narrative-panel" className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-8">
+        <div className="mx-auto w-full max-w-2xl space-y-6">
+          <BeatHistory beats={beats} />
+          {status === 'streaming' && <StreamingText text={narrativeText} isStreaming={isStreaming} />}
+          {choices.length > 0 && <ChoiceList choices={choices} onSelect={handleChoice} />}
+          {status === 'error' && (
+            <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30 p-4 space-y-2">
+              <p className="text-red-600 dark:text-red-400 text-sm">{errorMessage}</p>
+              <RetryButton onRetry={handleRetry} />
+            </div>
+          )}
+        </div>
       </div>
-      <div data-testid="input-area" className="flex-shrink-0">
-        <ValidationFeedback status={validationStatus} reason={rejectionReason} />
-        <ActionInput onSubmit={handleSubmit} disabled={isStreaming} />
+      <div data-testid="input-area" className="flex-shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 sm:px-6 py-4">
+        <div className="mx-auto w-full max-w-2xl space-y-2">
+          <ValidationFeedback status={validationStatus} reason={rejectionReason} />
+          <ActionInput onSubmit={handleSubmit} disabled={isStreaming} />
+        </div>
       </div>
     </div>
   )
