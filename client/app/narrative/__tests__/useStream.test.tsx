@@ -17,3 +17,40 @@ describe('useStream — isStreaming', () => {
     expect(result.current.isStreaming).toBe(true)
   })
 })
+
+function makeStream(...lines: string[]): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder()
+  return new ReadableStream({
+    start(controller) {
+      for (const line of lines) {
+        controller.enqueue(encoder.encode(line + '\n'))
+      }
+      controller.close()
+    },
+  })
+}
+
+describe('useStream — event dispatch', () => {
+  it('calls onEvent for each parsed event and resets isStreaming when stream completes', async () => {
+    const onEvent = jest.fn()
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      body: makeStream(
+        '{"type":"start"}',
+        '{"type":"chunk","content":"Hello"}',
+        '{"type":"done"}',
+      ),
+    })
+
+    const { result } = renderHook(() => useStream('http://test', onEvent))
+
+    await act(async () => {
+      await result.current.start({})
+    })
+
+    expect(onEvent).toHaveBeenCalledWith({ type: 'start' })
+    expect(onEvent).toHaveBeenCalledWith({ type: 'chunk', content: 'Hello' })
+    expect(onEvent).toHaveBeenCalledWith({ type: 'done' })
+    expect(result.current.isStreaming).toBe(false)
+  })
+})
