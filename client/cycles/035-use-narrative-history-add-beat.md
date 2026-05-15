@@ -1,7 +1,7 @@
 ---
 id: cycle-035
 slug: use-narrative-history-add-beat
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "useNarrativeHistory hook — addBeat(narrative) appends a beat with null chosenAction"
 covers: happy-path

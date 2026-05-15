@@ -1,7 +1,7 @@
 ---
 id: cycle-037
 slug: beat-history
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "BeatHistory component — renders each beat's narrative; renders highlighted chosenAction below narrative when non-null"
 covers: happy-path

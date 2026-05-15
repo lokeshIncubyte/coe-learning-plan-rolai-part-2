@@ -1,7 +1,7 @@
 ---
 id: cycle-036
 slug: use-narrative-history-set-action
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "useNarrativeHistory hook — setChosenAction(index, action) updates the chosenAction for the beat at the given index"
 covers: happy-path
