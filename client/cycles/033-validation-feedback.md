@@ -76,4 +76,4 @@ none
 
 ---
 
-> **Execute:** Run `/exec-cycle` to execute this cycle (RED → GREEN → squash merge).
+> **Execute:** Run the `/exec-cycle` skill to execute this cycle (RED → GREEN → squash merge).
