@@ -38,10 +38,10 @@
 
 ## 4. Custom Action Input
 
-- [ ] Add custom action text input field below choice buttons
-- [ ] Submitting the input sends it as a free-text prompt to `/generate`
-- [ ] Show validation feedback inline (accepted / modified / rejected + reason)
-- [ ] Optimistic UI — show action immediately, rollback display on rejection
+- [x] Add custom action text input field below choice buttons
+- [x] Submitting the input sends it as a free-text prompt to `/generate`
+- [x] Show validation feedback inline (accepted / modified / rejected + reason)
+- [x] Optimistic UI — show action immediately, rollback display on rejection
 
 > **TDD:** Use `/plan-cycle` for the optimistic UI logic — `useOptimistic` rollback behaviour on rejection is testable in isolation.
 
