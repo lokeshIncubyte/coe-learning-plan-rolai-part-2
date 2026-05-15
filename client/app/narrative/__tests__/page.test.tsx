@@ -50,6 +50,13 @@ describe('NarrativePage', () => {
     expect(screen.getByTestId('narrative-panel')).toHaveTextContent('hello world')
   })
 
+  it('shows choice buttons after a choices event arrives', () => {
+    render(<NarrativePage />)
+    act(() => { capturedOnEvent!({ type: 'choices', choices: [{ label: 'Fight' }, { label: 'Flee' }] }) })
+    expect(screen.getByRole('button', { name: 'Fight' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Flee' })).toBeInTheDocument()
+  })
+
   it('hides the streaming cursor after the done event', () => {
     mockIsStreaming = true
     render(<NarrativePage />)
