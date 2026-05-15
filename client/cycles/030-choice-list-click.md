@@ -1,7 +1,7 @@
 ---
 id: cycle-030
 slug: choice-list-click
-status: skip
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "ChoiceList component — clicking a button calls onSelect with that choice's label"
 covers: happy-path

@@ -1,7 +1,7 @@
 ---
 id: cycle-029
 slug: choice-list-render
-status: pending
+status: done
 exec: use /exec-cycle to execute this cycle
 source: "ChoiceList component — renders a button per choice; empty array renders nothing; new choices prop replaces old buttons; clicking a button calls onSelect with that choice's label"
 covers: happy-path
