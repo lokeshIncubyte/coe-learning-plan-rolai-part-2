@@ -16,6 +16,8 @@
 
 ## 2. Narrative Page Setup
 
+> **TDD:** Use `/plan-cycle` before implementing. The narrative panel (renders text, is scrollable), streaming text display (appends chunks), and scroll-to-bottom behaviour are testable with React Testing Library.
+
 - [ ] Create narrative page in Next.js (`app/narrative/page.tsx` or similar)
 - [ ] Build narrative panel component — scrollable area displaying narrative text
 - [ ] Add streaming text display — chunks appended progressively as SSE events arrive
@@ -24,6 +26,8 @@
 ---
 
 ## 3. Choice Buttons
+
+> **TDD:** Use `/plan-cycle` before implementing. Choice buttons (renders correct labels, fires callback on click, clears on new beat) are testable with React Testing Library.
 
 - [ ] Display 2–4 dynamic choice buttons below the narrative panel
 - [ ] Choices populated from `{ type: 'choices', choices: [...] }` SSE event
