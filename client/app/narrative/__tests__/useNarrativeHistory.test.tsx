@@ -25,3 +25,23 @@ describe('useNarrativeHistory — addBeat', () => {
     ])
   })
 })
+
+describe('useNarrativeHistory — setChosenAction', () => {
+  it('updates chosenAction for the beat at the given index', () => {
+    const { result } = renderHook(() => useNarrativeHistory())
+    act(() => { result.current.addBeat('Beat one.') })
+    act(() => { result.current.addBeat('Beat two.') })
+    act(() => { result.current.setChosenAction(0, 'Attack') })
+    expect(result.current.beats[0].chosenAction).toBe('Attack')
+    expect(result.current.beats[1].chosenAction).toBeNull()
+  })
+
+  it('does not mutate other beats when setting chosenAction', () => {
+    const { result } = renderHook(() => useNarrativeHistory())
+    act(() => { result.current.addBeat('Beat one.') })
+    act(() => { result.current.addBeat('Beat two.') })
+    act(() => { result.current.setChosenAction(1, 'Flee') })
+    expect(result.current.beats[0].chosenAction).toBeNull()
+    expect(result.current.beats[1].chosenAction).toBe('Flee')
+  })
+})

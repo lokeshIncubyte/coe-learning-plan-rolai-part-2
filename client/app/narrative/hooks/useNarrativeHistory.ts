@@ -8,5 +8,10 @@ export function useNarrativeHistory() {
   const addBeat = (narrative: string) =>
     setBeats((prev) => [...prev, { narrative, chosenAction: null }])
 
-  return { beats, addBeat }
+  const setChosenAction = (index: number, action: string) =>
+    setBeats((prev) =>
+      prev.map((beat, i) => (i === index ? { ...beat, chosenAction: action } : beat))
+    )
+
+  return { beats, addBeat, setChosenAction }
 }
