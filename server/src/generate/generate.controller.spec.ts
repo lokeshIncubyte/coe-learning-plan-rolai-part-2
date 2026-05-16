@@ -37,6 +37,25 @@ describe('GenerateController', () => {
     })
   })
 
+  // cycle-024
+  it('generates narrative with modifiedAction when validator returns modified', async () => {
+    const mod = await Test.createTestingModule({
+      controllers: [GenerateController],
+      providers: [
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('narrative'), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'modified', modifiedAction: 'safe action', reason: 'too dangerous' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+        { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+      ],
+    }).compile();
+    const ctrl = mod.get(GenerateController);
+    const narrativeSvc = mod.get(NarrativeGeneratorService);
+
+    await ctrl.generate({ prompt: 'dangerous action' });
+
+    expect(narrativeSvc.generate).toHaveBeenCalledWith('safe action');
+  });
+
   describe('stream SSE endpoint', () => {
     let controller: GenerateController;
     let narrativeService: { generate: jest.Mock; stream: jest.Mock };
@@ -51,9 +70,9 @@ describe('GenerateController', () => {
             provide: NarrativeGeneratorService,
             useValue: { generate: jest.fn(), stream: jest.fn() },
           },
-          { provide: ActionValidatorService, useValue: { validate: jest.fn() } },
+          { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
           { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn() } },
-          { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockReturnValue([]) } },
+          { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
         ],
       }).compile();
 
@@ -117,19 +136,106 @@ describe('GenerateController', () => {
       ]);
     });
 
-    it('passes AbortSignal to the service and aborts on unsubscribe', () => {
+    it('passes AbortSignal to the service and aborts on unsubscribe', async () => {
       let capturedSignal: AbortSignal | undefined;
-      async function* twoTokens() { yield 'a'; yield 'b'; }
+      let streamEntered: () => void;
+      const streamEnteredPromise = new Promise<void>(res => { streamEntered = res; });
+
+      async function* hangingStream() {
+        streamEntered();
+        // hang indefinitely so we can check the signal before it's aborted by teardown
+        await new Promise<void>(() => {});
+        yield 'a';
+      }
       narrativeService.stream.mockImplementation((_prompt: string, signal: AbortSignal) => {
         capturedSignal = signal;
-        return twoTokens();
+        return hangingStream();
       });
+      choiceGeneratorService.generateChoices.mockResolvedValue([]);
 
       const sub = controller.stream({ prompt: 'test' }).subscribe(() => {});
+      await streamEnteredPromise;
       expect(capturedSignal).toBeDefined();
       expect(capturedSignal!.aborted).toBe(false);
       sub.unsubscribe();
       expect(capturedSignal!.aborted).toBe(true);
+    });
+
+    // cycle-025
+    it('emits rejected event and completes without streaming when validator rejects', async () => {
+      const mod = await Test.createTestingModule({
+        controllers: [GenerateController],
+        providers: [
+          { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn() } },
+          { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'rejected', reason: 'impossible action' }) } },
+          { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+          { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+        ],
+      }).compile();
+      const ctrl = mod.get(GenerateController);
+      const narrativeSvc = mod.get(NarrativeGeneratorService);
+
+      const events: any[] = [];
+      await new Promise<void>((resolve, reject) => {
+        ctrl.stream({ prompt: 'impossible' }).subscribe({ next: (e) => events.push(e.data), error: reject, complete: resolve });
+      });
+
+      expect(events).toEqual([{ type: 'rejected', reason: 'impossible action' }]);
+      expect(narrativeSvc.stream).not.toHaveBeenCalled();
+    });
+
+    // cycle-026
+    it('emits modified event then streams using modifiedAction when validator returns modified', async () => {
+      async function* tokens() { yield 'story'; }
+      const mod = await Test.createTestingModule({
+        controllers: [GenerateController],
+        providers: [
+          { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn().mockImplementation(() => tokens()) } },
+          { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'modified', modifiedAction: 'adjusted action', reason: 'adjusted' }) } },
+          { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+          { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+        ],
+      }).compile();
+      const ctrl = mod.get(GenerateController);
+      const narrativeSvc = mod.get(NarrativeGeneratorService);
+
+      const events: any[] = [];
+      await new Promise<void>((resolve, reject) => {
+        ctrl.stream({ prompt: 'original prompt' }).subscribe({ next: (e) => events.push(e.data), error: reject, complete: resolve });
+      });
+
+      expect(events[0]).toEqual({ type: 'modified', modifiedAction: 'adjusted action' });
+      expect(narrativeSvc.stream).toHaveBeenCalledWith('adjusted action', expect.any(Object));
+    });
+
+    // cycle-027
+    it('passes worldContext to choiceGenerator in SSE path', async () => {
+      async function* tokens() { yield 'story'; }
+      const mod = await Test.createTestingModule({
+        controllers: [GenerateController],
+        providers: [
+          { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn().mockImplementation(() => tokens()) } },
+          { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted', reason: '' }) } },
+          { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+          {
+            provide: GraphService,
+            useValue: {
+              getEntitiesByType: jest.fn().mockImplementation((type: string) => {
+                if (type === 'character') return Promise.resolve([{ name: 'Hero', type: 'character' }]);
+                return Promise.resolve([]);
+              }),
+            },
+          },
+        ],
+      }).compile();
+      const ctrl = mod.get(GenerateController);
+      const choiceSvc = mod.get(ChoiceGeneratorService);
+
+      await new Promise<void>((resolve, reject) => {
+        ctrl.stream({ prompt: 'test' }).subscribe({ next: () => {}, error: reject, complete: resolve });
+      });
+
+      expect(choiceSvc.generateChoices).toHaveBeenCalledWith('story', expect.stringContaining('Hero'));
     });
   });
 })

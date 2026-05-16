@@ -29,16 +29,33 @@ export class GenerateController {
       const abort = new AbortController();
 
       (async () => {
-        subscriber.next({ data: { type: 'start' } });
         try {
+          const { ruleContext, worldContext } = await this.buildContexts();
+          const outcome = await this.validatorService.validate(query.prompt, ruleContext);
+
+          if (outcome.result === 'rejected') {
+            subscriber.next({ data: { type: 'rejected', reason: outcome.reason } });
+            subscriber.complete();
+            return;
+          }
+
+          const effectivePrompt = outcome.result === 'modified' && outcome.modifiedAction
+            ? outcome.modifiedAction
+            : query.prompt;
+
+          if (outcome.result === 'modified' && outcome.modifiedAction) {
+            subscriber.next({ data: { type: 'modified', modifiedAction: outcome.modifiedAction } });
+          }
+
+          subscriber.next({ data: { type: 'start' } });
           let fullNarrative = '';
-          for await (const token of this.narrativeService.stream(query.prompt, abort.signal)) {
+          for await (const token of this.narrativeService.stream(effectivePrompt, abort.signal)) {
             if (subscriber.closed) break;
             fullNarrative += token;
             subscriber.next({ data: { type: 'chunk', content: token } });
           }
           if (!subscriber.closed) {
-            const choices = await this.choiceGeneratorService.generateChoices(fullNarrative, '');
+            const choices = await this.choiceGeneratorService.generateChoices(fullNarrative, worldContext);
             subscriber.next({ data: { type: 'done' } });
             subscriber.next({ data: { type: 'choices', choices } });
             subscriber.complete();
@@ -58,6 +75,23 @@ export class GenerateController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async generate(@Body() body: GenerateRequestDto) {
+    const { ruleContext, worldContext } = await this.buildContexts();
+
+    const outcome = await this.validatorService.validate(body.prompt, ruleContext);
+    if (outcome.result === 'rejected') {
+      return { rejected: true, reason: outcome.reason };
+    }
+
+    const effectivePrompt = outcome.result === 'modified' && outcome.modifiedAction
+      ? outcome.modifiedAction
+      : body.prompt;
+
+    const narrative = await this.narrativeService.generate(effectivePrompt);
+    const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
+    return { narrative, choices };
+  }
+
+  private async buildContexts(): Promise<{ ruleContext: string; worldContext: string }> {
     const rules = await this.graphService.getEntitiesByType('rule');
     const ruleContext = rules.length
       ? `RULES:\n${rules.map((r: any) => `- ${r.name}: ${(r.facts as any)?.description ?? ''}`).join('\n')}`
@@ -71,12 +105,6 @@ export class GenerateController {
       ? `WORLD:\n${allEntities.map((e: any) => `- ${e.name} (${e.type})`).join('\n')}`
       : '';
 
-    const outcome = await this.validatorService.validate(body.prompt, ruleContext);
-    if (outcome.result === 'rejected') {
-      return { rejected: true, reason: outcome.reason };
-    }
-    const narrative = await this.narrativeService.generate(body.prompt);
-    const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
-    return { narrative, choices };
+    return { ruleContext, worldContext };
   }
 }
