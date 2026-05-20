@@ -1,9 +1,34 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+export type EnrichedEntity = {
+  id: string;
+  type: string;
+  name: string;
+  tags: string[];
+  facts: unknown;
+  archetype?: string | null;
+  backstory?: string | null;
+  role?: string | null;
+  identity_version: number;
+  state: unknown;
+  last_beat?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  fromEdges: unknown[];
+  toEdges: unknown[];
+};
+
 @Injectable()
 export class GraphService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async getAllEntitiesWithEdges(): Promise<EnrichedEntity[]> {
+    return this.prisma.entity.findMany({
+      where: { type: { notIn: ['rule'] } },
+      include: { fromEdges: true, toEdges: true },
+    }) as unknown as EnrichedEntity[];
+  }
 
   async createEntity(data: any) {
     return this.prisma.entity.create({ data });

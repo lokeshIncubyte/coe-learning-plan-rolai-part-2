@@ -135,4 +135,21 @@ describe('GraphService', () => {
       expect(result).toEqual(created);
     });
   });
+
+  describe('getAllEntitiesWithEdges', () => {
+    it('queries for non-rule entities with fromEdges and toEdges included', async () => {
+      const entities = [
+        { id: 'e1', type: 'character', name: 'Elara', fromEdges: [], toEdges: [] },
+      ];
+      (mockPrisma.entity.findMany as jest.Mock).mockResolvedValueOnce(entities);
+
+      const result = await service.getAllEntitiesWithEdges();
+
+      expect(mockPrisma.entity.findMany).toHaveBeenCalledWith({
+        where: { type: { notIn: ['rule'] } },
+        include: { fromEdges: true, toEdges: true },
+      });
+      expect(result).toEqual(entities);
+    });
+  });
 });
