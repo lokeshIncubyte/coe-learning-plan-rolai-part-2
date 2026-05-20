@@ -40,6 +40,13 @@ export class EngineService {
       .map(rule => rule.apply);
   }
 
+  resolveRuleConflict(
+    candidates: Array<{ ruleName: string; patch: Record<string, unknown>; priority?: number }>,
+    _conflictKey: string,
+  ): { ruleName: string; patch: Record<string, unknown>; priority?: number } {
+    return [...candidates].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))[0];
+  }
+
   async processDeltas(deltas: Delta[], spec: UpdateSpec): Promise<{ flaggedForReEmbed: IdentityShiftDelta[] }> {
     const { stateMutations, identityShifts } = this.classifyDeltas(deltas);
     await Promise.all(stateMutations.map(d => this.applyStateMutationDelta(d.entityId, d.patch, spec)));

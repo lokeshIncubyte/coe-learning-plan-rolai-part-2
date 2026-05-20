@@ -120,6 +120,21 @@ describe('EngineService', () => {
     });
   });
 
+  describe('resolveRuleConflict', () => {
+    it('returns the candidate with the highest priority', () => {
+      const engine = new EngineService(null as any);
+      const candidates = [
+        { ruleName: 'low-hp-critical', patch: { status: 'critical' }, priority: 2 },
+        { ruleName: 'regeneration-active', patch: { status: 'healing' }, priority: 5 },
+      ];
+
+      const resolved = engine.resolveRuleConflict(candidates, 'status');
+
+      expect(resolved.ruleName).toBe('regeneration-active');
+      expect(resolved.patch.status).toBe('healing');
+    });
+  });
+
   describe('classifyDeltas', () => {
     it('separates state_mutation and identity_shift; ignores new_entity and new_edge', () => {
       const engine = new EngineService(null as any);
