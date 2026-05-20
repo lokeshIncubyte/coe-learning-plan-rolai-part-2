@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// NOTE: pgvector extension must be enabled directly in PostgreSQL:
+//   CREATE EXTENSION IF NOT EXISTS vector;
+// Then create the HNSW index on the embedding column:
+//   CREATE INDEX ON "Entity" USING hnsw (embedding vector_cosine_ops);
+
+model Session {
+  id        String              @id @default(cuid())
+  createdAt DateTime            @default(now())
+  history   GenerationHistory[]
+}
+
+model Entity {
+  id   String   @id @default(cuid())
+  type String
+  name String
+  tags String[]
+  facts Json    @default("{}")
+
+  // --- Identity Layer (embedded, stable) ---
+  // Embedded via helper-apis (local ONNX all-MiniLM-L6-v2, 384-dim).
+  // Re-embed only on semantic identity shift (archetype/role/type change or destruction).
+  archetype        String?
+  backstory        String?
+  role             String?
+  identity_version Int     @default(0)
+  embedding        Unsupported("vector(384)")?
+
+  // --- State Layer (mutable, never embedded) ---
+  // Free to mutate — these never trigger an embedding API call.
+  state     Json    @default("{}")
+  last_beat String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fromEdges Edge[] @relation("EdgeFrom")
+  toEdges   Edge[] @relation("EdgeTo")
+}
+
+model Edge {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  type      String
+  weight    Float    @default(1.0)
+  tags      String[]
+  state     Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  from Entity @relation("EdgeFrom", fields: [fromId], references: [id])
+  to   Entity @relation("EdgeTo",   fields: [toId],   references: [id])
+}
+
+model GenerationHistory {
+  id        String   @id @default(cuid())
+  sessionId String
+  narrative String
+  anchor    String
+  deltas    Json     @default("[]")
+  createdAt DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id])
+}
