@@ -1,6 +1,8 @@
 import { EngineService } from './engine.service';
 import type { UpdateSpec } from './update-spec';
 import type { Delta } from '../upload/extractor.service';
+import { Prisma } from '@prisma/client';
+const { PrismaClientKnownRequestError } = Prisma;
 
 const spec: UpdateSpec = {
   variables: {
@@ -78,6 +80,22 @@ describe('EngineService', () => {
 
       expect(mockGraph.updateEntityState).toHaveBeenCalledWith('e1', { hp: 100 });
       expect(result).toEqual({ resolved: { hp: 100 } });
+    });
+  });
+
+  describe('applyStateMutationDelta error path', () => {
+    it('propagates PrismaClientKnownRequestError from graphService without swallowing', async () => {
+      const err = new PrismaClientKnownRequestError('Record not found', {
+        code: 'P2025',
+        clientVersion: '7.8.0',
+      });
+      const mockGraph = { updateEntityState: jest.fn().mockRejectedValue(err) };
+      const engine = new EngineService(mockGraph as any);
+      const errSpec: UpdateSpec = { variables: {} };
+
+      await expect(
+        engine.applyStateMutationDelta('missing-id', { hp: 10 }, errSpec),
+      ).rejects.toThrow(PrismaClientKnownRequestError);
     });
   });
 
