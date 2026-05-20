@@ -94,6 +94,35 @@ describe('EmbeddingService', () => {
     });
   });
 
+  describe('onEntityWrite', () => {
+    it('re-embeds and increments identity_version when an identity field changes', async () => {
+      const before = { id: 'e1', name: 'Elara', type: 'character', archetype: 'Mage', backstory: null, role: null, state: {} };
+      const after  = { id: 'e1', name: 'Elara', type: 'character', archetype: 'Warrior', backstory: null, role: null, state: {} };
+
+      (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce({ ...after, identity_version: 1 });
+      (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(after);
+      (mockPrisma.$executeRawUnsafe as jest.Mock).mockResolvedValueOnce(1);
+      jest.spyOn(service, 'generateEmbedding').mockResolvedValueOnce(new Array(384).fill(0.1));
+
+      await service.onEntityWrite(before, after);
+
+      expect(mockPrisma.entity.update).toHaveBeenCalledWith({
+        where: { id: 'e1' },
+        data: { identity_version: { increment: 1 } },
+      });
+    });
+
+    it('does NOT re-embed when only state changes', async () => {
+      const before = { id: 'e1', name: 'Elara', type: 'character', archetype: 'Mage', backstory: null, role: null, state: { health: 100 } };
+      const after  = { ...before, state: { health: 50 } };
+
+      await service.onEntityWrite(before, after);
+
+      expect(mockPrisma.entity.update).not.toHaveBeenCalled();
+      expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    });
+  });
+
   describe('shouldReembed', () => {
     const base = {
       id: 'e1', name: 'Elara', type: 'character',

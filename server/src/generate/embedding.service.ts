@@ -18,6 +18,18 @@ export class EmbeddingService {
     this.openai = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });
   }
 
+  async onEntityWrite(
+    before: Record<string, unknown>,
+    after: Record<string, unknown>,
+  ): Promise<void> {
+    if (!this.shouldReembed(before, after)) return;
+    await this.prisma.entity.update({
+      where: { id: after['id'] as string },
+      data: { identity_version: { increment: 1 } },
+    });
+    await this.embedEntityIdentity(after['id'] as string);
+  }
+
   async embedEntityIdentity(entityId: string): Promise<void> {
     const entity = await this.prisma.entity.findUnique({ where: { id: entityId } });
     if (!entity) return;
