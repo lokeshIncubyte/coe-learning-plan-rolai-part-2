@@ -16,6 +16,13 @@ const derivedSpec: UpdateSpec = {
   },
 };
 
+const circularSpec: UpdateSpec = {
+  variables: {},
+  cascades: [
+    { when: { key: 'x', op: '>', value: 0 }, apply: { x: 1 } },
+  ],
+};
+
 const cascadeSpec: UpdateSpec = {
   variables: {},
   cascades: [
@@ -47,6 +54,14 @@ describe('EngineService', () => {
       const cascades = engine.runCascades({ hp: 5, maxHp: 100 }, cascadeSpec);
       expect(cascades).toHaveLength(1);
       expect(cascades[0]).toEqual({ status: 'critical' });
+    });
+  });
+
+  describe('runCascades depth limit', () => {
+    it('returns [] when depth >= 5 without throwing', () => {
+      const engine = new EngineService(null as any);
+      const result = engine.runCascades({ x: 1 }, circularSpec, 5);
+      expect(result).toEqual([]);
     });
   });
 });

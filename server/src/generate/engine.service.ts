@@ -32,7 +32,8 @@ export class EngineService {
     return result;
   }
 
-  runCascades(state: Record<string, unknown>, spec: UpdateSpec): Record<string, unknown>[] {
+  runCascades(state: Record<string, unknown>, spec: UpdateSpec, depth?: number): Record<string, unknown>[] {
+    if ((depth ?? 0) >= 5) return [];
     return (spec.cascades ?? [])
       .filter(rule => this.evalCondition(state, rule.when))
       .map(rule => rule.apply);
