@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 export type NewEntityDelta = { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string }; state: Record<string, unknown>; sourceChunk?: string };
 export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; patch: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string }> };
-export type StateMutationDelta = { op: 'state_mutation'; entityId: string; state: Record<string, unknown> };
+export type StateMutationDelta = { op: 'state_mutation'; entityId: string; patch: Record<string, unknown> };
 export type NewEdgeDelta = { op: 'new_edge'; fromId: string; toId: string; type: string; weight?: number };
 export type Delta = NewEntityDelta | IdentityShiftDelta | StateMutationDelta | NewEdgeDelta;
 
@@ -70,7 +70,7 @@ export class ExtractorService {
       } else if (delta.op === 'identity_shift') {
         await this.graphService.updateEntityIdentity(delta.entityId, delta.patch);
       } else if (delta.op === 'state_mutation') {
-        await this.graphService.updateEntityState(delta.entityId, delta.state);
+        await this.graphService.updateEntityState(delta.entityId, delta.patch);
       } else if (delta.op === 'new_edge') {
         await this.graphService.createEdge({ fromId: delta.fromId, toId: delta.toId, type: delta.type, weight: delta.weight ?? 1 });
         edgeCount++;
