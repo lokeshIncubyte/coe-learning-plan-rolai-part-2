@@ -15,20 +15,20 @@ export class NarrativeGeneratorService {
     });
   }
 
-  async generate(prompt: string): Promise<string> {
+  async generate(prompt: string, worldContext?: string): Promise<string> {
     const response = await this.client.chat.completions.create({
       model: 'openai/gpt-4o-mini',
       temperature: 0.8,
       max_tokens: 200,
       messages: [
-        { role: 'system', content: this.buildSystemPrompt() },
+        { role: 'system', content: this.buildSystemPrompt(worldContext) },
         { role: 'user', content: prompt },
       ],
     });
     return response.choices[0].message.content ?? '';
   }
 
-  async *stream(prompt: string, signal?: AbortSignal): AsyncGenerator<string> {
+  async *stream(prompt: string, signal?: AbortSignal, worldContext?: string): AsyncGenerator<string> {
     const response = await this.client.chat.completions.create(
       {
         model: 'openai/gpt-4o-mini',
@@ -36,7 +36,7 @@ export class NarrativeGeneratorService {
         max_tokens: 200,
         stream: true,
         messages: [
-          { role: 'system', content: this.buildSystemPrompt() },
+          { role: 'system', content: this.buildSystemPrompt(worldContext) },
           { role: 'user', content: prompt },
         ],
       },
@@ -48,7 +48,10 @@ export class NarrativeGeneratorService {
     }
   }
 
-  private buildSystemPrompt(): string {
+  private buildSystemPrompt(worldContext?: string): string {
+    const worldBlock = worldContext?.trim()
+      ? `\n\nWORLD CONTEXT — you MUST ground the narrative in the entities named below. Reuse their names verbatim; do not invent replacement characters or places when one is supplied here:\n${worldContext}`
+      : '';
     return `
 You are a narrative engine for a ${metaDirectives.genre} story.
 
@@ -72,6 +75,6 @@ ${styleGuide.formatRules.map((r) => `- ${r}`).join('\n')}
 
 AVOID:
 ${styleGuide.avoid.map((a) => `- ${a}`).join('\n')}
-    `.trim();
+    `.trim() + worldBlock;
   }
 }

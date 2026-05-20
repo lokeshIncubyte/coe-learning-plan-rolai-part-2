@@ -128,5 +128,46 @@ describe('NarrativeGeneratorService', () => {
       expect(tokens).toEqual(['Hi']);
     });
   });
+
+  describe('worldContext injection', () => {
+    let module: TestingModule;
+    afterEach(async () => { await module.close(); });
+
+    it('includes WORLD CONTEXT block in system prompt when worldContext is provided', async () => {
+      module = await Test.createTestingModule({
+        providers: [
+          NarrativeGeneratorService,
+          { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('http://localhost:4000'), getOrThrow: jest.fn().mockReturnValue('test') } },
+        ],
+      }).compile();
+      const service = module.get(NarrativeGeneratorService);
+      const createSpy = jest.spyOn((service as any).client.chat.completions, 'create')
+        .mockResolvedValueOnce({ choices: [{ message: { content: 'narrative' } }] } as any);
+
+      await service.generate('test prompt', 'WORLD:\n- Elara (character)');
+
+      const call = createSpy.mock.calls[0][0] as any;
+      const systemMsg = call.messages.find((m: any) => m.role === 'system');
+      expect(systemMsg.content).toContain('Elara');
+    });
+
+    it('does NOT add WORLD CONTEXT when worldContext is empty', async () => {
+      module = await Test.createTestingModule({
+        providers: [
+          NarrativeGeneratorService,
+          { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('http://localhost:4000'), getOrThrow: jest.fn().mockReturnValue('test') } },
+        ],
+      }).compile();
+      const service = module.get(NarrativeGeneratorService);
+      const createSpy = jest.spyOn((service as any).client.chat.completions, 'create')
+        .mockResolvedValueOnce({ choices: [{ message: { content: 'narrative' } }] } as any);
+
+      await service.generate('test prompt', '');
+
+      const call = createSpy.mock.calls[0][0] as any;
+      const systemMsg = call.messages.find((m: any) => m.role === 'system');
+      expect(systemMsg.content).not.toContain('WORLD CONTEXT');
+    });
+  });
 })
 
