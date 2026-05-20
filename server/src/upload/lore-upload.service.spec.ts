@@ -36,6 +36,20 @@ describe('LoreUploadService', () => {
       expect(mockExtractor.applyDeltas).toHaveBeenCalledTimes(2);
       expect(result).toEqual({ entityCount: 2, edgeCount: 0, chunkCount: 2 });
     });
+
+    it('logs all applied deltas to GenerationHistoryService after each chunk', async () => {
+      const deltas = [{ op: 'new_entity', identity: { name: 'X', type: 'character' }, state: {} }];
+      const mockExtractor = {
+        extractDeltas: jest.fn().mockResolvedValue(deltas),
+        applyDeltas: jest.fn().mockResolvedValue({ entityCount: 1, edgeCount: 0 }),
+      };
+      const mockHistory = { logUploadDeltas: jest.fn().mockResolvedValue(undefined) };
+      const svc2 = new LoreUploadService(mockExtractor as any, mockHistory as any);
+
+      await svc2.extractAndPersist(['one chunk']);
+
+      expect(mockHistory.logUploadDeltas).toHaveBeenCalledWith(0, deltas);
+    });
   });
 
   describe('chunkIntoUnits', () => {
