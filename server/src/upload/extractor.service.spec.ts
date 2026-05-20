@@ -1,4 +1,4 @@
-import { ExtractorService, type NewEntityDelta } from './extractor.service';
+import { ExtractorService, type NewEntityDelta, type IdentityShiftDelta } from './extractor.service';
 
 const mockCreate = jest.fn();
 jest.mock('openai', () => ({
@@ -56,6 +56,16 @@ describe('ExtractorService', () => {
       expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({ name: 'Elara', type: 'character' }));
       expect(mockEmbed.embedEntityIdentity).toHaveBeenCalledWith('e1');
       expect(result.entityCount).toBe(1);
+    });
+
+    it('identity_shift: calls updateEntityIdentity with entityId and patch', async () => {
+      const mockGraph = { createEntity: jest.fn(), createEdge: jest.fn(), updateEntityIdentity: jest.fn().mockResolvedValue({}) };
+      const svc2 = new ExtractorService({} as any, mockGraph as any, {} as any);
+
+      const delta: IdentityShiftDelta = { op: 'identity_shift', entityId: 'e1', patch: { archetype: 'Warrior' } };
+      await svc2.applyDeltas([delta]);
+
+      expect(mockGraph.updateEntityIdentity).toHaveBeenCalledWith('e1', { archetype: 'Warrior' });
     });
   });
 });

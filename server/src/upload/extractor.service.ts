@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
 export type NewEntityDelta = { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string }; state: Record<string, unknown>; sourceChunk?: string };
-export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; identity: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string }> };
+export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; patch: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string }> };
 export type StateMutationDelta = { op: 'state_mutation'; entityId: string; state: Record<string, unknown> };
 export type NewEdgeDelta = { op: 'new_edge'; fromId: string; toId: string; type: string; weight?: number };
 export type Delta = NewEntityDelta | IdentityShiftDelta | StateMutationDelta | NewEdgeDelta;
@@ -68,7 +68,7 @@ export class ExtractorService {
         await this.embeddingService?.embedEntityIdentity(entity.id);
         entityCount++;
       } else if (delta.op === 'identity_shift') {
-        await this.graphService.updateEntityIdentity(delta.entityId, delta.identity);
+        await this.graphService.updateEntityIdentity(delta.entityId, delta.patch);
       } else if (delta.op === 'state_mutation') {
         await this.graphService.updateEntityState(delta.entityId, delta.state);
       } else if (delta.op === 'new_edge') {
