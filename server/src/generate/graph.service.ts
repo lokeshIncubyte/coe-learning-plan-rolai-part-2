@@ -34,6 +34,7 @@ export class GraphService {
 
   async updateEntityIdentity(id: string, patch: Record<string, unknown>) {
     const before = await this.prisma.entity.findUnique({ where: { id } });
+    if (!before) throw new NotFoundException(`Entity ${id} not found`);
     const after = await this.prisma.entity.update({ where: { id }, data: patch });
     await this.embeddingService!.onEntityWrite(
       before as unknown as Record<string, unknown>,

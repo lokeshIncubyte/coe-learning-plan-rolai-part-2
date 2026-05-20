@@ -176,6 +176,12 @@ describe('GraphService', () => {
       });
       expect(mockEmbeddingService.onEntityWrite).toHaveBeenCalledWith(before, after);
     });
+
+    it('throws NotFoundException when entity not found', async () => {
+      (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(null);
+      await expect(service.updateEntityIdentity('missing', { archetype: 'Warrior' }))
+        .rejects.toThrow(NotFoundException);
+    });
   });
 
   describe('semanticRecall (Phase 1 → Phase 2 composition)', () => {
