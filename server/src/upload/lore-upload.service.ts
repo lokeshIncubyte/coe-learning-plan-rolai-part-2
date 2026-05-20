@@ -14,4 +14,8 @@ export class LoreUploadService {
     }
     throw new Error(`Unsupported mimeType: ${mimeType}`);
   }
+
+  chunkIntoUnits(text: string, maxChunkSize = 1500): string[] {
+    return text.split('\n\n').map(s => s.trim()).filter(Boolean).map(s => s.slice(0, maxChunkSize));
+  }
 }

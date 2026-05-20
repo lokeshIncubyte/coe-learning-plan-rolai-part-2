@@ -20,4 +20,22 @@ describe('LoreUploadService', () => {
       expect(result).toBe('extracted pdf text');
     });
   });
+
+  describe('chunkIntoUnits', () => {
+    it('splits on double-newline, trims whitespace, filters empty segments', () => {
+      const text = 'Elara is a mage.\n\nThe tavern is dark.\n\n  \n\nA sword lies on the table.';
+      const chunks = svc.chunkIntoUnits(text);
+      expect(chunks).toEqual([
+        'Elara is a mage.',
+        'The tavern is dark.',
+        'A sword lies on the table.',
+      ]);
+    });
+
+    it('preserves single newlines within a paragraph', () => {
+      const text = 'Line one.\nLine two.\n\nParagraph two.';
+      const chunks = svc.chunkIntoUnits(text);
+      expect(chunks[0]).toBe('Line one.\nLine two.');
+    });
+  });
 });
