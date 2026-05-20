@@ -40,6 +40,12 @@ export class EngineService {
       .map(rule => rule.apply);
   }
 
+  async processDeltas(deltas: Delta[], spec: UpdateSpec): Promise<{ flaggedForReEmbed: IdentityShiftDelta[] }> {
+    const { stateMutations, identityShifts } = this.classifyDeltas(deltas);
+    await Promise.all(stateMutations.map(d => this.applyStateMutationDelta(d.entityId, d.patch, spec)));
+    return { flaggedForReEmbed: identityShifts };
+  }
+
   async applyStateMutationDelta(entityId: string, patch: Record<string, unknown>, spec: UpdateSpec): Promise<{ resolved: Record<string, unknown> }> {
     const clamped = this.clampPatch(patch, spec);
     await this.graphService.updateEntityState(entityId, clamped);

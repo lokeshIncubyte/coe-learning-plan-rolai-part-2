@@ -99,6 +99,27 @@ describe('EngineService', () => {
     });
   });
 
+  describe('processDeltas', () => {
+    it('writes state_mutation via graphService and returns identity_shift as flaggedForReEmbed', async () => {
+      const mockGraph = {
+        updateEntityState: jest.fn().mockResolvedValue({ id: 'e1', state: { hp: 80 } }),
+      };
+      const engine = new EngineService(mockGraph as any);
+      const pdSpec: UpdateSpec = { variables: { hp: { min: 0, max: 100 } } };
+      const pdDeltas: Delta[] = [
+        { op: 'state_mutation', entityId: 'e1', patch: { hp: 80 } },
+        { op: 'identity_shift', entityId: 'e2', patch: { archetype: 'Warrior' } },
+      ];
+
+      const result = await engine.processDeltas(pdDeltas, pdSpec);
+
+      expect(mockGraph.updateEntityState).toHaveBeenCalledWith('e1', { hp: 80 });
+      expect(mockGraph.updateEntityState).toHaveBeenCalledTimes(1);
+      expect(result.flaggedForReEmbed).toHaveLength(1);
+      expect(result.flaggedForReEmbed[0].entityId).toBe('e2');
+    });
+  });
+
   describe('classifyDeltas', () => {
     it('separates state_mutation and identity_shift; ignores new_entity and new_edge', () => {
       const engine = new EngineService(null as any);
