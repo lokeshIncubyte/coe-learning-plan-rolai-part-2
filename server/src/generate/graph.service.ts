@@ -32,6 +32,16 @@ export class GraphService {
     private readonly embeddingService?: EmbeddingService,
   ) {}
 
+  async updateEntityIdentity(id: string, patch: Record<string, unknown>) {
+    const before = await this.prisma.entity.findUnique({ where: { id } });
+    const after = await this.prisma.entity.update({ where: { id }, data: patch });
+    await this.embeddingService!.onEntityWrite(
+      before as unknown as Record<string, unknown>,
+      after as unknown as Record<string, unknown>,
+    );
+    return after;
+  }
+
   async semanticRecall(queryText: string, limit = 5): Promise<SemanticRecallResult> {
     const queryEmbedding = await this.embeddingService!.generateEmbedding(queryText);
     const candidates = await this.findSimilarEntityIds(queryEmbedding, limit);

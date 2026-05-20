@@ -147,6 +147,23 @@ describe('GraphService', () => {
     });
   });
 
+  describe('updateEntityIdentity', () => {
+    it('updates identity fields and calls onEntityWrite hook', async () => {
+      const before = { id: 'e1', name: 'Elara', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const after  = { ...before, archetype: 'Warrior' };
+      (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(before);
+      (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce(after);
+
+      await service.updateEntityIdentity('e1', { archetype: 'Warrior' });
+
+      expect(mockPrisma.entity.update).toHaveBeenCalledWith({
+        where: { id: 'e1' },
+        data: { archetype: 'Warrior' },
+      });
+      expect(mockEmbeddingService.onEntityWrite).toHaveBeenCalledWith(before, after);
+    });
+  });
+
   describe('semanticRecall (Phase 1 → Phase 2 composition)', () => {
     it('calls generateEmbedding, findSimilarEntityIds, then enrichWithState and returns entities + scores', async () => {
       const similarIds = [{ id: 'e1', similarity: 0.9 }];
