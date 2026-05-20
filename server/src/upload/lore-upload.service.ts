@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import pdfParse from 'pdf-parse';
 
 @Injectable()
 export class LoreUploadService {
@@ -7,6 +8,9 @@ export class LoreUploadService {
   async processUpload(buffer: Buffer, mimeType: string): Promise<string> {
     if (mimeType === 'text/plain') {
       return buffer.toString('utf-8');
+    } else if (mimeType === 'application/pdf') {
+      const { text } = await pdfParse(buffer);
+      return text;
     }
     throw new Error(`Unsupported mimeType: ${mimeType}`);
   }
