@@ -24,6 +24,6 @@ describe('StateService', () => {
 describe('EngineService', () => {
   it('process returns input unchanged', async () => {
     const input = { narrative: 'test', choices: [] };
-    await expect(new EngineService().process(input)).resolves.toEqual(input);
+    await expect(new EngineService(new GraphService(mockPrisma)).process(input)).resolves.toEqual(input);
   });
 });
