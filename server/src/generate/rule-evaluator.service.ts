@@ -52,7 +52,31 @@ export class RuleEvaluatorService {
     results.sort((a, b) =>
       b.priority !== a.priority ? b.priority - a.priority : b.specificity - a.specificity,
     );
-    return results;
+    return this.detectConflicts(results);
+  }
+
+  private detectConflicts(results: RuleResult[]): RuleResult[] {
+    const annotated = results.map((r) => ({ ...r, conflictsWith: [] as string[] }));
+    for (let i = 0; i < annotated.length; i++) {
+      for (let j = i + 1; j < annotated.length; j++) {
+        if (this.areOutcomesConflicting(annotated[i].outcome, annotated[j].outcome)) {
+          annotated[i].conflictsWith!.push(annotated[j].ruleId);
+          annotated[j].conflictsWith!.push(annotated[i].ruleId);
+        }
+      }
+    }
+    return annotated;
+  }
+
+  private areOutcomesConflicting(a: string, b: string): boolean {
+    const pairs: Array<[string, string]> = [
+      ['allow', 'deny'], ['allow', 'block'], ['open', 'close'],
+      ['enable', 'disable'], ['grant', 'revoke'], ['accept', 'reject'],
+    ];
+    const la = a.toLowerCase(), lb = b.toLowerCase();
+    return pairs.some(([w1, w2]) =>
+      (la.includes(w1) && lb.includes(w2)) || (la.includes(w2) && lb.includes(w1)),
+    );
   }
 
   private isTriggerSatisfied(

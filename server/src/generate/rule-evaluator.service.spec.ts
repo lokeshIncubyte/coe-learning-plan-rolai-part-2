@@ -139,6 +139,34 @@ describe('RuleEvaluatorService', () => {
       expect(results[1].ruleId).toBe('simple');
     });
 
+  });
+
+  describe('conflict detection', () => {
+    it('flags rules with contradictory outcomes in conflictsWith', () => {
+      const hero = makeEntity('hero');
+      const rules = [
+        makeRule('r1', 'Allow Rule', { triggers: [{ type: 'entity-presence', entityId: 'hero' }], outcome: 'allow entry', priority: 5 }),
+        makeRule('r2', 'Deny Rule',  { triggers: [{ type: 'entity-presence', entityId: 'hero' }], outcome: 'deny entry',  priority: 3 }),
+      ];
+      const results = service.evaluateRules([hero], rules);
+      const r1 = results.find(r => r.ruleId === 'r1')!;
+      const r2 = results.find(r => r.ruleId === 'r2')!;
+      expect(r1.conflictsWith).toContain('r2');
+      expect(r2.conflictsWith).toContain('r1');
+    });
+
+    it('does NOT mark non-conflicting rules as conflicts', () => {
+      const hero = makeEntity('hero');
+      const rules = [
+        makeRule('r1', 'Speed',    { triggers: [{ type: 'entity-presence', entityId: 'hero' }], outcome: 'hero moves faster', priority: 5 }),
+        makeRule('r2', 'Strength', { triggers: [{ type: 'entity-presence', entityId: 'hero' }], outcome: 'hero hits harder', priority: 3 }),
+      ];
+      const results = service.evaluateRules([hero], rules);
+      expect(results.find(r => r.ruleId === 'r1')!.conflictsWith).toHaveLength(0);
+    });
+  });
+
+  describe('priority and specificity ordering (continued)', () => {
     it('requires ALL triggers to be satisfied (AND logic)', () => {
       const hero = makeEntity('hero');
       const rules = [makeRule('r1', 'Double Rule', {
