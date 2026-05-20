@@ -96,4 +96,32 @@ describe('TraversalService', () => {
       expect(result.map(e => e.id)).not.toContain('b');
     });
   });
+
+  describe('scoreWithSemantics', () => {
+    function makeTraversed(id: string, proximityScore: number) {
+      return { ...makeEntity(id), proximityScore, combinedScore: proximityScore };
+    }
+
+    it('combines proximityScore and phase1Score at 0.5/0.5 weight', () => {
+      const traversed = [makeTraversed('e1', 0.8), makeTraversed('e2', 0.4)];
+      const scores = new Map([['e1', 0.6], ['e2', 1.0]]);
+      const result = service.scoreWithSemantics(traversed, scores);
+      expect(result.find(e => e.id === 'e1')!.combinedScore).toBeCloseTo(0.7);
+      expect(result.find(e => e.id === 'e2')!.combinedScore).toBeCloseTo(0.7);
+    });
+
+    it('uses 0 for phase1Score when entity has no Phase 1 score', () => {
+      const result = service.scoreWithSemantics([makeTraversed('e1', 0.6)], new Map());
+      expect(result[0].combinedScore).toBeCloseTo(0.3);
+    });
+
+    it('sorts results by combinedScore descending', () => {
+      const traversed = [makeTraversed('e1', 0.2), makeTraversed('e2', 0.8), makeTraversed('e3', 0.5)];
+      const scores = new Map([['e1', 0.9], ['e2', 0.1], ['e3', 0.5]]);
+      const result = service.scoreWithSemantics(traversed, scores);
+      expect(result[0].id).toBe('e1');
+      expect(result[1].id).toBe('e3');
+      expect(result[2].id).toBe('e2');
+    });
+  });
 });
