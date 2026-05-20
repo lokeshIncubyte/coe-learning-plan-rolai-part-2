@@ -32,6 +32,25 @@ export class EngineService {
     return result;
   }
 
+  runCascades(state: Record<string, unknown>, spec: UpdateSpec): Record<string, unknown>[] {
+    return (spec.cascades ?? [])
+      .filter(rule => this.evalCondition(state, rule.when))
+      .map(rule => rule.apply);
+  }
+
+  private evalCondition(state: Record<string, unknown>, when: { key: string; op: string; value: number }): boolean {
+    const stateVal = state[when.key];
+    if (typeof stateVal !== 'number') return false;
+    switch (when.op) {
+      case '<':  return stateVal <  when.value;
+      case '<=': return stateVal <= when.value;
+      case '>=': return stateVal >= when.value;
+      case '>':  return stateVal >  when.value;
+      case '==': return stateVal === when.value;
+      default:   return false;
+    }
+  }
+
   private clampValue(val: unknown, min?: number, max?: number): unknown {
     if (typeof val !== 'number') return val;
     let clamped = val;

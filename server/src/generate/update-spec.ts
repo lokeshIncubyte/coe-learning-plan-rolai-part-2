@@ -10,6 +10,19 @@ export interface SpecVariable {
   derived?: Record<string, DerivedFormula>;
 }
 
+export interface CascadeCondition {
+  key: string;
+  op: '<' | '<=' | '>=' | '>' | '==';
+  value: number;
+}
+
+export interface CascadeRule {
+  when: CascadeCondition;
+  apply: Record<string, unknown>;
+  priority?: number;
+}
+
 export interface UpdateSpec {
   variables: Record<string, SpecVariable>;
+  cascades?: CascadeRule[];
 }
