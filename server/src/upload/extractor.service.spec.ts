@@ -106,5 +106,26 @@ describe('ExtractorService', () => {
         type: 'contains',
       }));
     });
+
+    it('new_entity with source: includes source in entity facts', async () => {
+      const mockGraph = {
+        createEntity: jest.fn().mockResolvedValue({ id: 'e3' }),
+        createEdge: jest.fn(),
+      };
+      const mockEmbed = { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) };
+      const svc2 = new ExtractorService({} as any, mockGraph as any, mockEmbed as any);
+
+      const delta: NewEntityDelta = {
+        op: 'new_entity',
+        identity: { name: 'Elara', type: 'character' },
+        state: {},
+        source: 'Elara is an ancient mage who guards the northern pass.',
+      };
+      await svc2.applyDeltas([delta]);
+
+      expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({
+        facts: expect.objectContaining({ source: 'Elara is an ancient mage who guards the northern pass.' }),
+      }));
+    });
   });
 });
