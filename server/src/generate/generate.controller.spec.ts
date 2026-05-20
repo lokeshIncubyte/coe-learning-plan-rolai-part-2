@@ -220,6 +220,32 @@ describe('GenerateController', () => {
       expect(narrativeSvc.stream).toHaveBeenCalledWith('adjusted action', expect.any(Object), expect.any(String));
     });
 
+    // cycle-050
+    it('falls back to getAllEntitiesWithEdges when semanticRecall returns no entities', async () => {
+      const getAllEntitiesWithEdges = jest.fn().mockResolvedValue([
+        { id: 'e1', name: 'Elara', type: 'character', state: {}, fromEdges: [], toEdges: [] },
+      ]);
+      const mod = await Test.createTestingModule({
+        controllers: [GenerateController],
+        providers: [
+          { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('story'), stream: jest.fn() } },
+          { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
+          { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+          { provide: GraphService, useValue: {
+              semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }),
+              getAllEntitiesWithEdges,
+              getEntitiesByType: jest.fn().mockResolvedValue([]),
+          }},
+          { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+          { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        ],
+      }).compile();
+
+      await mod.get(GenerateController).generate({ prompt: 'test' });
+
+      expect(getAllEntitiesWithEdges).toHaveBeenCalled();
+    });
+
     // cycle-049
     it('calls graphService.semanticRecall with the prompt when building context', async () => {
       const semanticRecall = jest.fn().mockResolvedValue({ entities: [], scores: new Map() });

@@ -97,8 +97,11 @@ export class GenerateController {
 
   private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string }> {
     const { entities, scores } = await this.graphService.semanticRecall(prompt, 8);
-    const allEntities = entities;
+    let allEntities = entities;
     const phase1Scores = scores;
+    if (allEntities.length === 0) {
+      allEntities = await this.graphService.getAllEntitiesWithEdges();
+    }
     const anchorId = allEntities[0]?.id ?? '';
 
     const traversed = this.traversalService.traverse(anchorId, allEntities, 2);
