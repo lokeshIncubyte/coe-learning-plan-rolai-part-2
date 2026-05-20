@@ -1,4 +1,4 @@
-import { ExtractorService, type NewEntityDelta, type IdentityShiftDelta, type StateMutationDelta } from './extractor.service';
+import { ExtractorService, type NewEntityDelta, type IdentityShiftDelta, type StateMutationDelta, type NewEdgeDelta } from './extractor.service';
 
 const mockCreate = jest.fn();
 jest.mock('openai', () => ({
@@ -76,6 +76,17 @@ describe('ExtractorService', () => {
       await svc2.applyDeltas([delta]);
 
       expect(mockGraph.updateEntityState).toHaveBeenCalledWith('e2', { hp: 80 });
+    });
+
+    it('new_edge: calls createEdge and increments edgeCount', async () => {
+      const mockGraph = { createEntity: jest.fn(), createEdge: jest.fn().mockResolvedValue({ id: 'edge1' }), updateEntityState: jest.fn() };
+      const svc2 = new ExtractorService({} as any, mockGraph as any, {} as any);
+
+      const delta: NewEdgeDelta = { op: 'new_edge', fromId: 'e1', toId: 'e2', type: 'ally', weight: 1.0, tags: [] };
+      const result = await svc2.applyDeltas([delta]);
+
+      expect(mockGraph.createEdge).toHaveBeenCalledWith({ fromId: 'e1', toId: 'e2', type: 'ally', weight: 1.0, tags: [] });
+      expect(result.edgeCount).toBe(1);
     });
   });
 });
