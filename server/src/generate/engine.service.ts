@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GraphService } from './graph.service';
 import type { UpdateSpec } from './update-spec';
+import type { Delta, StateMutationDelta, IdentityShiftDelta } from '../upload/extractor.service';
 
 @Injectable()
 export class EngineService {
@@ -37,6 +38,13 @@ export class EngineService {
     return (spec.cascades ?? [])
       .filter(rule => this.evalCondition(state, rule.when))
       .map(rule => rule.apply);
+  }
+
+  classifyDeltas(deltas: Delta[]): { stateMutations: StateMutationDelta[]; identityShifts: IdentityShiftDelta[] } {
+    return {
+      stateMutations: deltas.filter((d): d is StateMutationDelta => d.op === 'state_mutation'),
+      identityShifts: deltas.filter((d): d is IdentityShiftDelta => d.op === 'identity_shift'),
+    };
   }
 
   private evalCondition(state: Record<string, unknown>, when: { key: string; op: string; value: number }): boolean {

@@ -1,5 +1,6 @@
 import { EngineService } from './engine.service';
 import type { UpdateSpec } from './update-spec';
+import type { Delta } from '../upload/extractor.service';
 
 const spec: UpdateSpec = {
   variables: {
@@ -62,6 +63,23 @@ describe('EngineService', () => {
       const engine = new EngineService(null as any);
       const result = engine.runCascades({ x: 1 }, circularSpec, 5);
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('classifyDeltas', () => {
+    it('separates state_mutation and identity_shift; ignores new_entity and new_edge', () => {
+      const engine = new EngineService(null as any);
+      const deltas: Delta[] = [
+        { op: 'state_mutation', entityId: 'e1', patch: { hp: 50 } },
+        { op: 'identity_shift', entityId: 'e2', patch: { archetype: 'Warrior' } },
+        { op: 'new_entity', identity: { name: 'X', type: 'item' }, state: {} },
+        { op: 'new_edge', fromId: 'e1', toId: 'e2', type: 'ally' },
+      ];
+      const { stateMutations, identityShifts } = engine.classifyDeltas(deltas);
+      expect(stateMutations).toHaveLength(1);
+      expect(stateMutations[0].entityId).toBe('e1');
+      expect(identityShifts).toHaveLength(1);
+      expect(identityShifts[0].entityId).toBe('e2');
     });
   });
 });
