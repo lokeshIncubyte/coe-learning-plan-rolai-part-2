@@ -18,6 +18,12 @@ export class GenerationHistoryService {
     });
   }
 
+  async logUploadDeltas(chunkIndex: number, deltas: object[]): Promise<void> {
+    await this.prisma.generationHistory.create({
+      data: { sessionId: 'upload', narrative: 'upload', anchor: String(chunkIndex), deltas },
+    });
+  }
+
   async getHistoryByDeltaCategory(op: string) {
     return this.prisma.$queryRaw`
       SELECT * FROM "GenerationHistory"
