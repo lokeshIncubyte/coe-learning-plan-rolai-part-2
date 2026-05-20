@@ -54,6 +54,23 @@ describe('EmbeddingService', () => {
     });
   });
 
+  describe('generateEmbedding', () => {
+    it('calls openai embeddings.create and returns the embedding array', async () => {
+      const OpenAI = require('openai').default;
+      OpenAI.mockImplementationOnce(() => ({
+        embeddings: {
+          create: jest.fn().mockResolvedValueOnce({
+            data: [{ embedding: Array.from({ length: 384 }, () => 0.5) }],
+          }),
+        },
+      }));
+      const svc = new EmbeddingService(mockPrisma, mockConfig);
+      const result = await svc.generateEmbedding('test text');
+      expect(result).toHaveLength(384);
+      expect(typeof result[0]).toBe('number');
+    });
+  });
+
   describe('shouldReembed', () => {
     const base = {
       id: 'e1', name: 'Elara', type: 'character',

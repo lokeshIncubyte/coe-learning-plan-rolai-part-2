@@ -18,6 +18,11 @@ export class EmbeddingService {
     this.openai = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });
   }
 
+  async generateEmbedding(text: string): Promise<number[]> {
+    const response = await this.openai.embeddings.create({ model: this.model, input: text });
+    return response.data[0].embedding;
+  }
+
   shouldReembed(
     before: Record<string, unknown>,
     after: Record<string, unknown>,
