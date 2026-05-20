@@ -17,6 +17,21 @@ export class EngineService {
     return result;
   }
 
+  computeDerived(state: Record<string, unknown>, spec: UpdateSpec): Record<string, unknown> {
+    const result: Record<string, unknown> = { ...state };
+    for (const varSpec of Object.values(spec.variables)) {
+      if (!varSpec.derived) continue;
+      for (const [derivedKey, formula] of Object.entries(varSpec.derived)) {
+        const num = state[formula.numerator];
+        const den = state[formula.denominator];
+        if (typeof num === 'number' && typeof den === 'number' && den !== 0) {
+          result[derivedKey] = Math.floor(num / den * (formula.multiplier ?? 1));
+        }
+      }
+    }
+    return result;
+  }
+
   private clampValue(val: unknown, min?: number, max?: number): unknown {
     if (typeof val !== 'number') return val;
     let clamped = val;
