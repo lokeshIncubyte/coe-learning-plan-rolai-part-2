@@ -66,4 +66,34 @@ describe('TraversalService', () => {
       expect(result.map(e => e.id)).toEqual(expect.arrayContaining(['a', 'b', 'c']));
     });
   });
+
+  describe('traverse — tag filtering', () => {
+    it('only follows edges that share at least one tag when filter is provided', () => {
+      const a = makeEntity('a', [
+        { fromId: 'a', toId: 'b', weight: 1, tags: ['combat'] },
+        { fromId: 'a', toId: 'c', weight: 1, tags: ['social'] },
+      ]);
+      const result = service.traverse('a', [a, makeEntity('b'), makeEntity('c')], 2, ['combat']);
+      const ids = result.map(e => e.id);
+      expect(ids).toContain('b');
+      expect(ids).not.toContain('c');
+    });
+
+    it('follows all edges when no tags filter is provided', () => {
+      const a = makeEntity('a', [
+        { fromId: 'a', toId: 'b', weight: 1, tags: ['combat'] },
+        { fromId: 'a', toId: 'c', weight: 1, tags: ['social'] },
+      ]);
+      const result = service.traverse('a', [a, makeEntity('b'), makeEntity('c')], 2);
+      expect(result.map(e => e.id)).toContain('b');
+      expect(result.map(e => e.id)).toContain('c');
+    });
+
+    it('returns only the anchor when no edges match the tag filter', () => {
+      const a = makeEntity('a', [{ fromId: 'a', toId: 'b', weight: 1, tags: ['combat'] }]);
+      const result = service.traverse('a', [a, makeEntity('b')], 2, ['social']);
+      expect(result.map(e => e.id)).toContain('a');
+      expect(result.map(e => e.id)).not.toContain('b');
+    });
+  });
 });
