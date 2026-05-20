@@ -88,5 +88,23 @@ describe('ExtractorService', () => {
       expect(mockGraph.createEdge).toHaveBeenCalledWith({ fromId: 'e1', toId: 'e2', type: 'ally', weight: 1.0, tags: [] });
       expect(result.edgeCount).toBe(1);
     });
+
+    it('new_entity with anchorId: creates edge from anchor to new entity', async () => {
+      const mockGraph = {
+        createEntity: jest.fn().mockResolvedValue({ id: 'newE' }),
+        createEdge: jest.fn().mockResolvedValue({}),
+      };
+      const mockEmbed = { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) };
+      const svc2 = new ExtractorService({} as any, mockGraph as any, mockEmbed as any);
+
+      const delta: NewEntityDelta = { op: 'new_entity', identity: { name: 'Tavern', type: 'location' }, state: {} };
+      await svc2.applyDeltas([delta], 'anchor-1');
+
+      expect(mockGraph.createEdge).toHaveBeenCalledWith(expect.objectContaining({
+        fromId: 'anchor-1',
+        toId: 'newE',
+        type: 'contains',
+      }));
+    });
   });
 });

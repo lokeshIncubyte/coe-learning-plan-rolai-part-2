@@ -66,6 +66,9 @@ export class ExtractorService {
       if (delta.op === 'new_entity') {
         const entity = await this.graphService.createEntity({ ...delta.identity, state: delta.state ?? {} });
         await this.embeddingService?.embedEntityIdentity(entity.id);
+        if (anchorId) {
+          await this.graphService.createEdge({ fromId: anchorId, toId: entity.id, type: 'contains', weight: 1.0, tags: [] });
+        }
         entityCount++;
       } else if (delta.op === 'identity_shift') {
         await this.graphService.updateEntityIdentity(delta.entityId, delta.patch);
