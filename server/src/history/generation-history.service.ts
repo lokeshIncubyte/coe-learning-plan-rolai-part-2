@@ -19,8 +19,9 @@ export class GenerationHistoryService {
   }
 
   async logUploadDeltas(chunkIndex: number, deltas: object[]): Promise<void> {
+    const session = await this.prisma.session.create({ data: {} });
     await this.prisma.generationHistory.create({
-      data: { sessionId: 'upload', narrative: 'upload', anchor: String(chunkIndex), deltas },
+      data: { sessionId: session.id, narrative: 'upload', anchor: String(chunkIndex), deltas },
     });
   }
 

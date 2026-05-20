@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import pdfParse from 'pdf-parse';
+import { BadRequestException, Injectable } from '@nestjs/common';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { PDFParse } = require('pdf-parse') as { PDFParse: new (opts: { data: Buffer }) => { getText(): Promise<{ text: string }> } };
 import { ExtractorService } from './extractor.service';
 import { GenerationHistoryService } from '../history/generation-history.service';
 
@@ -11,8 +12,14 @@ export class LoreUploadService {
     if (mimeType === 'text/plain') {
       return buffer.toString('utf-8');
     } else if (mimeType === 'application/pdf') {
-      const { text } = await pdfParse(buffer);
-      return text;
+      try {
+        const parser = new PDFParse({ data: buffer });
+        const { text } = await parser.getText();
+        return text;
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        throw new BadRequestException(`PDF parse failed: ${msg}`);
+      }
     }
     throw new Error(`Unsupported mimeType: ${mimeType}`);
   }
