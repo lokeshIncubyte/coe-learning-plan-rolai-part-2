@@ -49,6 +49,9 @@ export class RuleEvaluatorService {
       }
     }
 
+    results.sort((a, b) =>
+      b.priority !== a.priority ? b.priority - a.priority : b.specificity - a.specificity,
+    );
     return results;
   }
 

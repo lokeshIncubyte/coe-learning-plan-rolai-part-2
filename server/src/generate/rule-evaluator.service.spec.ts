@@ -105,4 +105,51 @@ describe('RuleEvaluatorService', () => {
       expect(service.evaluateRules([makeEntity('hero')], rules)).toHaveLength(0);
     });
   });
+
+  describe('priority and specificity ordering', () => {
+    it('orders results by priority descending', () => {
+      const reached = [makeEntity('hero')];
+      const rules = [
+        makeRule('low',  'Low',  { triggers: [{ type: 'entity-presence', entityId: 'hero' }], outcome: 'minor', priority: 1 }),
+        makeRule('high', 'High', { triggers: [{ type: 'entity-presence', entityId: 'hero' }], outcome: 'major', priority: 10 }),
+      ];
+      const results = service.evaluateRules(reached, rules);
+      expect(results[0].ruleId).toBe('high');
+      expect(results[1].ruleId).toBe('low');
+    });
+
+    it('orders by specificity (more triggers = higher) when priority is equal', () => {
+      const hero = makeEntity('hero', { state: { health: 100 } });
+      const villain = makeEntity('villain');
+      const rules = [
+        makeRule('simple', 'Simple', {
+          triggers: [{ type: 'entity-presence', entityId: 'hero' }],
+          outcome: 'simple', priority: 5,
+        }),
+        makeRule('complex', 'Complex', {
+          triggers: [
+            { type: 'entity-presence', entityId: 'hero' },
+            { type: 'entity-presence', entityId: 'villain' },
+          ],
+          outcome: 'complex', priority: 5,
+        }),
+      ];
+      const results = service.evaluateRules([hero, villain], rules);
+      expect(results[0].ruleId).toBe('complex');
+      expect(results[1].ruleId).toBe('simple');
+    });
+
+    it('requires ALL triggers to be satisfied (AND logic)', () => {
+      const hero = makeEntity('hero');
+      const rules = [makeRule('r1', 'Double Rule', {
+        triggers: [
+          { type: 'entity-presence', entityId: 'hero' },
+          { type: 'entity-presence', entityId: 'villain' },
+        ],
+        outcome: 'encounter', priority: 1,
+      })];
+      expect(service.evaluateRules([hero], rules)).toHaveLength(0);
+      expect(service.evaluateRules([hero, makeEntity('villain')], rules)).toHaveLength(1);
+    });
+  });
 });
