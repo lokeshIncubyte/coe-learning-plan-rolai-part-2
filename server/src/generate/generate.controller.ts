@@ -5,6 +5,8 @@ import { NarrativeGeneratorService } from './narrative-generator.service';
 import { ActionValidatorService } from '../agents/action-validator.service';
 import { ChoiceGeneratorService } from '../agents/choice-generator.service';
 import { GraphService } from './graph.service';
+import { TraversalService } from './traversal.service';
+import { RuleEvaluatorService } from './rule-evaluator.service';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
 import { LoggingInterceptor } from './logging.interceptor';
 
@@ -21,6 +23,8 @@ export class GenerateController {
     private readonly validatorService: ActionValidatorService,
     private readonly choiceGeneratorService: ChoiceGeneratorService,
     private readonly graphService: GraphService,
+    private readonly traversalService: TraversalService,
+    private readonly ruleEvaluator: RuleEvaluatorService,
   ) {}
 
   @Sse('stream')
@@ -30,7 +34,7 @@ export class GenerateController {
 
       (async () => {
         try {
-          const { ruleContext, worldContext } = await this.buildContexts();
+          const { ruleContext, worldContext } = await this.buildContexts(query.prompt);
           const outcome = await this.validatorService.validate(query.prompt, ruleContext);
 
           if (outcome.result === 'rejected') {
@@ -49,7 +53,7 @@ export class GenerateController {
 
           subscriber.next({ data: { type: 'start' } });
           let fullNarrative = '';
-          for await (const token of this.narrativeService.stream(effectivePrompt, abort.signal)) {
+          for await (const token of this.narrativeService.stream(effectivePrompt, abort.signal, worldContext)) {
             if (subscriber.closed) break;
             fullNarrative += token;
             subscriber.next({ data: { type: 'chunk', content: token } });
@@ -75,7 +79,7 @@ export class GenerateController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async generate(@Body() body: GenerateRequestDto) {
-    const { ruleContext, worldContext } = await this.buildContexts();
+    const { ruleContext, worldContext } = await this.buildContexts(body.prompt);
 
     const outcome = await this.validatorService.validate(body.prompt, ruleContext);
     if (outcome.result === 'rejected') {
@@ -86,25 +90,42 @@ export class GenerateController {
       ? outcome.modifiedAction
       : body.prompt;
 
-    const narrative = await this.narrativeService.generate(effectivePrompt);
+    const narrative = await this.narrativeService.generate(effectivePrompt, worldContext);
     const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
     return { narrative, choices };
   }
 
-  private async buildContexts(): Promise<{ ruleContext: string; worldContext: string }> {
+  private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string }> {
+    const { entities, scores } = await this.graphService.semanticRecall(prompt, 8);
+    const allEntities = entities;
+    const phase1Scores = scores;
+    const anchorId = allEntities[0]?.id ?? '';
+
+    const traversed = this.traversalService.traverse(anchorId, allEntities, 2);
+    const toRank = traversed.length
+      ? traversed
+      : allEntities.map((e: any) => ({ ...e, proximityScore: 1, combinedScore: 1 }));
+    const ranked = this.traversalService.scoreWithSemantics(toRank, phase1Scores);
+
     const rules = await this.graphService.getEntitiesByType('rule');
-    const ruleContext = rules.length
-      ? `RULES:\n${rules.map((r: any) => `- ${r.name}: ${(r.facts as any)?.description ?? ''}`).join('\n')}`
+    const activeRules = this.ruleEvaluator.evaluateRules(allEntities, rules);
+    const ruleContext = activeRules.length
+      ? `RULES:\n${activeRules.map((r) => {
+          const conflicts = r.conflictsWith?.length ? ` [conflicts: ${r.conflictsWith.join(', ')}]` : '';
+          return `- ${r.ruleName}: ${r.outcome}${conflicts}`;
+        }).join('\n')}`
       : '';
 
-    const chars = await this.graphService.getEntitiesByType('character');
-    const locs = await this.graphService.getEntitiesByType('location');
-    const objs = await this.graphService.getEntitiesByType('object');
-    const allEntities = [...chars, ...locs, ...objs];
-    const worldContext = allEntities.length
-      ? `WORLD:\n${allEntities.map((e: any) => `- ${e.name} (${e.type})`).join('\n')}`
-      : '';
+    const worldContext = this.buildWorldContext(ranked.slice(0, 8));
 
     return { ruleContext, worldContext };
+  }
+
+  private buildWorldContext(entities: any[]): string {
+    if (!entities.length) return '';
+    return `WORLD:\n${entities.map((e) => {
+      const extras = [e.archetype, e.role, e.state ? JSON.stringify(e.state) : null].filter(Boolean).join(', ');
+      return `- ${e.name} (${e.type})${extras ? `: ${extras}` : ''}`;
+    }).join('\n')}`;
   }
 }

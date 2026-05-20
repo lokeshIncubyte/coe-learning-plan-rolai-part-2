@@ -4,6 +4,8 @@ import { NarrativeGeneratorService } from './narrative-generator.service'
 import { ActionValidatorService } from '../agents/action-validator.service'
 import { ChoiceGeneratorService } from '../agents/choice-generator.service'
 import { GraphService } from './graph.service'
+import { TraversalService } from './traversal.service'
+import { RuleEvaluatorService } from './rule-evaluator.service'
 
 describe('GenerateController', () => {
   let controller: GenerateController
@@ -16,7 +18,9 @@ describe('GenerateController', () => {
         { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn() } },
         { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'approved' }) } },
         { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue(['Investigate', 'Flee', 'Negotiate']) } },
-        { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
       ],
     }).compile()
 
@@ -30,7 +34,7 @@ describe('GenerateController', () => {
 
     const result = await controller.generate({ prompt: 'Write beat 1' })
 
-    expect(generateMock).toHaveBeenCalledWith('Write beat 1')
+    expect(generateMock).toHaveBeenCalledWith('Write beat 1', expect.any(String))
     expect(result).toEqual({
       narrative: 'Once upon a time...',
       choices: ['Investigate', 'Flee', 'Negotiate'],
@@ -45,7 +49,9 @@ describe('GenerateController', () => {
         { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('narrative'), stream: jest.fn() } },
         { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'modified', modifiedAction: 'safe action', reason: 'too dangerous' }) } },
         { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
-        { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
       ],
     }).compile();
     const ctrl = mod.get(GenerateController);
@@ -53,7 +59,7 @@ describe('GenerateController', () => {
 
     await ctrl.generate({ prompt: 'dangerous action' });
 
-    expect(narrativeSvc.generate).toHaveBeenCalledWith('safe action');
+    expect(narrativeSvc.generate).toHaveBeenCalledWith('safe action', expect.any(String));
   });
 
   describe('stream SSE endpoint', () => {
@@ -72,7 +78,9 @@ describe('GenerateController', () => {
           },
           { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
           { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn() } },
-          { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+          { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+          { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+          { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         ],
       }).compile();
 
@@ -169,7 +177,9 @@ describe('GenerateController', () => {
           { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn() } },
           { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'rejected', reason: 'impossible action' }) } },
           { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
-          { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+          { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+          { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+          { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -193,7 +203,9 @@ describe('GenerateController', () => {
           { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn().mockImplementation(() => tokens()) } },
           { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'modified', modifiedAction: 'adjusted action', reason: 'adjusted' }) } },
           { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
-          { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+          { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+          { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+          { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -205,12 +217,34 @@ describe('GenerateController', () => {
       });
 
       expect(events[0]).toEqual({ type: 'modified', modifiedAction: 'adjusted action' });
-      expect(narrativeSvc.stream).toHaveBeenCalledWith('adjusted action', expect.any(Object));
+      expect(narrativeSvc.stream).toHaveBeenCalledWith('adjusted action', expect.any(Object), expect.any(String));
+    });
+
+    // cycle-049
+    it('calls graphService.semanticRecall with the prompt when building context', async () => {
+      const semanticRecall = jest.fn().mockResolvedValue({ entities: [], scores: new Map() });
+      const getAllEntitiesWithEdges = jest.fn().mockResolvedValue([]);
+      const mod = await Test.createTestingModule({
+        controllers: [GenerateController],
+        providers: [
+          { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('story'), stream: jest.fn() } },
+          { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
+          { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+          { provide: GraphService, useValue: { semanticRecall, getAllEntitiesWithEdges, getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+          { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+          { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        ],
+      }).compile();
+
+      await mod.get(GenerateController).generate({ prompt: 'test action' });
+
+      expect(semanticRecall).toHaveBeenCalledWith('test action', 8);
     });
 
     // cycle-027
     it('passes worldContext to choiceGenerator in SSE path', async () => {
       async function* tokens() { yield 'story'; }
+      const heroEntity = { id: 'e1', name: 'Hero', type: 'character', tags: [], facts: null, archetype: null, backstory: null, role: null, identity_version: 0, state: null, last_beat: null, createdAt: new Date(), updatedAt: new Date(), fromEdges: [], toEdges: [] };
       const mod = await Test.createTestingModule({
         controllers: [GenerateController],
         providers: [
@@ -220,12 +254,13 @@ describe('GenerateController', () => {
           {
             provide: GraphService,
             useValue: {
-              getEntitiesByType: jest.fn().mockImplementation((type: string) => {
-                if (type === 'character') return Promise.resolve([{ name: 'Hero', type: 'character' }]);
-                return Promise.resolve([]);
-              }),
+              semanticRecall: jest.fn().mockResolvedValue({ entities: [heroEntity], scores: new Map([['e1', 0.9]]) }),
+              getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]),
+              getEntitiesByType: jest.fn().mockResolvedValue([]),
             },
           },
+          { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([{ ...heroEntity, proximityScore: 1, combinedScore: 1 }]), scoreWithSemantics: jest.fn().mockImplementation((t: any[]) => t) } },
+          { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);

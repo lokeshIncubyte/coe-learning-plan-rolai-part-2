@@ -8,6 +8,8 @@ import { NarrativeGeneratorService } from './narrative-generator.service';
 import { ActionValidatorService } from '../agents/action-validator.service';
 import { ChoiceGeneratorService } from '../agents/choice-generator.service';
 import { GraphService } from './graph.service';
+import { TraversalService } from './traversal.service';
+import { RuleEvaluatorService } from './rule-evaluator.service';
 
 describe('Rate limiting', () => {
   let app: INestApplication;
@@ -20,7 +22,9 @@ describe('Rate limiting', () => {
         { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('ok'), stream: jest.fn() } },
         { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'approved' }) } },
         { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue(['Investigate', 'Flee', 'Negotiate']) } },
-        { provide: GraphService, useValue: { getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
       ],
     }).compile();
