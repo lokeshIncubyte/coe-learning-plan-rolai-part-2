@@ -30,6 +30,15 @@ export class GraphService {
     }) as unknown as EnrichedEntity[];
   }
 
+  async enrichWithState(ids: string[]): Promise<EnrichedEntity[]> {
+    const entities = await this.prisma.entity.findMany({
+      where: { id: { in: ids } },
+      include: { fromEdges: true, toEdges: true },
+    });
+    const byId = new Map(entities.map((e) => [e.id, e]));
+    return ids.map((id) => byId.get(id)).filter(Boolean) as EnrichedEntity[];
+  }
+
   async findSimilarEntityIds(
     queryEmbedding: number[],
     limit: number,

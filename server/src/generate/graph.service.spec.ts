@@ -23,7 +23,7 @@ describe('GraphService', () => {
   let service: GraphService;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     service = new GraphService(mockPrisma);
   });
   // describe blocks added per cycle below
@@ -134,6 +134,29 @@ describe('GraphService', () => {
         data: { type: 'character', name: 'Elara', tags: [] },
       });
       expect(result).toEqual(created);
+    });
+  });
+
+  describe('enrichWithState (Phase 2 — graph layer)', () => {
+    const base = {
+      id: 'e1', name: 'Elara', type: 'character', archetype: null,
+      backstory: null, role: null, tags: [], facts: {}, state: { health: 100 },
+      identity_version: 0, fromEdges: [], toEdges: [],
+    };
+
+    it('fetches entities with edges and preserves Phase 1 ordering', async () => {
+      const e1 = { ...base, id: 'e1' };
+      const e2 = { ...base, id: 'e2', name: 'Drake' };
+      (mockPrisma.entity.findMany as jest.Mock).mockResolvedValueOnce([e2, e1]); // DB returns out of order
+
+      const result = await service.enrichWithState(['e1', 'e2']);
+
+      expect(mockPrisma.entity.findMany).toHaveBeenCalledWith({
+        where: { id: { in: ['e1', 'e2'] } },
+        include: { fromEdges: true, toEdges: true },
+      });
+      expect(result[0].id).toBe('e1');
+      expect(result[1].id).toBe('e2');
     });
   });
 
