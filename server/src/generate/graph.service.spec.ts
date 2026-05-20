@@ -16,6 +16,7 @@ const mockPrisma = {
     findMany: jest.fn(),
   },
   $transaction: jest.fn(),
+  $queryRawUnsafe: jest.fn(),
 } as unknown as PrismaService;
 
 describe('GraphService', () => {
@@ -133,6 +134,26 @@ describe('GraphService', () => {
         data: { type: 'character', name: 'Elara', tags: [] },
       });
       expect(result).toEqual(created);
+    });
+  });
+
+  describe('findSimilarEntityIds (Phase 1 — vector layer)', () => {
+    it('calls $queryRawUnsafe and returns id+similarity pairs above threshold', async () => {
+      const rows = [{ id: 'e1', similarity: 0.95 }, { id: 'e2', similarity: 0.80 }];
+      (mockPrisma.$queryRawUnsafe as jest.Mock).mockResolvedValueOnce(rows);
+
+      const embedding = Array.from({ length: 384 }, () => 0.1);
+      const result = await service.findSimilarEntityIds(embedding, 5, 0.7);
+
+      expect(mockPrisma.$queryRawUnsafe).toHaveBeenCalled();
+      expect(result).toEqual(rows);
+    });
+
+    it('returns empty array when no entities meet the threshold', async () => {
+      (mockPrisma.$queryRawUnsafe as jest.Mock).mockResolvedValueOnce([]);
+      const embedding = Array.from({ length: 384 }, () => 0.1);
+      const result = await service.findSimilarEntityIds(embedding, 5, 0.99);
+      expect(result).toEqual([]);
     });
   });
 

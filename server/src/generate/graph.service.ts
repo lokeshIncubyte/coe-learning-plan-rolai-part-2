@@ -30,6 +30,24 @@ export class GraphService {
     }) as unknown as EnrichedEntity[];
   }
 
+  async findSimilarEntityIds(
+    queryEmbedding: number[],
+    limit: number,
+    threshold = 0.7,
+  ): Promise<Array<{ id: string; similarity: number }>> {
+    const embeddingStr = `[${queryEmbedding.join(',')}]`;
+    return this.prisma.$queryRawUnsafe<Array<{ id: string; similarity: number }>>(
+      `SELECT id, 1 - (embedding <=> '${embeddingStr}'::vector) AS similarity
+       FROM "Entity"
+       WHERE embedding IS NOT NULL
+         AND 1 - (embedding <=> '${embeddingStr}'::vector) >= $1
+       ORDER BY embedding <=> '${embeddingStr}'::vector
+       LIMIT $2`,
+      threshold,
+      limit,
+    );
+  }
+
   async createEntity(data: any) {
     return this.prisma.entity.create({ data });
   }
