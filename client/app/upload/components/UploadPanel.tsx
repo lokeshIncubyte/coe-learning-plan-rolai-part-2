@@ -4,6 +4,19 @@ import { useState } from 'react';
 
 export function UploadPanel() {
   const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      await fetch('/api/upload', { method: 'POST', body: formData });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <div>
@@ -14,7 +27,8 @@ export function UploadPanel() {
         accept=".pdf,.txt"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
-      <button disabled={!file}>Upload</button>
+      {isUploading && <span>Processing…</span>}
+      <button disabled={!file || isUploading} onClick={handleUpload}>Upload</button>
     </div>
   );
 }
