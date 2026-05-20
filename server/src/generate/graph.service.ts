@@ -1,5 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmbeddingService } from './embedding.service';
+
+export type SemanticRecallResult = {
+  entities: EnrichedEntity[];
+  scores: Map<string, number>;
+};
 
 export type EnrichedEntity = {
   id: string;
@@ -21,7 +27,18 @@ export type EnrichedEntity = {
 
 @Injectable()
 export class GraphService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly embeddingService?: EmbeddingService,
+  ) {}
+
+  async semanticRecall(queryText: string, limit = 5): Promise<SemanticRecallResult> {
+    const queryEmbedding = await this.embeddingService!.generateEmbedding(queryText);
+    const candidates = await this.findSimilarEntityIds(queryEmbedding, limit);
+    const scores = new Map(candidates.map((c) => [c.id, c.similarity]));
+    const entities = await this.enrichWithState(candidates.map((c) => c.id));
+    return { entities, scores };
+  }
 
   async getAllEntitiesWithEdges(): Promise<EnrichedEntity[]> {
     return this.prisma.entity.findMany({

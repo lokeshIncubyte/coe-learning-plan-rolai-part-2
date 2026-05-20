@@ -1,7 +1,13 @@
 import { Test } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { GraphService } from './graph.service';
+import { EmbeddingService } from './embedding.service';
 import { PrismaService } from '../prisma/prisma.service';
+
+const mockEmbeddingService = {
+  generateEmbedding: jest.fn().mockResolvedValue(Array.from({ length: 384 }, () => 0.1)),
+  onEntityWrite: jest.fn().mockResolvedValue(undefined),
+} as unknown as EmbeddingService;
 
 const mockPrisma = {
   entity: {
@@ -24,7 +30,11 @@ describe('GraphService', () => {
 
   beforeEach(() => {
     jest.resetAllMocks();
-    service = new GraphService(mockPrisma);
+    (mockEmbeddingService.generateEmbedding as jest.Mock).mockResolvedValue(
+      Array.from({ length: 384 }, () => 0.1),
+    );
+    (mockEmbeddingService.onEntityWrite as jest.Mock).mockResolvedValue(undefined);
+    service = new GraphService(mockPrisma, mockEmbeddingService);
   });
   // describe blocks added per cycle below
 
@@ -134,6 +144,25 @@ describe('GraphService', () => {
         data: { type: 'character', name: 'Elara', tags: [] },
       });
       expect(result).toEqual(created);
+    });
+  });
+
+  describe('semanticRecall (Phase 1 → Phase 2 composition)', () => {
+    it('calls generateEmbedding, findSimilarEntityIds, then enrichWithState and returns entities + scores', async () => {
+      const similarIds = [{ id: 'e1', similarity: 0.9 }];
+      const enriched = [{
+        id: 'e1', name: 'Elara', type: 'character', archetype: null,
+        backstory: null, role: null, tags: [], facts: {}, state: { health: 100 },
+        identity_version: 0, fromEdges: [], toEdges: [],
+      }];
+      (mockPrisma.$queryRawUnsafe as jest.Mock).mockResolvedValueOnce(similarIds);
+      (mockPrisma.entity.findMany as jest.Mock).mockResolvedValueOnce(enriched);
+
+      const result = await service.semanticRecall('a brave hero', 5);
+
+      expect(mockEmbeddingService.generateEmbedding).toHaveBeenCalledWith('a brave hero');
+      expect(result.entities[0].id).toBe('e1');
+      expect(result.scores.get('e1')).toBe(0.9);
     });
   });
 
