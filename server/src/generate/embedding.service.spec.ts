@@ -53,4 +53,38 @@ describe('EmbeddingService', () => {
       expect(result).not.toContain('gold');
     });
   });
+
+  describe('shouldReembed', () => {
+    const base = {
+      id: 'e1', name: 'Elara', type: 'character',
+      archetype: 'Mage', backstory: 'Ancient sorcerer', role: 'protagonist',
+      state: { health: 100 }, facts: { hometown: 'Ashwood' },
+    };
+
+    it('returns false when only state changes', () => {
+      expect(service.shouldReembed(
+        { ...base, state: { health: 100 } },
+        { ...base, state: { health: 50, status: 'wounded' } },
+      )).toBe(false);
+    });
+
+    it('returns false when only facts change', () => {
+      expect(service.shouldReembed(
+        { ...base, facts: { hometown: 'Ashwood' } },
+        { ...base, facts: { hometown: 'Ashwood', guild: 'Mages' } },
+      )).toBe(false);
+    });
+
+    it('returns true when archetype changes', () => {
+      expect(service.shouldReembed(base, { ...base, archetype: 'Warrior' })).toBe(true);
+    });
+
+    it('returns true when role changes', () => {
+      expect(service.shouldReembed(base, { ...base, role: 'antagonist' })).toBe(true);
+    });
+
+    it('returns true when name changes', () => {
+      expect(service.shouldReembed(base, { ...base, name: 'Elena' })).toBe(true);
+    });
+  });
 });

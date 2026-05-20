@@ -18,6 +18,14 @@ export class EmbeddingService {
     this.openai = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });
   }
 
+  shouldReembed(
+    before: Record<string, unknown>,
+    after: Record<string, unknown>,
+  ): boolean {
+    const identityFields = ['name', 'type', 'archetype', 'backstory', 'role'] as const;
+    return identityFields.some((f) => before[f] !== after[f]);
+  }
+
   buildIdentityText(entity: {
     name: string;
     type: string;
