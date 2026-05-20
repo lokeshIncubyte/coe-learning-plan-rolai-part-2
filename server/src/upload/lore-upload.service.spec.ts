@@ -21,6 +21,23 @@ describe('LoreUploadService', () => {
     });
   });
 
+  describe('extractAndPersist', () => {
+    it('calls extractDeltas + applyDeltas per chunk and returns aggregate counts', async () => {
+      const mockExtractor = {
+        extractDeltas: jest.fn().mockResolvedValue([{ op: 'new_entity', identity: { name: 'X', type: 'character' }, state: {} }]),
+        applyDeltas: jest.fn().mockResolvedValue({ entityCount: 1, edgeCount: 0 }),
+      };
+      const mockHistory = { logUploadDeltas: jest.fn().mockResolvedValue(undefined) };
+      const svc2 = new LoreUploadService(mockExtractor as any, mockHistory as any);
+
+      const result = await svc2.extractAndPersist(['chunk one', 'chunk two']);
+
+      expect(mockExtractor.extractDeltas).toHaveBeenCalledTimes(2);
+      expect(mockExtractor.applyDeltas).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({ entityCount: 2, edgeCount: 0, chunkCount: 2 });
+    });
+  });
+
   describe('chunkIntoUnits', () => {
     it('splits on double-newline, trims whitespace, filters empty segments', () => {
       const text = 'Elara is a mage.\n\nThe tavern is dark.\n\n  \n\nA sword lies on the table.';
