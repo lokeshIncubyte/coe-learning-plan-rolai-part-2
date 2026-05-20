@@ -7,11 +7,18 @@ import { ChoiceGeneratorService } from '../agents/choice-generator.service';
 import { GraphService } from './graph.service';
 import { TraversalService } from './traversal.service';
 import { RuleEvaluatorService } from './rule-evaluator.service';
+import { EngineService } from './engine.service';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
 import { LoggingInterceptor } from './logging.interceptor';
+import type { Delta } from '../upload/extractor.service';
+import type { UpdateSpec } from './update-spec';
+import * as defaultSpecJson from '../config/update-spec.json';
+
+const defaultSpec: UpdateSpec = defaultSpecJson as UpdateSpec;
 
 export class GenerateRequestDto {
   prompt: string;
+  deltas?: Delta[];
 }
 
 @Controller('generate')
@@ -25,6 +32,7 @@ export class GenerateController {
     private readonly graphService: GraphService,
     private readonly traversalService: TraversalService,
     private readonly ruleEvaluator: RuleEvaluatorService,
+    private readonly engineService: EngineService,
   ) {}
 
   @Sse('stream')
@@ -79,6 +87,9 @@ export class GenerateController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async generate(@Body() body: GenerateRequestDto) {
+    if (body.deltas?.length) {
+      await this.engineService.processDeltas(body.deltas, defaultSpec);
+    }
     const { ruleContext, worldContext } = await this.buildContexts(body.prompt);
 
     const outcome = await this.validatorService.validate(body.prompt, ruleContext);

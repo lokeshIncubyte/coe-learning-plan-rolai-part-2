@@ -6,6 +6,7 @@ import { ChoiceGeneratorService } from '../agents/choice-generator.service'
 import { GraphService } from './graph.service'
 import { TraversalService } from './traversal.service'
 import { RuleEvaluatorService } from './rule-evaluator.service'
+import { EngineService } from './engine.service'
 
 describe('GenerateController', () => {
   let controller: GenerateController
@@ -21,6 +22,7 @@ describe('GenerateController', () => {
         { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
         { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
       ],
     }).compile()
 
@@ -52,6 +54,7 @@ describe('GenerateController', () => {
         { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
         { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
       ],
     }).compile();
     const ctrl = mod.get(GenerateController);
@@ -81,6 +84,7 @@ describe('GenerateController', () => {
           { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
           { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+          { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         ],
       }).compile();
 
@@ -180,6 +184,7 @@ describe('GenerateController', () => {
           { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
           { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+          { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -206,6 +211,7 @@ describe('GenerateController', () => {
           { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
           { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+          { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -238,6 +244,7 @@ describe('GenerateController', () => {
           }},
           { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+          { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         ],
       }).compile();
 
@@ -259,6 +266,7 @@ describe('GenerateController', () => {
           { provide: GraphService, useValue: { semanticRecall, getAllEntitiesWithEdges, getEntitiesByType: jest.fn().mockResolvedValue([]) } },
           { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+          { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         ],
       }).compile();
 
@@ -287,6 +295,7 @@ describe('GenerateController', () => {
           },
           { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([{ ...heroEntity, proximityScore: 1, combinedScore: 1 }]), scoreWithSemantics: jest.fn().mockImplementation((t: any[]) => t) } },
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+          { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -298,5 +307,27 @@ describe('GenerateController', () => {
 
       expect(choiceSvc.generateChoices).toHaveBeenCalledWith('story', expect.stringContaining('Hero'));
     });
+  });
+
+  // cycle-010
+  it('calls engineService.processDeltas with body.deltas before generating narrative', async () => {
+    const processDeltas = jest.fn().mockResolvedValue({ flaggedForReEmbed: [] });
+    const mod = await Test.createTestingModule({
+      controllers: [GenerateController],
+      providers: [
+        { provide: EngineService, useValue: { processDeltas } },
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('narrative'), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+      ],
+    }).compile();
+
+    const delta = { op: 'state_mutation' as const, entityId: 'e1', patch: { hp: 50 } };
+    await mod.get(GenerateController).generate({ prompt: 'test', deltas: [delta] });
+
+    expect(processDeltas).toHaveBeenCalledWith([delta], expect.any(Object));
   });
 })

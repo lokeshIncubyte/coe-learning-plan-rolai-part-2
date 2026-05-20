@@ -1,0 +1,6 @@
+{
+  "variables": {
+    "hp": { "min": 0, "max": 100 }
+  },
+  "cascades": []
+}

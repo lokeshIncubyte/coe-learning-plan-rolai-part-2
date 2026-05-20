@@ -10,6 +10,7 @@ import { ChoiceGeneratorService } from '../agents/choice-generator.service';
 import { GraphService } from './graph.service';
 import { TraversalService } from './traversal.service';
 import { RuleEvaluatorService } from './rule-evaluator.service';
+import { EngineService } from './engine.service';
 
 describe('Rate limiting', () => {
   let app: INestApplication;
@@ -25,6 +26,7 @@ describe('Rate limiting', () => {
         { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
         { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
       ],
     }).compile();
