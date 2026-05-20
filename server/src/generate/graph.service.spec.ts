@@ -73,6 +73,20 @@ describe('GraphService', () => {
       });
       expect(result).toEqual(updatedEntity);
     });
+
+    it('calls onEntityWrite after state update so the re-embed hook can check for identity shift', async () => {
+      const before = { id: 'e1', state: { health: 100 }, name: 'Elara', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const after  = { id: 'e1', state: { health: 50 },  name: 'Elara', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(before);
+      (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce(after);
+      (mockPrisma.$transaction as jest.Mock).mockImplementation(
+        (fn: (tx: typeof mockPrisma) => Promise<unknown>) => fn(mockPrisma),
+      );
+
+      await service.updateEntityState('e1', { health: 50 });
+
+      expect(mockEmbeddingService.onEntityWrite).toHaveBeenCalledWith(before, after);
+    });
   });
 
   describe('createEdge', () => {

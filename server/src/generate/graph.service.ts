@@ -108,9 +108,14 @@ export class GraphService {
 
   async updateEntityState(id: string, patch: Record<string, unknown>) {
     return this.prisma.$transaction(async (tx: any) => {
-      const entity = await tx.entity.findUnique({ where: { id } });
-      const merged = { ...(entity?.state as object ?? {}), ...patch };
-      return tx.entity.update({ where: { id }, data: { state: merged } });
+      const before = await tx.entity.findUnique({ where: { id } });
+      const merged = { ...(before?.state as object ?? {}), ...patch };
+      const after = await tx.entity.update({ where: { id }, data: { state: merged } });
+      await this.embeddingService?.onEntityWrite(
+        before as Record<string, unknown>,
+        after as Record<string, unknown>,
+      );
+      return after;
     });
   }
 
