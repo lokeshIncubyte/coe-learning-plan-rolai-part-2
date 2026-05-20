@@ -66,6 +66,17 @@ export class RuleEvaluatorService {
         if (!state) return false;
         return state[trigger.field] === trigger.value;
       }
+      case 'relationship': {
+        type EdgeLike = { fromId: string; toId: string; type?: string };
+        for (const entity of reachedEntities) {
+          for (const edge of (entity.fromEdges ?? []) as EdgeLike[]) {
+            if (edge.fromId === trigger.fromId && edge.toId === trigger.toId && edge.type === trigger.edgeType) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
       default:
         return false;
     }

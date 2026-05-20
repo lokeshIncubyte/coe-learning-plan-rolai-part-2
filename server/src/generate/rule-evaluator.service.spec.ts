@@ -73,4 +73,36 @@ describe('RuleEvaluatorService', () => {
       expect(service.evaluateRules([], rules)).toHaveLength(0);
     });
   });
+
+  describe('relationship trigger', () => {
+    it('fires when an edge fromId→toId with the matching type exists', () => {
+      const hero = makeEntity('hero', {
+        fromEdges: [{ fromId: 'hero', toId: 'villain', type: 'enemy' } as any],
+      });
+      const rules = [makeRule('r1', 'Enemy Rule', {
+        triggers: [{ type: 'relationship', fromId: 'hero', toId: 'villain', edgeType: 'enemy' }],
+        outcome: 'combat is possible', priority: 1,
+      })];
+      expect(service.evaluateRules([hero, makeEntity('villain')], rules)).toHaveLength(1);
+    });
+
+    it('does NOT fire when the edge type does not match', () => {
+      const hero = makeEntity('hero', {
+        fromEdges: [{ fromId: 'hero', toId: 'villain', type: 'ally' } as any],
+      });
+      const rules = [makeRule('r1', 'Enemy Rule', {
+        triggers: [{ type: 'relationship', fromId: 'hero', toId: 'villain', edgeType: 'enemy' }],
+        outcome: 'combat', priority: 1,
+      })];
+      expect(service.evaluateRules([hero], rules)).toHaveLength(0);
+    });
+
+    it('does NOT fire when no edge exists', () => {
+      const rules = [makeRule('r1', 'Relation Rule', {
+        triggers: [{ type: 'relationship', fromId: 'hero', toId: 'villain', edgeType: 'enemy' }],
+        outcome: 'something', priority: 1,
+      })];
+      expect(service.evaluateRules([makeEntity('hero')], rules)).toHaveLength(0);
+    });
+  });
 });
