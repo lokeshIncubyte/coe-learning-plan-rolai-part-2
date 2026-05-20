@@ -6,6 +6,7 @@ const mockPrisma = {
     create: jest.fn(),
     findMany: jest.fn(),
   },
+  $queryRaw: jest.fn(),
 } as unknown as PrismaService;
 
 describe('GenerationHistoryService', () => {
@@ -68,6 +69,21 @@ describe('GenerationHistoryService', () => {
         take: 10,
         orderBy: { createdAt: 'desc' },
       });
+    });
+  });
+
+  describe('getHistoryByDeltaCategory', () => {
+    it('queries generationHistory records containing deltas with the given op category', async () => {
+      const mockPrisma2 = {
+        ...mockPrisma,
+        $queryRaw: jest.fn().mockResolvedValue([{ id: 'h1' }]),
+      } as unknown as PrismaService;
+      const svc2 = new GenerationHistoryService(mockPrisma2);
+
+      const result = await svc2.getHistoryByDeltaCategory('identity_shift');
+
+      expect(mockPrisma2.$queryRaw).toHaveBeenCalled();
+      expect(result).toEqual([{ id: 'h1' }]);
     });
   });
 });

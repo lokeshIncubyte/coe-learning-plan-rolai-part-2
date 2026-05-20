@@ -17,4 +17,12 @@ export class GenerationHistoryService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async getHistoryByDeltaCategory(op: string) {
+    return this.prisma.$queryRaw`
+      SELECT * FROM "GenerationHistory"
+      WHERE deltas::jsonb @> ${JSON.stringify([{ op }])}::jsonb
+      ORDER BY "createdAt" DESC
+    `;
+  }
 }
