@@ -54,6 +54,29 @@ describe('EmbeddingService', () => {
     });
   });
 
+  describe('embedEntityIdentity', () => {
+    it('reads the entity, builds identity text, generates embedding, and writes via $executeRawUnsafe', async () => {
+      const entity = {
+        id: 'e1', name: 'Elara', type: 'character',
+        archetype: 'Mage', backstory: null, role: null,
+      };
+      (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(entity);
+      (mockPrisma.$executeRawUnsafe as jest.Mock).mockResolvedValueOnce(1);
+      jest.spyOn(service, 'generateEmbedding').mockResolvedValueOnce(new Array(384).fill(0.1));
+
+      await service.embedEntityIdentity('e1');
+
+      expect(mockPrisma.entity.findUnique).toHaveBeenCalledWith({ where: { id: 'e1' } });
+      expect(mockPrisma.$executeRawUnsafe).toHaveBeenCalled();
+    });
+
+    it('skips and does not throw when entity is not found', async () => {
+      (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(null);
+      await expect(service.embedEntityIdentity('missing')).resolves.toBeUndefined();
+      expect(mockPrisma.$executeRawUnsafe).not.toHaveBeenCalled();
+    });
+  });
+
   describe('generateEmbedding', () => {
     it('calls openai embeddings.create and returns the embedding array', async () => {
       const OpenAI = require('openai').default;
