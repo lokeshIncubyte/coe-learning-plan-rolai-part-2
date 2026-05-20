@@ -1,7 +1,7 @@
 ---
 id: cycle-038
 slug: graph-service-update-entity-identity
-status: pending
+status: done
 source: "GraphService.updateEntityIdentity(id, patch) updates identity fields and fires the onEntityWrite hook. Throws NotFoundException when entity is missing."
 covers: happy-path
 group: graph-service-hybrid-vector-graph

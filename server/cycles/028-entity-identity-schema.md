@@ -1,7 +1,7 @@
 ---
 id: cycle-028
 slug: entity-identity-schema
-status: pending
+status: done
 source: "Group A: Add identity layer fields to Entity model in Prisma schema"
 covers: schema-migration
 ---

@@ -1,7 +1,7 @@
 ---
 id: cycle-044
 slug: rule-evaluator-state-value
-status: pending
+status: done
 source: "Day 7 — RuleEvaluatorService: state-value trigger"
 covers: happy-path
 group: rule-evaluator

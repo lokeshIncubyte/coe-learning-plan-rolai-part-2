@@ -1,7 +1,7 @@
 ---
 id: cycle-030
 slug: embedding-service-should-reembed
-status: pending
+status: done
 source: "Group B: EmbeddingService.shouldReembed — false on state-only change, true on identity shift"
 covers: happy-path
 group: embedding-service

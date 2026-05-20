@@ -1,7 +1,7 @@
 ---
 id: cycle-035
 slug: graph-service-find-similar-entity-ids
-status: pending
+status: done
 source: "GraphService.findSimilarEntityIds(queryEmbedding, limit, threshold) performs a Phase 1 pgvector cosine-similarity search using $queryRawUnsafe."
 covers: happy-path
 group: graph-service-hybrid-vector-graph

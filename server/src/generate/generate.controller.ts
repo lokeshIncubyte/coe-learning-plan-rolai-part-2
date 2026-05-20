@@ -110,7 +110,7 @@ export class GenerateController {
       : allEntities.map((e: any) => ({ ...e, proximityScore: 1, combinedScore: 1 }));
     const ranked = this.traversalService.scoreWithSemantics(toRank, phase1Scores);
 
-    const rules = await this.graphService.getEntitiesByType('rule');
+    const rules = await this.graphService.getEntitiesByType('rule') as any[];
     const activeRules = this.ruleEvaluator.evaluateRules(allEntities, rules);
     const ruleContext = activeRules.length
       ? `RULES:\n${activeRules.map((r) => {

@@ -1,7 +1,7 @@
 ---
 id: cycle-037
 slug: graph-service-semantic-recall
-status: pending
+status: done
 source: "GraphService.semanticRecall(queryText, limit) composes Phase 1 → Phase 2 and returns { entities, scores }. Adds EmbeddingService as constructor dependency."
 covers: happy-path
 group: graph-service-hybrid-vector-graph

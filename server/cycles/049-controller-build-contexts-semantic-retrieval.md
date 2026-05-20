@@ -1,7 +1,7 @@
 ---
 id: cycle-049
 slug: controller-build-contexts-semantic-retrieval
-status: pending
+status: done
 source: "Day 7 — GenerateController: two-phase semantic retrieval in buildContexts"
 covers: happy-path
 group: controller-semantic-retrieval

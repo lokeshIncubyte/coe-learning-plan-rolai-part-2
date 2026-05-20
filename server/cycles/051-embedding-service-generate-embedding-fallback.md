@@ -1,7 +1,7 @@
 ---
 id: cycle-051
 slug: embedding-service-generate-embedding-fallback
-status: pending
+status: done
 source: "Group B: EmbeddingService.generateEmbedding — zero-vector fallback when proxy is unreachable"
 covers: error-path
 group: embedding-service

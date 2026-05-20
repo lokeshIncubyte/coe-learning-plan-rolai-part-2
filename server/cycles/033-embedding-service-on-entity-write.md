@@ -1,7 +1,7 @@
 ---
 id: cycle-033
 slug: embedding-service-on-entity-write
-status: pending
+status: done
 source: "Group B: EmbeddingService.onEntityWrite — re-embeds + increments identity_version only on identity shift"
 covers: happy-path
 group: embedding-service

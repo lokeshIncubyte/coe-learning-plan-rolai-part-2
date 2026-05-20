@@ -1,7 +1,7 @@
 ---
 id: cycle-039
 slug: graph-service-update-entity-state-re-embed-hook
-status: pending
+status: done
 source: "GraphService.updateEntityState wires onEntityWrite after the transaction so EmbeddingService can check for identity shift."
 covers: error-path
 group: graph-service-hybrid-vector-graph

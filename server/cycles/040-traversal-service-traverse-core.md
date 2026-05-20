@@ -1,7 +1,7 @@
 ---
 id: cycle-040
 slug: traversal-service-traverse-core
-status: pending
+status: done
 source: "TraversalService.traverse(anchorId, entities, maxDepth, tags?) performs BFS from anchorId through entity edges with proximityScore assignment."
 covers: happy-path
 group: traversal-service-hybrid-vector-graph

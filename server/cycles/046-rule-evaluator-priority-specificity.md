@@ -1,7 +1,7 @@
 ---
 id: cycle-046
 slug: rule-evaluator-priority-specificity
-status: pending
+status: done
 source: "Day 7 — RuleEvaluatorService: priority + specificity sort and AND logic"
 covers: happy-path
 group: rule-evaluator

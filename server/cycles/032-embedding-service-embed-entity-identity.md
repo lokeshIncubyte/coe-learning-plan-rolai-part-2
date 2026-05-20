@@ -1,7 +1,7 @@
 ---
 id: cycle-032
 slug: embedding-service-embed-entity-identity
-status: pending
+status: done
 source: "Group B: EmbeddingService.embedEntityIdentity — reads entity, writes vector via $executeRawUnsafe"
 covers: happy-path
 group: embedding-service

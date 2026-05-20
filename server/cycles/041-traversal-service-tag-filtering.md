@@ -1,7 +1,7 @@
 ---
 id: cycle-041
 slug: traversal-service-tag-filtering
-status: pending
+status: skip
 source: "traverse with a non-empty tags array only follows edges whose tags array contains at least one of the filter tags."
 covers: error-path
 group: traversal-service-hybrid-vector-graph

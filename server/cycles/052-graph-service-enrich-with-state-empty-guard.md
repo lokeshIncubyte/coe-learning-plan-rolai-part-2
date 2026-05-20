@@ -1,7 +1,7 @@
 ---
 id: cycle-052
 slug: graph-service-enrich-with-state-empty-guard
-status: pending
+status: done
 source: "GraphService.enrichWithState — returns [] immediately without hitting DB when ids is empty"
 covers: error-path
 group: graph-service-hybrid-vector-graph

@@ -1,7 +1,7 @@
 ---
 id: cycle-047
 slug: rule-evaluator-conflict-detection
-status: pending
+status: done
 source: "Day 7 — RuleEvaluatorService: conflict detection"
 covers: happy-path
 group: rule-evaluator

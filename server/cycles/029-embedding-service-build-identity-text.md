@@ -1,7 +1,7 @@
 ---
 id: cycle-029
 slug: embedding-service-build-identity-text
-status: pending
+status: done
 source: "Group B: EmbeddingService.buildIdentityText joins identity fields with ' | ', omits nulls"
 covers: happy-path
 group: embedding-service

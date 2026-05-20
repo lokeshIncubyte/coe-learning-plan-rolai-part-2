@@ -7,17 +7,22 @@ import { styleGuide } from '../config/style-guide';
 @Injectable()
 export class NarrativeGeneratorService {
   private readonly client: OpenAI;
+  private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    this.client = new OpenAI({
-      apiKey: config.getOrThrow<string>('OPENROUTER_API_KEY'),
-      baseURL: 'https://openrouter.ai/api/v1',
-    });
+    const helperApisUrl = config.get<string>('HELPER_APIS_URL');
+    if (helperApisUrl) {
+      this.client = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });
+      this.model = 'anthropic/claude-sonnet-4-6';
+    } else {
+      this.client = new OpenAI({ apiKey: config.getOrThrow<string>('OPENROUTER_API_KEY'), baseURL: 'https://openrouter.ai/api/v1' });
+      this.model = 'openai/gpt-4o-mini';
+    }
   }
 
   async generate(prompt: string, worldContext?: string): Promise<string> {
     const response = await this.client.chat.completions.create({
-      model: 'openai/gpt-4o-mini',
+      model: this.model,
       temperature: 0.8,
       max_tokens: 200,
       messages: [
@@ -31,7 +36,7 @@ export class NarrativeGeneratorService {
   async *stream(prompt: string, signal?: AbortSignal, worldContext?: string): AsyncGenerator<string> {
     const response = await this.client.chat.completions.create(
       {
-        model: 'openai/gpt-4o-mini',
+        model: this.model,
         temperature: 0.8,
         max_tokens: 200,
         stream: true,

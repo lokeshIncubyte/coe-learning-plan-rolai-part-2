@@ -1,7 +1,7 @@
 ---
 id: cycle-054
 slug: graph-service-update-entity-identity-not-found
-status: pending
+status: done
 source: "GraphService.updateEntityIdentity — throws NotFoundException when entity is not found"
 covers: error-path
 group: graph-service-hybrid-vector-graph

@@ -1,7 +1,7 @@
 ---
 id: cycle-053
 slug: graph-service-semantic-recall-empty-candidates
-status: pending
+status: skip
 source: "GraphService.semanticRecall — skips enrichWithState and returns empty result when no similar entities found"
 covers: error-path
 group: graph-service-hybrid-vector-graph

@@ -1,7 +1,7 @@
 ---
 id: cycle-043
 slug: rule-evaluator-entity-presence
-status: pending
+status: done
 source: "Day 7 — RuleEvaluatorService: entity-presence trigger"
 covers: happy-path
 group: rule-evaluator

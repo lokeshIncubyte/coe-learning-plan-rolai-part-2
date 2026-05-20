@@ -1,7 +1,7 @@
 ---
 id: cycle-036
 slug: graph-service-enrich-with-state
-status: pending
+status: done
 source: "GraphService.enrichWithState(ids) fetches entities and their edges by ID list (Phase 2), preserving Phase 1 ordering."
 covers: happy-path
 group: graph-service-hybrid-vector-graph

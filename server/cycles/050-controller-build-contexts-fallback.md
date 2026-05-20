@@ -1,7 +1,7 @@
 ---
 id: cycle-050
 slug: controller-build-contexts-fallback
-status: pending
+status: done
 source: "Day 7 — GenerateController: getAllEntitiesWithEdges fallback when semanticRecall returns empty"
 covers: error-path
 group: controller-semantic-retrieval

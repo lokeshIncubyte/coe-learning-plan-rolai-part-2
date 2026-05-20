@@ -1,7 +1,7 @@
 ---
 id: cycle-034
 slug: graph-service-get-all-entities-with-edges
-status: pending
+status: done
 source: "GraphService.getAllEntitiesWithEdges() returns all entities whose type is not 'rule', including their fromEdges and toEdges."
 covers: happy-path
 group: graph-service-hybrid-vector-graph

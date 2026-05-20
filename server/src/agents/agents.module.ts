@@ -11,34 +11,38 @@ import { ChoiceGeneratorService } from './choice-generator.service';
     ChoiceGeneratorService,
     {
       provide: 'ACTION_VALIDATOR_AGENT',
-      useFactory: (config: ConfigService) =>
-        new Agent({
+      useFactory: (config: ConfigService) => {
+        const helperApisUrl = config.get<string>('HELPER_APIS_URL');
+        return new Agent({
           id: 'action-validator',
           name: 'action-validator',
           instructions:
             'You validate whether player actions are physically and narratively possible in the game world. Return accepted, modified, or rejected with a reason.',
           model: {
-            id: 'openai/gpt-4o-mini',
-            url: 'https://openrouter.ai/api/v1',
-            apiKey: config.getOrThrow('OPENROUTER_API_KEY'),
+            id: helperApisUrl ? 'anthropic/claude-sonnet-4-6' : 'openai/gpt-4o-mini',
+            url: helperApisUrl ? `${helperApisUrl}/v1` : 'https://openrouter.ai/api/v1',
+            apiKey: helperApisUrl ? 'local' : config.getOrThrow('OPENROUTER_API_KEY'),
           },
-        }),
+        });
+      },
       inject: [ConfigService],
     },
     {
       provide: 'CHOICE_GENERATOR_AGENT',
-      useFactory: (config: ConfigService) =>
-        new Agent({
+      useFactory: (config: ConfigService) => {
+        const helperApisUrl = config.get<string>('HELPER_APIS_URL');
+        return new Agent({
           id: 'choice-generator',
           name: 'choice-generator',
           instructions:
             'You generate 3 narrative choices for the player given the current story beat. Return choices as structured JSON.',
           model: {
-            id: 'openai/gpt-4o-mini',
-            url: 'https://openrouter.ai/api/v1',
-            apiKey: config.getOrThrow('OPENROUTER_API_KEY'),
+            id: helperApisUrl ? 'anthropic/claude-sonnet-4-6' : 'openai/gpt-4o-mini',
+            url: helperApisUrl ? `${helperApisUrl}/v1` : 'https://openrouter.ai/api/v1',
+            apiKey: helperApisUrl ? 'local' : config.getOrThrow('OPENROUTER_API_KEY'),
           },
-        }),
+        });
+      },
       inject: [ConfigService],
     },
   ],

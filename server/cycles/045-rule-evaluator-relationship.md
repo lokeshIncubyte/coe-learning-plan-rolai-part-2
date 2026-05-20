@@ -1,7 +1,7 @@
 ---
 id: cycle-045
 slug: rule-evaluator-relationship
-status: pending
+status: done
 source: "Day 7 — RuleEvaluatorService: relationship trigger"
 covers: happy-path
 group: rule-evaluator

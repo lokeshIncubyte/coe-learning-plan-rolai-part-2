@@ -1,7 +1,7 @@
 ---
 id: cycle-031
 slug: embedding-service-generate-embedding
-status: pending
+status: done
 source: "Group B: EmbeddingService.generateEmbedding — calls ONNX proxy and returns the embedding array"
 covers: happy-path
 group: embedding-service

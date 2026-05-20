@@ -1,7 +1,7 @@
 ---
 id: cycle-042
 slug: traversal-service-score-with-semantics
-status: pending
+status: skip
 source: "TraversalService.scoreWithSemantics(traversed, phase1Scores) re-ranks by blending proximityScore and Phase 1 similarity at 50/50 weight."
 covers: happy-path
 group: traversal-service-hybrid-vector-graph

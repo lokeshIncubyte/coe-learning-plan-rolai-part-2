@@ -1,7 +1,7 @@
 ---
 id: cycle-048
 slug: narrative-generator-world-context
-status: pending
+status: done
 source: "Day 7 — NarrativeGeneratorService: worldContext parameter"
 covers: happy-path
 group: narrative-generator-world-context
