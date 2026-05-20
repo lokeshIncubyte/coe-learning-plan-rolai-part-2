@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import { GraphService } from '../generate/graph.service';
+import { EmbeddingService } from '../generate/embedding.service';
 
 export type NewEntityDelta = { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string }; state: Record<string, unknown>; sourceChunk?: string };
 export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; patch: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string }> };
@@ -31,7 +33,7 @@ export class ExtractorService {
   private readonly client: OpenAI;
   private readonly model: string;
 
-  constructor(private readonly config: ConfigService, private readonly graphService: any, private readonly embeddingService?: any) {
+  constructor(private readonly config: ConfigService, private readonly graphService: GraphService, private readonly embeddingService?: EmbeddingService) {
     const helperApisUrl = config?.get?.('HELPER_APIS_URL');
     if (helperApisUrl) {
       this.client = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });

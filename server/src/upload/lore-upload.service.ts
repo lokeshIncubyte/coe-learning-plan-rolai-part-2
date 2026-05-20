@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import pdfParse from 'pdf-parse';
+import { ExtractorService } from './extractor.service';
+import { GenerationHistoryService } from '../history/generation-history.service';
 
 @Injectable()
 export class LoreUploadService {
-  constructor(private readonly extractorService: any, private readonly historyService: any) {}
+  constructor(private readonly extractorService: ExtractorService, private readonly historyService: GenerationHistoryService) {}
 
   async processUpload(buffer: Buffer, mimeType: string): Promise<string> {
     if (mimeType === 'text/plain') {
