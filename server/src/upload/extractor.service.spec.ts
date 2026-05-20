@@ -1,4 +1,4 @@
-import { ExtractorService } from './extractor.service';
+import { ExtractorService, type NewEntityDelta } from './extractor.service';
 
 const mockCreate = jest.fn();
 jest.mock('openai', () => ({
@@ -41,6 +41,21 @@ describe('ExtractorService', () => {
       const systemMsg = call.messages.find((m: any) => m.role === 'system').content;
       expect(systemMsg).toMatch(/identity/i);
       expect(systemMsg).toMatch(/state/i);
+    });
+  });
+
+  describe('applyDeltas', () => {
+    it('new_entity: calls createEntity then embedEntityIdentity', async () => {
+      const mockGraph = { createEntity: jest.fn().mockResolvedValue({ id: 'e1' }), createEdge: jest.fn() };
+      const mockEmbed = { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) };
+      const svc2 = new ExtractorService({} as any, mockGraph as any, mockEmbed as any);
+
+      const delta: NewEntityDelta = { op: 'new_entity', identity: { name: 'Elara', type: 'character' }, state: {} };
+      const result = await svc2.applyDeltas([delta]);
+
+      expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({ name: 'Elara', type: 'character' }));
+      expect(mockEmbed.embedEntityIdentity).toHaveBeenCalledWith('e1');
+      expect(result.entityCount).toBe(1);
     });
   });
 });

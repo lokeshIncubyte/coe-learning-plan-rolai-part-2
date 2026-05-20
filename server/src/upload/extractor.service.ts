@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
-export type Delta =
-  | { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string }; state: Record<string, unknown>; sourceChunk?: string }
-  | { op: 'identity_shift'; entityId: string; identity: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string }> }
-  | { op: 'state_mutation'; entityId: string; state: Record<string, unknown> }
-  | { op: 'new_edge'; fromId: string; toId: string; type: string; weight?: number };
+export type NewEntityDelta = { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string }; state: Record<string, unknown>; sourceChunk?: string };
+export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; identity: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string }> };
+export type StateMutationDelta = { op: 'state_mutation'; entityId: string; state: Record<string, unknown> };
+export type NewEdgeDelta = { op: 'new_edge'; fromId: string; toId: string; type: string; weight?: number };
+export type Delta = NewEntityDelta | IdentityShiftDelta | StateMutationDelta | NewEdgeDelta;
 
 const SYSTEM_PROMPT = `You are an entity extractor for a narrative world engine.
 
@@ -31,7 +31,7 @@ export class ExtractorService {
   private readonly client: OpenAI;
   private readonly model: string;
 
-  constructor(private readonly config: ConfigService, private readonly graphService: any) {
+  constructor(private readonly config: ConfigService, private readonly graphService: any, private readonly embeddingService?: any) {
     const helperApisUrl = config?.get?.('HELPER_APIS_URL');
     if (helperApisUrl) {
       this.client = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });
@@ -56,5 +56,27 @@ export class ExtractorService {
     const raw = response.choices[0].message.content ?? '{"deltas":[]}';
     const parsed = JSON.parse(raw);
     return parsed.deltas ?? [];
+  }
+
+  async applyDeltas(deltas: Delta[], anchorId?: string): Promise<{ entityCount: number; edgeCount: number }> {
+    let entityCount = 0;
+    let edgeCount = 0;
+
+    for (const delta of deltas) {
+      if (delta.op === 'new_entity') {
+        const entity = await this.graphService.createEntity({ ...delta.identity, state: delta.state ?? {} });
+        await this.embeddingService?.embedEntityIdentity(entity.id);
+        entityCount++;
+      } else if (delta.op === 'identity_shift') {
+        await this.graphService.updateEntityIdentity(delta.entityId, delta.identity);
+      } else if (delta.op === 'state_mutation') {
+        await this.graphService.updateEntityState(delta.entityId, delta.state);
+      } else if (delta.op === 'new_edge') {
+        await this.graphService.createEdge({ fromId: delta.fromId, toId: delta.toId, type: delta.type, weight: delta.weight ?? 1 });
+        edgeCount++;
+      }
+    }
+
+    return { entityCount, edgeCount };
   }
 }
