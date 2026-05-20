@@ -309,6 +309,30 @@ describe('GenerateController', () => {
     });
   });
 
+  // cycle-011
+  it('propagates error when engineService.processDeltas throws', async () => {
+    const processDeltas = jest.fn().mockRejectedValue(new Error('engine failure'));
+    const mod = await Test.createTestingModule({
+      controllers: [GenerateController],
+      providers: [
+        { provide: EngineService, useValue: { processDeltas } },
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+      ],
+    }).compile();
+
+    await expect(
+      mod.get(GenerateController).generate({
+        prompt: 'test',
+        deltas: [{ op: 'state_mutation', entityId: 'bad-id', patch: { hp: 10 } }],
+      }),
+    ).rejects.toThrow('engine failure');
+  });
+
   // cycle-010
   it('calls engineService.processDeltas with body.deltas before generating narrative', async () => {
     const processDeltas = jest.fn().mockResolvedValue({ flaggedForReEmbed: [] });
