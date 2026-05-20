@@ -59,6 +59,13 @@ export class RuleEvaluatorService {
     switch (trigger.type) {
       case 'entity-presence':
         return reachedEntities.some((e) => e.id === trigger.entityId);
+      case 'state-value': {
+        const entity = reachedEntities.find((e) => e.id === trigger.entityId);
+        if (!entity) return false;
+        const state = entity.state as Record<string, unknown> | null;
+        if (!state) return false;
+        return state[trigger.field] === trigger.value;
+      }
       default:
         return false;
     }

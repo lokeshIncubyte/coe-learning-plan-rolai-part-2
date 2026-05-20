@@ -45,4 +45,32 @@ describe('RuleEvaluatorService', () => {
       expect(service.evaluateRules([makeEntity('hero')], [badRule])).toHaveLength(0);
     });
   });
+
+  describe('state-value trigger', () => {
+    it('fires when the entity state field matches the expected value', () => {
+      const hero = makeEntity('hero', { state: { health: 100 } });
+      const rules = [makeRule('r1', 'Healthy', {
+        triggers: [{ type: 'state-value', entityId: 'hero', field: 'health', value: 100 }],
+        outcome: 'hero is at full strength', priority: 1,
+      })];
+      expect(service.evaluateRules([hero], rules)).toHaveLength(1);
+    });
+
+    it('does NOT fire when the state field has a different value', () => {
+      const hero = makeEntity('hero', { state: { health: 50 } });
+      const rules = [makeRule('r1', 'Healthy', {
+        triggers: [{ type: 'state-value', entityId: 'hero', field: 'health', value: 100 }],
+        outcome: 'full strength', priority: 1,
+      })];
+      expect(service.evaluateRules([hero], rules)).toHaveLength(0);
+    });
+
+    it('does NOT fire when the entity is absent from the reached set', () => {
+      const rules = [makeRule('r1', 'State Rule', {
+        triggers: [{ type: 'state-value', entityId: 'missing', field: 'health', value: 100 }],
+        outcome: 'some outcome', priority: 1,
+      })];
+      expect(service.evaluateRules([], rules)).toHaveLength(0);
+    });
+  });
 });
