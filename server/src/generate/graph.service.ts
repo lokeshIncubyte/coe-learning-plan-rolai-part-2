@@ -58,6 +58,7 @@ export class GraphService {
   }
 
   async enrichWithState(ids: string[]): Promise<EnrichedEntity[]> {
+    if (ids.length === 0) return [];
     const entities = await this.prisma.entity.findMany({
       where: { id: { in: ids } },
       include: { fromEdges: true, toEdges: true },

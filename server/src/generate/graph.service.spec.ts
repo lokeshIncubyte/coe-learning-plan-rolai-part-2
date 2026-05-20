@@ -218,6 +218,12 @@ describe('GraphService', () => {
       expect(result[0].id).toBe('e1');
       expect(result[1].id).toBe('e2');
     });
+
+    it('returns empty array without hitting DB when ids is empty', async () => {
+      const result = await service.enrichWithState([]);
+      expect(mockPrisma.entity.findMany).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
   });
 
   describe('findSimilarEntityIds (Phase 1 — vector layer)', () => {
