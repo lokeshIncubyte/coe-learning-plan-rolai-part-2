@@ -66,6 +66,21 @@ describe('EngineService', () => {
     });
   });
 
+  describe('applyStateMutationDelta', () => {
+    it('clamps patch and writes clamped values to graphService.updateEntityState', async () => {
+      const mockGraph = {
+        updateEntityState: jest.fn().mockResolvedValue({ id: 'e1', state: { hp: 100 } }),
+      };
+      const engine = new EngineService(mockGraph as any);
+      const applySpec: UpdateSpec = { variables: { hp: { min: 0, max: 100 } } };
+
+      const result = await engine.applyStateMutationDelta('e1', { hp: 150 }, applySpec);
+
+      expect(mockGraph.updateEntityState).toHaveBeenCalledWith('e1', { hp: 100 });
+      expect(result).toEqual({ resolved: { hp: 100 } });
+    });
+  });
+
   describe('classifyDeltas', () => {
     it('separates state_mutation and identity_shift; ignores new_entity and new_edge', () => {
       const engine = new EngineService(null as any);
