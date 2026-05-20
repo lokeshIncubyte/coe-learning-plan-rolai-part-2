@@ -92,6 +92,19 @@ describe('EmbeddingService', () => {
       expect(result).toHaveLength(384);
       expect(typeof result[0]).toBe('number');
     });
+
+    it('returns a zero-vector when the proxy throws', async () => {
+      const OpenAI = require('openai').default;
+      OpenAI.mockImplementationOnce(() => ({
+        embeddings: {
+          create: jest.fn().mockRejectedValueOnce(new Error('ECONNREFUSED')),
+        },
+      }));
+      const svc = new EmbeddingService(mockPrisma, mockConfig);
+      const result = await svc.generateEmbedding('any text');
+      expect(result).toHaveLength(384);
+      expect(result.every((v: number) => v === 0)).toBe(true);
+    });
   });
 
   describe('onEntityWrite', () => {

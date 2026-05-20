@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,6 +9,7 @@ export class EmbeddingService {
 
   static readonly EMBEDDING_DIM = 384;
   private readonly model = 'Xenova/all-MiniLM-L6-v2';
+  private readonly logger = new Logger(EmbeddingService.name);
 
   constructor(
     private readonly prisma: PrismaService,
@@ -43,8 +44,13 @@ export class EmbeddingService {
   }
 
   async generateEmbedding(text: string): Promise<number[]> {
-    const response = await this.openai.embeddings.create({ model: this.model, input: text });
-    return response.data[0].embedding;
+    try {
+      const response = await this.openai.embeddings.create({ model: this.model, input: text });
+      return response.data[0].embedding;
+    } catch (err) {
+      this.logger.warn(`Embedding proxy unreachable, returning zero-vector: ${(err as Error).message}`);
+      return new Array(EmbeddingService.EMBEDDING_DIM).fill(0);
+    }
   }
 
   shouldReembed(
