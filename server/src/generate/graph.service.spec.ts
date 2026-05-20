@@ -195,6 +195,14 @@ describe('GraphService', () => {
       expect(result.entities[0].id).toBe('e1');
       expect(result.scores.get('e1')).toBe(0.9);
     });
+
+    it('returns empty entities and empty scores when no similar entities found', async () => {
+      (mockPrisma.$queryRawUnsafe as jest.Mock).mockResolvedValueOnce([]);
+      const result = await service.semanticRecall('obscure query', 5);
+      expect(result.entities).toEqual([]);
+      expect(result.scores.size).toBe(0);
+      expect(mockPrisma.entity.findMany).not.toHaveBeenCalled();
+    });
   });
 
   describe('enrichWithState (Phase 2 — graph layer)', () => {
