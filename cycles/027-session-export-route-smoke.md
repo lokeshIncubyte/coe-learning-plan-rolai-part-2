@@ -1,7 +1,7 @@
 ---
 id: cycle-027
 slug: session-export-route-smoke
-status: pending
+status: done
 source: "§5 Session Export — GET /api/session/:id/export route"
 covers: happy-path
 group: session-export
