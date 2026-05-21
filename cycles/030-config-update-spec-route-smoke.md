@@ -1,7 +1,7 @@
 ---
 id: cycle-030
 slug: config-update-spec-route-smoke
-status: pending
+status: done
 source: "§7 Config Editor UI — PUT /api/config/update-spec route"
 covers: happy-path
 group: config-editor
