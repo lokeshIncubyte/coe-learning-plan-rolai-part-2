@@ -1,7 +1,7 @@
 ---
 id: cycle-028
 slug: config-service-get-spec
-status: pending
+status: done
 source: "§7 Config Editor UI — ConfigService.getSpec reads update-spec.json from disk"
 covers: happy-path
 group: config-editor
