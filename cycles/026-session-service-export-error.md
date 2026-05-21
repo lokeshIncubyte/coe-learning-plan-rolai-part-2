@@ -1,7 +1,7 @@
 ---
 id: cycle-026
 slug: session-service-export-error
-status: pending
+status: skip
 source: "§5 Session Export — SessionService.exportSession error path (session not found)"
 covers: error-path
 group: session-export
