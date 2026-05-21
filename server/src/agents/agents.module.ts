@@ -17,7 +17,7 @@ import { ChoiceGeneratorService } from './choice-generator.service';
           id: 'action-validator',
           name: 'action-validator',
           instructions:
-            'You validate whether player actions are physically and narratively possible in the game world. Return accepted, modified, or rejected with a reason.',
+            "Validate player actions against world physics and narrative. Accepted/modified actions must remain grounded in the POV character's sensory reality. Return accepted, modified, or rejected with a one-line reason.",
           model: {
             id: helperApisUrl ? 'anthropic/claude-sonnet-4-6' : 'openai/gpt-4o-mini',
             url: helperApisUrl ? `${helperApisUrl}/v1` : 'https://openrouter.ai/api/v1',
@@ -35,7 +35,7 @@ import { ChoiceGeneratorService } from './choice-generator.service';
           id: 'choice-generator',
           name: 'choice-generator',
           instructions:
-            'You generate 3 narrative choices for the player given the current story beat. Return choices as structured JSON.',
+            "Generate 3 narrative choices for the current beat. Each label evokes the POV character's dominant sense or emotion (noble→sight, knight→sound/touch, child→wonder, wildling→scent). Return structured JSON.",
           model: {
             id: helperApisUrl ? 'anthropic/claude-sonnet-4-6' : 'openai/gpt-4o-mini',
             url: helperApisUrl ? `${helperApisUrl}/v1` : 'https://openrouter.ai/api/v1',

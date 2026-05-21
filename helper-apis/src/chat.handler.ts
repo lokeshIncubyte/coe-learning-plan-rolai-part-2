@@ -159,22 +159,31 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
         res.end();
         return;
       }
+      let content = '';
       try {
         const result = JSON.parse(stdout);
-        const content: string = needsJson ? extractJson(result.result ?? '') : (result.result ?? '');
-        // Emit in ~40-char chunks to simulate streaming
-        const chunkSize = 40;
-        for (let i = 0; i < content.length; i += chunkSize) {
-          sse({ id, object: 'chat.completion.chunk', created, model,
-            choices: [{ index: 0, delta: { content: content.slice(i, i + chunkSize) }, finish_reason: null }] });
-        }
+        content = needsJson ? extractJson(result.result ?? '') : (result.result ?? '');
       } catch {
         // ignore parse error — still close cleanly
       }
-      sse({ id, object: 'chat.completion.chunk', created, model,
-        choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] });
-      res.write('data: [DONE]\n\n');
-      res.end();
+      // Drip content in small chunks with a delay to simulate real token streaming
+      const chunkSize = 12;
+      const intervalMs = 18;
+      const chunks: string[] = [];
+      for (let i = 0; i < content.length; i += chunkSize) chunks.push(content.slice(i, i + chunkSize));
+      let idx = 0;
+      const timer = setInterval(() => {
+        if (idx < chunks.length) {
+          sse({ id, object: 'chat.completion.chunk', created, model,
+            choices: [{ index: 0, delta: { content: chunks[idx++] }, finish_reason: null }] });
+        } else {
+          clearInterval(timer);
+          sse({ id, object: 'chat.completion.chunk', created, model,
+            choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] });
+          res.write('data: [DONE]\n\n');
+          res.end();
+        }
+      }, intervalMs);
     });
 
     // Kill child only if client disconnects before we finish

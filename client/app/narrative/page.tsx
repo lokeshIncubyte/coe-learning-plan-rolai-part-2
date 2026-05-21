@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useStreamState } from './hooks/useStreamState'
 import { useStream } from './hooks/useStream'
 import { useNarrativeHistory } from './hooks/useNarrativeHistory'
@@ -18,6 +18,7 @@ export default function NarrativePage() {
   const lastPromptRef = useRef<string>('')
   const [validationStatus, setValidationStatus] = useState<'accepted' | 'modified' | 'rejected' | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
+  const [isValidating, setIsValidating] = useState(false)
 
   const onEvent = (event: { type: string; [key: string]: unknown }) => {
     if (event.type === 'chunk') {
@@ -31,6 +32,12 @@ export default function NarrativePage() {
 
   const { start, isStreaming } = useStream('/api/generate/stream', onEvent)
 
+  useEffect(() => {
+    dispatch({ type: 'start' })
+    start({ prompt: 'I enter a cavern.' })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleRetry = () => { start({ prompt: lastPromptRef.current }) }
 
   const handleChoice = (label: string) => {
@@ -41,6 +48,7 @@ export default function NarrativePage() {
 
   const handleSubmit = async (text: string) => {
     lastPromptRef.current = text
+    setIsValidating(true)
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -58,6 +66,8 @@ export default function NarrativePage() {
       }
     } catch {
       // validation unavailable — proceed to stream
+    } finally {
+      setIsValidating(false)
     }
     start({ prompt: text })
   }
@@ -68,7 +78,7 @@ export default function NarrativePage() {
         <div className="mx-auto w-full max-w-2xl space-y-6">
           <BeatHistory beats={beats} />
           {status === 'streaming' && <StreamingText text={narrativeText} isStreaming={isStreaming} />}
-          {choices.length > 0 && <ChoiceList choices={choices} onSelect={handleChoice} />}
+          {choices.length > 0 && <ChoiceList choices={choices} onSelect={handleChoice} disabled={isValidating || isStreaming} />}
           {status === 'error' && (
             <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30 p-4 space-y-2">
               <p className="text-red-600 dark:text-red-400 text-sm">{errorMessage}</p>
@@ -80,7 +90,7 @@ export default function NarrativePage() {
       <div data-testid="input-area" className="flex-shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 sm:px-6 py-4">
         <div className="mx-auto w-full max-w-2xl space-y-2">
           <ValidationFeedback status={validationStatus} reason={rejectionReason} />
-          <ActionInput onSubmit={handleSubmit} disabled={isStreaming} />
+          <ActionInput onSubmit={handleSubmit} disabled={isStreaming || isValidating} isValidating={isValidating} />
         </div>
       </div>
     </div>

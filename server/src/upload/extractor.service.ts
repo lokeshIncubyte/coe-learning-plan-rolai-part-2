@@ -4,29 +4,26 @@ import OpenAI from 'openai';
 import { GraphService } from '../generate/graph.service';
 import { EmbeddingService } from '../generate/embedding.service';
 
-export type NewEntityDelta = { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string }; state: Record<string, unknown>; source?: string; sourceChunk?: string };
-export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; patch: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string }> };
+export type NewEntityDelta = { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string; sensoryProfile?: string }; state: Record<string, unknown>; source?: string; sourceChunk?: string };
+export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; patch: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string; sensoryProfile: string }> };
 export type StateMutationDelta = { op: 'state_mutation'; entityId: string; patch: Record<string, unknown> };
 export type NewEdgeDelta = { op: 'new_edge'; fromId: string; toId: string; type: string; weight?: number; tags?: string[] };
 export type Delta = NewEntityDelta | IdentityShiftDelta | StateMutationDelta | NewEdgeDelta;
 
-const SYSTEM_PROMPT = `You are an entity extractor for a narrative world engine.
+const SYSTEM_PROMPT = `Extract entities and relationships from narrative text as JSON: { "deltas": Delta[] }.
 
-Given a narrative text chunk, extract entities and relationships as a JSON object: { "deltas": Delta[] }
+Ops:
+- "new_entity": identity { name, type, archetype?, backstory?, role?, sensoryProfile? } + state { ...mutable }. Identity embeds for search; state never embeds.
+- "identity_shift": entityId + identity patch.
+- "state_mutation": entityId + state patch.
+- "new_edge": fromId, toId, type, weight (0-1).
 
-Each delta has an "op" field:
-- "new_entity": a new entity appears. Use two separate sections:
-  - "identity": { name, type, archetype?, backstory?, role? } — WHO/WHAT this entity is (will be embedded for semantic search)
-  - "state": { ...mutableFields } — current condition (hp, location, mood, etc.) — NEVER embedded
-- "identity_shift": an entity's core identity changes (name, type, archetype, backstory, role). Provide entityId + identity patch.
-- "state_mutation": an entity's mutable state changes. Provide entityId + state patch.
-- "new_edge": a directed relationship between two entities. Provide fromId, toId, type, weight (0-1).
-
-RULES:
-- Identity fields: name, type, archetype, backstory, role — these define what the entity IS
-- State fields: hp, location, mood, inventory, status — these describe current condition
-- Never put state fields inside identity block; never put identity fields inside state block
-- Return valid JSON only, no markdown.`;
+Rules:
+- Identity (what it IS): name, type, archetype, backstory, role, sensoryProfile.
+- sensoryProfile = dominant perceptual mode inferred from type (noble→visual, knight→auditory+tactile, peasant→balanced, child→visual+tactile, wildling→olfactory+auditory, scout→auditory+tactile, warg→olfactory).
+- State (current condition): hp, location, mood, inventory, status.
+- Never mix identity and state fields.
+- Return JSON only, no markdown.`;
 
 @Injectable()
 export class ExtractorService {
