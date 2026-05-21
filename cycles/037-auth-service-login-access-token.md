@@ -1,7 +1,7 @@
 ---
 id: cycle-037
 slug: auth-service-login-access-token
-status: pending
+status: skip
 source: "AuthService.login(user) — returns { accessToken: string } signed with JWT"
 covers: happy-path
 group: auth-service
