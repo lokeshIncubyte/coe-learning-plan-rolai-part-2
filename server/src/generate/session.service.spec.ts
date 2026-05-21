@@ -36,6 +36,20 @@ describe('SessionService — exportSession', () => {
   })
 })
 
+describe('SessionService — exportSession error', () => {
+  it('propagates PrismaClientKnownRequestError P2025 when session not found', async () => {
+    const notFound = new PrismaClientKnownRequestError('Not found', { code: 'P2025', clientVersion: '5.0.0' })
+    const mockPrisma = {
+      session: {
+        create: jest.fn().mockResolvedValue({ id: 'x' }),
+        findUniqueOrThrow: jest.fn().mockRejectedValue(notFound),
+      },
+    }
+    const service = new SessionService(mockPrisma as any)
+    await expect(service.exportSession('bad-id')).rejects.toThrow(PrismaClientKnownRequestError)
+  })
+})
+
 describe('SessionService — error path', () => {
   it('propagates PrismaClientKnownRequestError from session.create', async () => {
     const dbErr = new PrismaClientKnownRequestError('Connection failed', { code: 'P1001', clientVersion: '5.0.0' })
