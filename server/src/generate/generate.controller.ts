@@ -110,9 +110,8 @@ export class GenerateController {
       return { rejected: true, reason: outcome.reason };
     }
 
-    const effectivePrompt = outcome.result === 'modified' && outcome.modifiedAction
-      ? outcome.modifiedAction
-      : body.prompt;
+    const modifiedAction = outcome.result === 'modified' ? outcome.modifiedAction : undefined;
+    const effectivePrompt = modifiedAction ?? body.prompt;
 
     const narrative = await this.narrativeService.generate(effectivePrompt, worldContext);
     try {
@@ -122,7 +121,7 @@ export class GenerateController {
     }
     const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
     await this.historyService.logEntry(sessionId, narrative, anchorId, body.deltas ?? []);
-    return { narrative, choices, sessionId };
+    return { narrative, choices, sessionId, ...(modifiedAction ? { modifiedAction } : {}) };
   }
 
   private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string; anchorId: string }> {

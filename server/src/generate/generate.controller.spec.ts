@@ -536,4 +536,26 @@ describe('GenerateController — write-back error skip', () => {
 
     expect(result).toMatchObject({ narrative: 'The dragon retreats.', choices: ['Pursue', 'Rest'] })
   })
+
+  it('generate returns modifiedAction when validator returns modified', async () => {
+    const mod = await Test.createTestingModule({
+      controllers: [GenerateController],
+      providers: [
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('narrative'), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'modified', modifiedAction: 'safe action' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
+        { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
+      ],
+    }).compile()
+    const ctrl = mod.get(GenerateController)
+    const result = await ctrl.generate({ prompt: 'dangerous action' })
+    expect(result).toMatchObject({ modifiedAction: 'safe action' })
+  })
 })
