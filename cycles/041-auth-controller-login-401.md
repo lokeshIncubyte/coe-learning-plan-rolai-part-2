@@ -1,7 +1,7 @@
 ---
 id: cycle-041
 slug: auth-controller-login-401
-status: pending
+status: done
 source: "POST /auth/login — 401 UnauthorizedException when validateUser returns null"
 covers: error-path
 group: auth-controller
