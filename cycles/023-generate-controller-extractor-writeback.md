@@ -1,7 +1,7 @@
 ---
 id: cycle-023
 slug: generate-controller-extractor-writeback
-status: pending
+status: done
 source: "§3 Full Pipeline step 8-9 — Extractor parse + write-back via EngineService.processDeltas"
 covers: happy-path
 group: extractor-writeback
