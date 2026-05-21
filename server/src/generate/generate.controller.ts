@@ -8,6 +8,7 @@ import { GraphService } from './graph.service';
 import { TraversalService } from './traversal.service';
 import { RuleEvaluatorService } from './rule-evaluator.service';
 import { EngineService } from './engine.service';
+import { EmbeddingService } from './embedding.service';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
 import { LoggingInterceptor } from './logging.interceptor';
 import type { Delta } from '../upload/extractor.service';
@@ -33,6 +34,7 @@ export class GenerateController {
     private readonly traversalService: TraversalService,
     private readonly ruleEvaluator: RuleEvaluatorService,
     private readonly engineService: EngineService,
+    private readonly embeddingService: EmbeddingService,
   ) {}
 
   @Sse('stream')
@@ -88,7 +90,10 @@ export class GenerateController {
   @HttpCode(HttpStatus.OK)
   async generate(@Body() body: GenerateRequestDto) {
     if (body.deltas?.length) {
-      await this.engineService.processDeltas(body.deltas, defaultSpec);
+      const { flaggedForReEmbed } = await this.engineService.processDeltas(body.deltas, defaultSpec);
+      for (const d of flaggedForReEmbed) {
+        void this.embeddingService.embedEntityIdentity(d.entityId);
+      }
     }
     const { ruleContext, worldContext } = await this.buildContexts(body.prompt);
 

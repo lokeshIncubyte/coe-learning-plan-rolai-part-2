@@ -11,6 +11,7 @@ import { GraphService } from './graph.service';
 import { TraversalService } from './traversal.service';
 import { RuleEvaluatorService } from './rule-evaluator.service';
 import { EngineService } from './engine.service';
+import { EmbeddingService } from './embedding.service';
 
 describe('Rate limiting', () => {
   let app: INestApplication;
@@ -27,6 +28,7 @@ describe('Rate limiting', () => {
         { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
+        { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
       ],
     }).compile();
