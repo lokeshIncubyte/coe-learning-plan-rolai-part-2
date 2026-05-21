@@ -6,3 +6,7 @@ project-roadmap.md
 server/dist/
 server/node_modules/
 coe-discussion-points/
+.claude/
+client/test-results/
+server/.day8-check-*.ts
+server/.day8-log-*.log
