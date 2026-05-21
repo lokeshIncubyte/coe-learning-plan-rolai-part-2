@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import type { ChatCompletionFunctionTool } from 'openai/resources/chat/completions';
+import type { ChatCompletionFunctionTool, ChatCompletionMessageFunctionToolCall } from 'openai/resources/chat/completions';
 import { EngineService } from './engine.service';
+import type { UpdateSpec } from './update-spec';
 
 @Injectable()
 export class EngineToolsService {
@@ -53,5 +54,19 @@ export class EngineToolsService {
         },
       },
     ];
+  }
+
+  async dispatch(toolCall: ChatCompletionMessageFunctionToolCall, spec: UpdateSpec): Promise<unknown> {
+    const args = JSON.parse(toolCall.function.arguments ?? '{}');
+    switch (toolCall.function.name) {
+      case 'apply_delta':
+        return this.engineService.applyStateMutationDelta(args.entityId, args.patch, spec);
+      case 'fire_cascade':
+        return this.engineService.runCascades(args.state, spec);
+      case 'resolve_rule_conflict':
+        return this.engineService.resolveRuleConflict(args.candidates, args.conflictKey);
+      default:
+        throw new Error(`Unknown tool: ${toolCall.function.name}`);
+    }
   }
 }
