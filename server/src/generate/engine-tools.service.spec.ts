@@ -72,4 +72,21 @@ describe('EngineToolsService.dispatch', () => {
     expect(resolveRuleConflict).toHaveBeenCalledWith(candidates, 'hp');
     expect(result).toEqual(winner);
   });
+
+  // cycle-016
+  it('dispatch throws for unknown function name', async () => {
+    const svc = new EngineToolsService({
+      applyStateMutationDelta: jest.fn(),
+      runCascades: jest.fn(),
+      resolveRuleConflict: jest.fn(),
+    } as any);
+    const spec = { variables: {}, cascades: [] };
+
+    await expect(
+      svc.dispatch(
+        { id: 'c4', type: 'function', function: { name: 'nonexistent_tool', arguments: '{}' } },
+        spec,
+      ),
+    ).rejects.toThrow('nonexistent_tool');
+  });
 });
