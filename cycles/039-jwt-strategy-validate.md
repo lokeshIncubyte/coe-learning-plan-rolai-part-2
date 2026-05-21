@@ -1,7 +1,7 @@
 ---
 id: cycle-039
 slug: jwt-strategy-validate
-status: pending
+status: done
 source: "JwtStrategy — Passport JWT strategy, validates token, attaches { id, email, role } to request"
 covers: atomic
 group: jwt-strategy
