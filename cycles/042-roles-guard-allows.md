@@ -1,7 +1,7 @@
 ---
 id: cycle-042
 slug: roles-guard-allows
-status: pending
+status: done
 source: "RolesGuard + @Roles decorator — guards routes by role; allows when user role matches"
 covers: happy-path
 group: roles-guard
