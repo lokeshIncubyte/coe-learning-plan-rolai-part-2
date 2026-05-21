@@ -1,3 +1,4 @@
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 import { AdminStatsService } from './admin-stats.service'
 
 describe('AdminStatsService', () => {
@@ -21,5 +22,22 @@ describe('AdminStatsService', () => {
       historyCount: 271,
       latestHistoryAt: latestDate,
     })
+  })
+})
+
+describe('AdminStatsService — error path', () => {
+  it('propagates PrismaClientKnownRequestError when count fails', async () => {
+    const connErr = new PrismaClientKnownRequestError('Connection failed', { code: 'P1001', clientVersion: '5.0.0' })
+    const mockPrisma = {
+      entity: { count: jest.fn().mockRejectedValue(connErr) },
+      edge: { count: jest.fn().mockResolvedValue(0) },
+      session: { count: jest.fn().mockResolvedValue(0) },
+      generationHistory: {
+        count: jest.fn().mockResolvedValue(0),
+        findFirst: jest.fn().mockResolvedValue(null),
+      },
+    }
+    const service = new AdminStatsService(mockPrisma as any)
+    await expect(service.getStats()).rejects.toThrow(PrismaClientKnownRequestError)
   })
 })
