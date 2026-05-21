@@ -1,7 +1,7 @@
 ---
 id: cycle-046
 slug: nextjs-auth-login-route-error
-status: pending
+status: done
 source: "Next.js /api/auth/login proxy — returns 401 when upstream NestJS returns 401"
 covers: error-path
 group: next-auth
