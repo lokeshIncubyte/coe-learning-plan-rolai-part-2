@@ -32,7 +32,7 @@ When prisma.generationHistory.create throws (e.g. FK violation — sessionId not
 - **Test file**: `src/generate/history.service.spec.ts`
 - **Assertion**:
   ```ts
-  import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+  import { PrismaClientKnownRequestError } from '@prisma/client'
   import { HistoryService } from './history.service'
 
   describe('HistoryService — error path', () => {

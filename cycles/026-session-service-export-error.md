@@ -24,7 +24,7 @@ When prisma.session.findUniqueOrThrow throws P2025 (not found), SessionService.e
 - **Test file**: `src/generate/session.service.spec.ts`
 - **Assertion**:
   ```ts
-  import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+  import { PrismaClientKnownRequestError } from '@prisma/client'
 
   describe('SessionService — exportSession error', () => {
     it('propagates PrismaClientKnownRequestError P2025 when session not found', async () => {

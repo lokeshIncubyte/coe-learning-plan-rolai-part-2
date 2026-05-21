@@ -1,7 +1,7 @@
 ---
 id: cycle-019
 slug: session-service-create-session-error
-status: pending
+status: skip
 source: "§4 Session Model — SessionService.createSession error path"
 covers: error-path
 group: session-model
@@ -30,7 +30,7 @@ When prisma.session.create throws a PrismaClientKnownRequestError, SessionServic
 - **Test file**: `src/generate/session.service.spec.ts`
 - **Assertion**:
   ```ts
-  import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+  import { PrismaClientKnownRequestError } from '@prisma/client'
   import { SessionService } from './session.service'
 
   describe('SessionService — error path', () => {

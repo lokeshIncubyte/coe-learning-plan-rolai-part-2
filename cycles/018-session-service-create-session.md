@@ -1,7 +1,7 @@
 ---
 id: cycle-018
 slug: session-service-create-session
-status: pending
+status: done
 source: "§4 Session Model — SessionService.createSession"
 covers: happy-path
 group: session-model

@@ -22,7 +22,7 @@ When any Prisma count query throws, `AdminStatsService.getStats()` propagates th
 - **Test file**: `src/admin/admin-stats.service.spec.ts`
 - **Assertion**:
   ```ts
-  import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+  import { PrismaClientKnownRequestError } from '@prisma/client'
   import { AdminStatsService } from './admin-stats.service'
 
   describe('AdminStatsService — error path', () => {
