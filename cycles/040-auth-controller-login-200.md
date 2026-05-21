@@ -1,7 +1,7 @@
 ---
 id: cycle-040
 slug: auth-controller-login-200
-status: pending
+status: done
 source: "POST /auth/login controller — takes { email, password }, calls validateUser, returns { accessToken } on success"
 covers: happy-path
 group: auth-controller
