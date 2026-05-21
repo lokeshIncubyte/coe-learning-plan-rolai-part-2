@@ -22,6 +22,16 @@ describe('AuthService.validateUser — happy path', () => {
   })
 })
 
+describe('AuthService.login', () => {
+  it('returns { accessToken } from JwtService.sign', () => {
+    const mockJwt = { sign: jest.fn().mockReturnValue('token.jwt.string') }
+    const service = new AuthService(null as any, mockJwt as any)
+    const result = service.login({ id: 'u1', email: 'admin@platform.com', role: 'ADMIN' })
+    expect(result).toEqual({ accessToken: 'token.jwt.string' })
+    expect(mockJwt.sign).toHaveBeenCalledWith({ sub: 'u1', email: 'admin@platform.com', role: 'ADMIN' })
+  })
+})
+
 describe('AuthService.validateUser — null paths', () => {
   it('returns null when user is not found', async () => {
     const mockPrisma = { user: { findUnique: jest.fn().mockResolvedValue(null) } }
