@@ -21,3 +21,27 @@ describe('AuthService.validateUser — happy path', () => {
     expect(result).toEqual({ id: 'user-1', email: 'admin@platform.com', role: 'ADMIN' })
   })
 })
+
+describe('AuthService.validateUser — null paths', () => {
+  it('returns null when user is not found', async () => {
+    const mockPrisma = { user: { findUnique: jest.fn().mockResolvedValue(null) } }
+    ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
+    const service = new AuthService(mockPrisma as any, null as any)
+    const result = await service.validateUser('unknown@platform.com', 'login')
+    expect(result).toBeNull()
+  })
+
+  it('returns null when password does not match', async () => {
+    const mockPrisma = {
+      user: {
+        findUnique: jest.fn().mockResolvedValue({
+          id: 'u1', email: 'user@platform.com', passwordHash: '$2b$10$hash', role: 'USER',
+        }),
+      },
+    }
+    ;(bcrypt.compare as jest.Mock).mockResolvedValue(false)
+    const service = new AuthService(mockPrisma as any, null as any)
+    const result = await service.validateUser('user@platform.com', 'wrongpassword')
+    expect(result).toBeNull()
+  })
+})
