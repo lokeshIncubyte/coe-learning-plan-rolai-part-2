@@ -1,7 +1,7 @@
 ---
 id: cycle-036
 slug: auth-service-validate-user-null
-status: pending
+status: skip
 source: "AuthService.validateUser — returns null when user not found or password wrong"
 covers: error-path
 group: auth-service
