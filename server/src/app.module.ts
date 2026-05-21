@@ -6,6 +6,7 @@ import { GenerateModule } from './generate/generate.module';
 import { HistoryModule } from './history/history.module';
 import { UploadModule } from './upload/upload.module';
 import { AppConfigModule } from './config/config.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AppConfigModule } from './config/config.module';
     HistoryModule,
     UploadModule,
     AppConfigModule,
+    AdminModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
