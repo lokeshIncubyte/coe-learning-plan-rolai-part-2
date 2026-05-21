@@ -7,6 +7,7 @@ import { HistoryModule } from './history/history.module';
 import { UploadModule } from './upload/upload.module';
 import { AppConfigModule } from './config/config.module';
 import { AdminModule } from './admin/admin.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AdminModule } from './admin/admin.module';
     UploadModule,
     AppConfigModule,
     AdminModule,
+    AuthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
