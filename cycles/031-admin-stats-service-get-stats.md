@@ -1,7 +1,7 @@
 ---
 id: cycle-031
 slug: admin-stats-service-get-stats
-status: pending
+status: done
 source: "§8 Admin Dashboard — AdminStatsService.getStats"
 covers: happy-path
 group: admin-dashboard
