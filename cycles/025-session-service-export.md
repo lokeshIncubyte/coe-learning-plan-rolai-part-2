@@ -1,7 +1,7 @@
 ---
 id: cycle-025
 slug: session-service-export
-status: pending
+status: done
 source: "§5 Session Export — SessionService.exportSession"
 covers: happy-path
 group: session-export
