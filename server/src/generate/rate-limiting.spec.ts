@@ -14,6 +14,7 @@ import { EngineService } from './engine.service';
 import { EmbeddingService } from './embedding.service';
 import { SessionService } from './session.service';
 import { HistoryService } from './history.service';
+import { ExtractorService } from '../upload/extractor.service';
 
 describe('Rate limiting', () => {
   let app: INestApplication;
@@ -33,6 +34,7 @@ describe('Rate limiting', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
       ],
     }).compile();

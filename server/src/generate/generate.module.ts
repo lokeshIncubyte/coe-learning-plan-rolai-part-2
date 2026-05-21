@@ -12,11 +12,12 @@ import { HistoryService } from './history.service';
 import { GenerateController } from './generate.controller';
 import { AgentsModule } from '../agents/agents.module';
 import { PrismaModule } from '../prisma/prisma.module';
+import { ExtractorService } from '../upload/extractor.service';
 
 @Module({
   imports: [ConfigModule, AgentsModule, PrismaModule],
   controllers: [GenerateController],
-  providers: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService],
-  exports: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService],
+  providers: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService, ExtractorService],
+  exports: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService, ExtractorService],
 })
 export class GenerateModule {}

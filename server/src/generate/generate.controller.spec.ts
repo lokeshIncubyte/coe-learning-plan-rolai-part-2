@@ -29,6 +29,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile()
 
@@ -64,6 +65,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile();
     const ctrl = mod.get(GenerateController);
@@ -97,6 +99,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
         ],
       }).compile();
 
@@ -200,6 +203,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -230,6 +234,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -266,6 +271,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
         ],
       }).compile();
 
@@ -291,6 +297,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
         ],
       }).compile();
 
@@ -323,6 +330,7 @@ describe('GenerateController', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -352,6 +360,7 @@ describe('GenerateController', () => {
         { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
         { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile();
 
@@ -379,6 +388,7 @@ describe('GenerateController', () => {
         { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
         { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile();
 
@@ -410,6 +420,7 @@ describe('GenerateController', () => {
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
         { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile();
 
@@ -442,6 +453,7 @@ describe('GenerateController — session + history wiring', () => {
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
         { provide: SessionService, useValue: { createSession } },
         { provide: HistoryService, useValue: { logEntry } },
+        { provide: ExtractorService, useValue: { extractDeltas: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile()
 
@@ -450,5 +462,42 @@ describe('GenerateController — session + history wiring', () => {
 
     expect(createSession).toHaveBeenCalledTimes(1)
     expect(logEntry).toHaveBeenCalledWith('sess-xyz', 'A tale.', 'e1', [])
+  })
+})
+
+// cycle-023
+import { ExtractorService } from '../upload/extractor.service'
+import type { Delta } from '../upload/extractor.service'
+
+describe('GenerateController — extractor write-back', () => {
+  it('calls extractorService.extractDeltas then engineService.processDeltas with extracted deltas', async () => {
+    const extractedDeltas: Delta[] = [{ op: 'state_mutation', entityId: 'e1', patch: { hp: 80 } }]
+    const extractDeltas = jest.fn().mockResolvedValue(extractedDeltas)
+    const processDeltas = jest.fn().mockResolvedValue({ flaggedForReEmbed: [] })
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [GenerateController],
+      providers: [
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('The hero fights.'), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'approved' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: EngineService, useValue: { processDeltas } },
+        { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-1') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas } },
+      ],
+    }).compile()
+
+    const controller = module.get(GenerateController)
+    await controller.generate({ prompt: 'Attack the dragon.' })
+
+    expect(extractDeltas).toHaveBeenCalledWith('The hero fights.')
+    expect(processDeltas).toHaveBeenCalledTimes(1)
+    const secondCall = processDeltas.mock.calls[0]
+    expect(secondCall[0]).toEqual(extractedDeltas)
   })
 })

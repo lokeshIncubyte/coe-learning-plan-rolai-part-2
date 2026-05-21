@@ -11,6 +11,7 @@ import { EngineService } from './engine.service';
 import { EmbeddingService } from './embedding.service';
 import { SessionService } from './session.service';
 import { HistoryService } from './history.service';
+import { ExtractorService } from '../upload/extractor.service';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
 import { LoggingInterceptor } from './logging.interceptor';
 import type { Delta } from '../upload/extractor.service';
@@ -39,6 +40,7 @@ export class GenerateController {
     private readonly embeddingService: EmbeddingService,
     private readonly sessionService: SessionService,
     private readonly historyService: HistoryService,
+    private readonly extractorService: ExtractorService,
   ) {}
 
   @Sse('stream')
@@ -113,6 +115,8 @@ export class GenerateController {
       : body.prompt;
 
     const narrative = await this.narrativeService.generate(effectivePrompt, worldContext);
+    const extractedDeltas = await this.extractorService.extractDeltas(narrative);
+    await this.engineService.processDeltas(extractedDeltas, defaultSpec);
     const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
     await this.historyService.logEntry(sessionId, narrative, anchorId, body.deltas ?? []);
     return { narrative, choices };
