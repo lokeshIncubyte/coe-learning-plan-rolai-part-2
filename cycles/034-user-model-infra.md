@@ -1,7 +1,7 @@
 ---
 id: cycle-034
 slug: user-model-infra
-status: pending
+status: done
 source: "Prisma User model — email (unique), passwordHash, role enum (ADMIN|USER); install auth packages; seed admin@platform.com and user@platform.com with password 'login'"
 covers: atomic
 group: user-model
