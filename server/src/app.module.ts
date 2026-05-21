@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { GenerateModule } from './generate/generate.module';
 import { HistoryModule } from './history/history.module';
 import { UploadModule } from './upload/upload.module';
+import { AppConfigModule } from './config/config.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UploadModule } from './upload/upload.module';
     GenerateModule,
     HistoryModule,
     UploadModule,
+    AppConfigModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
