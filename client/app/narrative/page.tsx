@@ -50,6 +50,7 @@ export default function NarrativePage() {
 
   const handleSubmit = async (text: string) => {
     lastPromptRef.current = text
+    let effectivePrompt = text
     setIsValidating(true)
     try {
       const res = await fetch('/api/generate', {
@@ -64,14 +65,19 @@ export default function NarrativePage() {
           setRejectionReason(data.reason ?? '')
           return
         }
-        setValidationStatus('accepted')
+        if (data.modifiedAction) {
+          setValidationStatus('modified')
+          effectivePrompt = data.modifiedAction
+        } else {
+          setValidationStatus('accepted')
+        }
       }
     } catch {
       // validation unavailable — proceed to stream
     } finally {
       setIsValidating(false)
     }
-    start({ prompt: text })
+    start({ prompt: effectivePrompt })
   }
 
   return (

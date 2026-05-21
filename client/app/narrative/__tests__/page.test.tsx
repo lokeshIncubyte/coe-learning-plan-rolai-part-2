@@ -126,6 +126,7 @@ describe('NarrativePage', () => {
     })
 
     render(<NarrativePage />)
+    mockStart.mockClear() // clear the auto-start call on mount
     await user.type(screen.getByRole('textbox'), 'bad input')
     await user.click(screen.getByRole('button', { name: 'Submit' }))
 
@@ -201,5 +202,20 @@ describe('NarrativePage', () => {
     await user.click(screen.getByRole('button', { name: 'Retry' }))
 
     expect(mockStart).toHaveBeenLastCalledWith({ prompt: 'hello' })
+  })
+
+  it('shows modified feedback and streams with modifiedAction when validator returns modified', async () => {
+    const user = userEvent.setup()
+    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ narrative: 'ok', choices: [], modifiedAction: 'safe action' }),
+    })
+    render(<NarrativePage />)
+    await user.type(screen.getByRole('textbox'), 'dangerous action')
+    await user.click(screen.getByRole('button', { name: 'Submit' }))
+    await waitFor(() => {
+      expect(screen.getByTestId('feedback-indicator')).toHaveAttribute('data-status', 'modified')
+    })
+    expect(mockStart).toHaveBeenCalledWith({ prompt: 'safe action' })
   })
 })
