@@ -115,8 +115,11 @@ export class GenerateController {
       : body.prompt;
 
     const narrative = await this.narrativeService.generate(effectivePrompt, worldContext);
-    const extractedDeltas = await this.extractorService.extractDeltas(narrative);
-    await this.engineService.processDeltas(extractedDeltas, defaultSpec);
+    try {
+      const extractedDeltas = await this.extractorService.extractDeltas(narrative);
+      await this.engineService.processDeltas(extractedDeltas, defaultSpec);
+    } catch {
+    }
     const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
     await this.historyService.logEntry(sessionId, narrative, anchorId, body.deltas ?? []);
     return { narrative, choices };

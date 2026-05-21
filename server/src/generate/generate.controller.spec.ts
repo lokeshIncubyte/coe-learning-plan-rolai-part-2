@@ -501,3 +501,32 @@ describe('GenerateController — extractor write-back', () => {
     expect(secondCall[0]).toEqual(extractedDeltas)
   })
 })
+
+// cycle-024
+describe('GenerateController — write-back error skip', () => {
+  it('returns narrative and choices even when extractDeltas throws', async () => {
+    const extractDeltas = jest.fn().mockRejectedValue(new Error('Malformed JSON from LLM'))
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [GenerateController],
+      providers: [
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('The dragon retreats.'), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'approved' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue(['Pursue', 'Rest']) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
+        { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-1') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
+        { provide: ExtractorService, useValue: { extractDeltas } },
+      ],
+    }).compile()
+
+    const controller = module.get(GenerateController)
+    const result = await controller.generate({ prompt: 'Chase it.' })
+
+    expect(result).toEqual({ narrative: 'The dragon retreats.', choices: ['Pursue', 'Rest'] })
+  })
+})
