@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useStreamState } from './hooks/useStreamState'
 import { useStream } from './hooks/useStream'
 import { useNarrativeHistory } from './hooks/useNarrativeHistory'
+import { useAuthGuard } from './hooks/useAuthGuard'
 import { ActionInput } from './components/ActionInput'
 import { StreamingText } from './components/StreamingText'
 import { ChoiceList } from './components/ChoiceList'
@@ -12,6 +13,7 @@ import { ValidationFeedback } from './components/ValidationFeedback'
 import { RetryButton } from './components/RetryButton'
 
 export default function NarrativePage() {
+  useAuthGuard()
   const { status, narrativeText, choices, errorMessage, dispatch } = useStreamState()
   const { beats, addBeat, setChosenAction } = useNarrativeHistory()
   const narrativeAccumRef = useRef<string>('')

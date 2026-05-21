@@ -19,6 +19,10 @@ jest.mock('../hooks/useScrollToBottom', () => ({
   useScrollToBottom: () => ({ current: null }),
 }))
 
+jest.mock('../hooks/useAuthGuard', () => ({
+  useAuthGuard: () => undefined,
+}))
+
 const narrativeHistoryState = {
   beats: [] as { narrative: string; chosenAction: string | null }[],
   addBeat: jest.fn(),
