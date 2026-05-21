@@ -122,7 +122,7 @@ export class GenerateController {
     }
     const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
     await this.historyService.logEntry(sessionId, narrative, anchorId, body.deltas ?? []);
-    return { narrative, choices };
+    return { narrative, choices, sessionId };
   }
 
   private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string; anchorId: string }> {

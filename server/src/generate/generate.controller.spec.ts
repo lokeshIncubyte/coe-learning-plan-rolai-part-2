@@ -44,10 +44,17 @@ describe('GenerateController', () => {
     const result = await controller.generate({ prompt: 'Write beat 1' })
 
     expect(generateMock).toHaveBeenCalledWith('Write beat 1', expect.any(String))
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       narrative: 'Once upon a time...',
       choices: ['Investigate', 'Flee', 'Negotiate'],
     })
+  })
+
+  it('generate returns sessionId from sessionService', async () => {
+    const generateMock = service.generate as jest.Mock
+    generateMock.mockResolvedValueOnce('Once upon a time...')
+    const result = await controller.generate({ prompt: 'Write beat 1' })
+    expect(result).toMatchObject({ sessionId: 'sess-test' })
   })
 
   // cycle-024
@@ -527,6 +534,6 @@ describe('GenerateController — write-back error skip', () => {
     const controller = module.get(GenerateController)
     const result = await controller.generate({ prompt: 'Chase it.' })
 
-    expect(result).toEqual({ narrative: 'The dragon retreats.', choices: ['Pursue', 'Rest'] })
+    expect(result).toMatchObject({ narrative: 'The dragon retreats.', choices: ['Pursue', 'Rest'] })
   })
 })
