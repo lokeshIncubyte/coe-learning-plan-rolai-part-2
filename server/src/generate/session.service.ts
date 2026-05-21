@@ -9,4 +9,8 @@ export class SessionService {
     const session = await this.prisma.session.create({ data: {} })
     return session.id
   }
+
+  async exportSession(id: string) {
+    return this.prisma.session.findUniqueOrThrow({ where: { id }, include: { history: true } })
+  }
 }
