@@ -13,3 +13,12 @@ describe('ConfigService', () => {
     expect(result).toEqual({ variables: { hp: { min: 0, max: 100 } } })
   })
 })
+
+describe('ConfigService — error path', () => {
+  it('propagates ENOENT when update-spec.json is missing', async () => {
+    const enoent = Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
+    ;(readFile as jest.Mock).mockRejectedValue(enoent)
+    const service = new ConfigService()
+    await expect(service.getSpec()).rejects.toMatchObject({ code: 'ENOENT' })
+  })
+})
