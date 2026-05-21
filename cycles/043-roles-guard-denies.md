@@ -1,7 +1,7 @@
 ---
 id: cycle-043
 slug: roles-guard-denies
-status: pending
+status: done
 source: "RolesGuard — throws ForbiddenException when user role does not match required role"
 covers: error-path
 group: roles-guard
