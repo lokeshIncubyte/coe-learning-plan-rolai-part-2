@@ -32,6 +32,17 @@ describe('AuthService.login', () => {
   })
 })
 
+describe('AuthService.login — error path', () => {
+  it('propagates error when JwtService.sign throws', () => {
+    const mockJwt = {
+      sign: jest.fn().mockImplementation(() => { throw new Error('secretOrPrivateKey must have a value') }),
+    }
+    const service = new AuthService(null as any, mockJwt as any)
+    expect(() => service.login({ id: 'u1', email: 'admin@platform.com', role: 'ADMIN' }))
+      .toThrow('secretOrPrivateKey must have a value')
+  })
+})
+
 describe('AuthService.validateUser — null paths', () => {
   it('returns null when user is not found', async () => {
     const mockPrisma = { user: { findUnique: jest.fn().mockResolvedValue(null) } }
