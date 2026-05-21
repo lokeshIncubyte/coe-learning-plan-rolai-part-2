@@ -10,13 +10,14 @@ import { RuleEvaluatorService } from './rule-evaluator.service';
 import { SessionService } from './session.service';
 import { HistoryService } from './history.service';
 import { GenerateController } from './generate.controller';
+import { SessionController } from './session.controller';
 import { AgentsModule } from '../agents/agents.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { ExtractorService } from '../upload/extractor.service';
 
 @Module({
   imports: [ConfigModule, AgentsModule, PrismaModule],
-  controllers: [GenerateController],
+  controllers: [GenerateController, SessionController],
   providers: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService, ExtractorService],
   exports: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService, ExtractorService],
 })
