@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
+import { UnauthorizedException } from '@nestjs/common'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 
@@ -18,5 +19,21 @@ describe('AuthController POST /auth/login — 200', () => {
     expect(validateUser).toHaveBeenCalledWith('admin@platform.com', 'login')
     expect(login).toHaveBeenCalledWith({ id: 'u1', email: 'admin@platform.com', role: 'ADMIN' })
     expect(result).toEqual({ accessToken: 'token.jwt.string' })
+  })
+})
+
+describe('AuthController POST /auth/login — 401', () => {
+  it('throws UnauthorizedException when validateUser returns null', async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [AuthController],
+      providers: [{
+        provide: AuthService,
+        useValue: { validateUser: jest.fn().mockResolvedValue(null), login: jest.fn() },
+      }],
+    }).compile()
+
+    const controller = module.get(AuthController)
+    await expect(controller.login({ email: 'bad@example.com', password: 'wrong' }))
+      .rejects.toThrow(UnauthorizedException)
   })
 })
