@@ -1,4 +1,4 @@
-import { PrismaClientKnownRequestError } from '@prisma/client'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 import { SessionService } from './session.service'
 
 describe('SessionService', () => {

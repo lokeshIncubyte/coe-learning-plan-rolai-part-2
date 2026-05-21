@@ -12,6 +12,8 @@ import { TraversalService } from './traversal.service';
 import { RuleEvaluatorService } from './rule-evaluator.service';
 import { EngineService } from './engine.service';
 import { EmbeddingService } from './embedding.service';
+import { SessionService } from './session.service';
+import { HistoryService } from './history.service';
 
 describe('Rate limiting', () => {
   let app: INestApplication;
@@ -29,6 +31,8 @@ describe('Rate limiting', () => {
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
       ],
     }).compile();

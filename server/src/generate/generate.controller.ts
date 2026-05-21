@@ -9,6 +9,8 @@ import { TraversalService } from './traversal.service';
 import { RuleEvaluatorService } from './rule-evaluator.service';
 import { EngineService } from './engine.service';
 import { EmbeddingService } from './embedding.service';
+import { SessionService } from './session.service';
+import { HistoryService } from './history.service';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
 import { LoggingInterceptor } from './logging.interceptor';
 import type { Delta } from '../upload/extractor.service';
@@ -35,6 +37,8 @@ export class GenerateController {
     private readonly ruleEvaluator: RuleEvaluatorService,
     private readonly engineService: EngineService,
     private readonly embeddingService: EmbeddingService,
+    private readonly sessionService: SessionService,
+    private readonly historyService: HistoryService,
   ) {}
 
   @Sse('stream')
@@ -89,13 +93,15 @@ export class GenerateController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async generate(@Body() body: GenerateRequestDto) {
+    const sessionId = await this.sessionService.createSession();
+
     if (body.deltas?.length) {
       const { flaggedForReEmbed } = await this.engineService.processDeltas(body.deltas, defaultSpec);
       for (const d of flaggedForReEmbed) {
         void this.embeddingService.embedEntityIdentity(d.entityId);
       }
     }
-    const { ruleContext, worldContext } = await this.buildContexts(body.prompt);
+    const { ruleContext, worldContext, anchorId } = await this.buildContexts(body.prompt);
 
     const outcome = await this.validatorService.validate(body.prompt, ruleContext);
     if (outcome.result === 'rejected') {
@@ -108,10 +114,11 @@ export class GenerateController {
 
     const narrative = await this.narrativeService.generate(effectivePrompt, worldContext);
     const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
+    await this.historyService.logEntry(sessionId, narrative, anchorId, body.deltas ?? []);
     return { narrative, choices };
   }
 
-  private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string }> {
+  private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string; anchorId: string }> {
     const { entities, scores } = await this.graphService.semanticRecall(prompt, 8);
     let allEntities = entities;
     const phase1Scores = scores;
@@ -137,7 +144,7 @@ export class GenerateController {
 
     const worldContext = this.buildWorldContext(ranked.slice(0, 8));
 
-    return { ruleContext, worldContext };
+    return { ruleContext, worldContext, anchorId };
   }
 
   private buildWorldContext(entities: any[]): string {

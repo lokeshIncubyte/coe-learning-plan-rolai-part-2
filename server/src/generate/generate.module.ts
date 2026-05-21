@@ -7,6 +7,8 @@ import { StateService } from './state.service';
 import { EngineService } from './engine.service';
 import { TraversalService } from './traversal.service';
 import { RuleEvaluatorService } from './rule-evaluator.service';
+import { SessionService } from './session.service';
+import { HistoryService } from './history.service';
 import { GenerateController } from './generate.controller';
 import { AgentsModule } from '../agents/agents.module';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -14,7 +16,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 @Module({
   imports: [ConfigModule, AgentsModule, PrismaModule],
   controllers: [GenerateController],
-  providers: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService],
-  exports: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService],
+  providers: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService],
+  exports: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService],
 })
 export class GenerateModule {}

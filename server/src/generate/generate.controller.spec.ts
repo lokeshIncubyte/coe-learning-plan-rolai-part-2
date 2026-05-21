@@ -8,6 +8,8 @@ import { TraversalService } from './traversal.service'
 import { RuleEvaluatorService } from './rule-evaluator.service'
 import { EngineService } from './engine.service'
 import { EmbeddingService } from './embedding.service'
+import { SessionService } from './session.service'
+import { HistoryService } from './history.service'
 
 describe('GenerateController', () => {
   let controller: GenerateController
@@ -25,6 +27,8 @@ describe('GenerateController', () => {
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile()
 
@@ -58,6 +62,8 @@ describe('GenerateController', () => {
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
         { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
     const ctrl = mod.get(GenerateController);
@@ -89,6 +95,8 @@ describe('GenerateController', () => {
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
           { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         ],
       }).compile();
 
@@ -190,6 +198,8 @@ describe('GenerateController', () => {
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
           { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -218,6 +228,8 @@ describe('GenerateController', () => {
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
           { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -252,6 +264,8 @@ describe('GenerateController', () => {
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
           { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         ],
       }).compile();
 
@@ -275,6 +289,8 @@ describe('GenerateController', () => {
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
           { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         ],
       }).compile();
 
@@ -305,6 +321,8 @@ describe('GenerateController', () => {
           { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
           { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         ],
       }).compile();
       const ctrl = mod.get(GenerateController);
@@ -326,6 +344,8 @@ describe('GenerateController', () => {
       providers: [
         { provide: EngineService, useValue: { processDeltas } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         { provide: NarrativeGeneratorService, useValue: { generate: jest.fn(), stream: jest.fn() } },
         { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
         { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
@@ -351,6 +371,8 @@ describe('GenerateController', () => {
       providers: [
         { provide: EngineService, useValue: { processDeltas } },
         { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
         { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('narrative'), stream: jest.fn() } },
         { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'accepted' }) } },
         { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue([]) } },
@@ -386,6 +408,8 @@ describe('GenerateController', () => {
         { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockResolvedValue([]) } },
         { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
         { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: SessionService, useValue: { createSession: jest.fn().mockResolvedValue('sess-test') } },
+        { provide: HistoryService, useValue: { logEntry: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();
 
@@ -397,4 +421,34 @@ describe('GenerateController', () => {
     expect(embedEntityIdentity).toHaveBeenCalledWith('e1');
     expect(embedEntityIdentity).toHaveBeenCalledWith('e2');
   });
+})
+
+// cycle-022
+describe('GenerateController — session + history wiring', () => {
+  it('calls sessionService.createSession and historyService.logEntry on each generate call', async () => {
+    const createSession = jest.fn().mockResolvedValue('sess-xyz')
+    const logEntry = jest.fn().mockResolvedValue(undefined)
+
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [GenerateController],
+      providers: [
+        { provide: NarrativeGeneratorService, useValue: { generate: jest.fn().mockResolvedValue('A tale.'), stream: jest.fn() } },
+        { provide: ActionValidatorService, useValue: { validate: jest.fn().mockResolvedValue({ result: 'approved' }) } },
+        { provide: ChoiceGeneratorService, useValue: { generateChoices: jest.fn().mockResolvedValue(['Go left']) } },
+        { provide: GraphService, useValue: { semanticRecall: jest.fn().mockResolvedValue({ entities: [{ id: 'e1', name: 'Cave', type: 'location', state: {} }], scores: new Map() }), getAllEntitiesWithEdges: jest.fn().mockResolvedValue([]), getEntitiesByType: jest.fn().mockReturnValue([]) } },
+        { provide: TraversalService, useValue: { traverse: jest.fn().mockReturnValue([]), scoreWithSemantics: jest.fn().mockReturnValue([]) } },
+        { provide: RuleEvaluatorService, useValue: { evaluateRules: jest.fn().mockReturnValue([]) } },
+        { provide: EngineService, useValue: { processDeltas: jest.fn().mockResolvedValue({ flaggedForReEmbed: [] }) } },
+        { provide: EmbeddingService, useValue: { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) } },
+        { provide: SessionService, useValue: { createSession } },
+        { provide: HistoryService, useValue: { logEntry } },
+      ],
+    }).compile()
+
+    const controller = module.get(GenerateController)
+    await controller.generate({ prompt: 'I explore.' })
+
+    expect(createSession).toHaveBeenCalledTimes(1)
+    expect(logEntry).toHaveBeenCalledWith('sess-xyz', 'A tale.', 'e1', [])
+  })
 })

@@ -12,7 +12,7 @@ export class HistoryService {
     deltas: unknown[],
   ): Promise<void> {
     await this.prisma.generationHistory.create({
-      data: { sessionId, narrative, anchor, deltas },
+      data: { sessionId, narrative, anchor, deltas: deltas as any },
     })
   }
 }
