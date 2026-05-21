@@ -1,4 +1,4 @@
-import { ExecutionContext } from '@nestjs/common'
+import { ExecutionContext, ForbiddenException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { RolesGuard } from './roles.guard'
 
@@ -27,5 +27,20 @@ describe('RolesGuard — allows', () => {
       }),
     } as unknown as ExecutionContext
     expect(guard.canActivate(context)).toBe(true)
+  })
+})
+
+describe('RolesGuard — denies', () => {
+  it('throws ForbiddenException when user role does not match', () => {
+    const reflector = { getAllAndOverride: jest.fn().mockReturnValue(['ADMIN']) }
+    const guard = new RolesGuard(reflector as unknown as Reflector)
+    const context = {
+      getHandler: jest.fn(),
+      getClass: jest.fn(),
+      switchToHttp: jest.fn().mockReturnValue({
+        getRequest: jest.fn().mockReturnValue({ user: { role: 'USER' } }),
+      }),
+    } as unknown as ExecutionContext
+    expect(() => guard.canActivate(context)).toThrow(ForbiddenException)
   })
 })
