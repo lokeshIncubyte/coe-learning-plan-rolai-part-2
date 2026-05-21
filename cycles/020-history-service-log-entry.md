@@ -1,7 +1,7 @@
 ---
 id: cycle-020
 slug: history-service-log-entry
-status: pending
+status: done
 source: "§2 GenerationHistory Logging Fix — HistoryService.logEntry"
 covers: happy-path
 group: history-logging

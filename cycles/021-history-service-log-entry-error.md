@@ -1,7 +1,7 @@
 ---
 id: cycle-021
 slug: history-service-log-entry-error
-status: pending
+status: skip
 source: "§2 GenerationHistory Logging Fix — HistoryService.logEntry error path"
 covers: error-path
 group: history-logging
