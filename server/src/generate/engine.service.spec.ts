@@ -103,6 +103,7 @@ describe('EngineService', () => {
     it('writes state_mutation via graphService and returns identity_shift as flaggedForReEmbed', async () => {
       const mockGraph = {
         updateEntityState: jest.fn().mockResolvedValue({ id: 'e1', state: { hp: 80 } }),
+        updateEntityIdentity: jest.fn().mockResolvedValue({}),
       };
       const engine = new EngineService(mockGraph as any);
       const pdSpec: UpdateSpec = { variables: { hp: { min: 0, max: 100 } } };
@@ -150,5 +151,25 @@ describe('EngineService', () => {
       expect(identityShifts).toHaveLength(1);
       expect(identityShifts[0].entityId).toBe('e2');
     });
+  });
+});
+
+// cycle-017
+describe('processDeltas — identity_shift persistence', () => {
+  it('calls graphService.updateEntityIdentity for each identity_shift delta', async () => {
+    const updateEntityIdentity = jest.fn().mockResolvedValue({});
+    const mockGraph = {
+      updateEntityState: jest.fn().mockResolvedValue({}),
+      updateEntityIdentity,
+    };
+    const engine = new EngineService(mockGraph as any);
+    const pdSpec: UpdateSpec = { variables: { hp: { min: 0, max: 100 } } };
+    const deltas: Delta[] = [
+      { op: 'identity_shift', entityId: 'e3', patch: { archetype: 'Lich', role: 'villain' } },
+    ];
+
+    await engine.processDeltas(deltas, pdSpec);
+
+    expect(updateEntityIdentity).toHaveBeenCalledWith('e3', { archetype: 'Lich', role: 'villain' });
   });
 });
