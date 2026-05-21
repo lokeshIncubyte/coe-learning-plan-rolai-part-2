@@ -1,7 +1,7 @@
 ---
 id: cycle-048
 slug: nextjs-auth-guard
-status: pending
+status: done
 source: "Next.js client auth guard — narrative page redirects to /login if no token; admin page redirects to /login if no token or role !== ADMIN"
 covers: happy-path
 group: next-auth
