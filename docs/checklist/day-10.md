@@ -15,9 +15,9 @@
 
 ## 2. GenerationHistory Logging Fix
 
-- [ ] Investigate why `GenerationHistory` stopped receiving entries after 271 rows (last entry: 2026-05-16)
-- [ ] Identify the broken write path and fix it
-- [ ] Verify all generate calls log to `GenerationHistory` with session anchor, narrative, and deltas
+- [x] Investigate why `GenerationHistory` stopped receiving entries after 271 rows (last entry: 2026-05-16)
+- [x] Identify the broken write path and fix it
+- [x] Verify all generate calls log to `GenerationHistory` with session anchor, narrative, and deltas
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 id: cycle-022
 slug: generate-controller-session-history
-status: pending
+status: done
 source: "§2+§4 GenerationHistory logging fix + Session model wiring in GenerateController"
 covers: happy-path
 group: history-logging
