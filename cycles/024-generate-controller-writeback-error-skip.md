@@ -1,7 +1,7 @@
 ---
 id: cycle-024
 slug: generate-controller-writeback-error-skip
-status: pending
+status: done
 source: "§3 Full Pipeline + §6 Error Handling — extractor parse failure skips write-back, stream continues"
 covers: error-path
 group: extractor-writeback
