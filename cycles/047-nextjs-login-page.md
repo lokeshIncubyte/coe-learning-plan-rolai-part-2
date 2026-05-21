@@ -1,7 +1,7 @@
 ---
 id: cycle-047
 slug: nextjs-login-page
-status: pending
+status: done
 source: "Next.js login page at /login — form with email + password, POST to /api/auth/login, stores JWT in localStorage, redirects"
 covers: happy-path
 group: next-auth
