@@ -1,7 +1,7 @@
 ---
 id: cycle-038
 slug: auth-service-login-jwt-error
-status: pending
+status: skip
 source: "AuthService.login — propagates JwtService.sign error"
 covers: error-path
 group: auth-service
