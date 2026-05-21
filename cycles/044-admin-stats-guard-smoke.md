@@ -1,7 +1,7 @@
 ---
 id: cycle-044
 slug: admin-stats-guard-smoke
-status: pending
+status: done
 source: "Protect GET /admin/stats — require ADMIN role via @UseGuards(JwtAuthGuard, RolesGuard) @Roles('ADMIN')"
 covers: routing-smoke
 group: admin-protection
