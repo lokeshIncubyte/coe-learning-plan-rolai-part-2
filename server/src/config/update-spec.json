@@ -1,6 +1,15 @@
 {
   "variables": {
-    "hp": { "min": 0, "max": 100 }
+    "hp": { "min": 0, "max": 100 },
+    "mana": {
+      "min": 0,
+      "max": 100,
+      "derived": {
+        "mana_pct": { "numerator": "mana", "denominator": "mana_cap", "multiplier": 100 }
+      }
+    }
   },
-  "cascades": []
+  "cascades": [
+    { "when": { "key": "hp", "op": "<", "value": 20 }, "apply": { "stamina": 50 } }
+  ]
 }
