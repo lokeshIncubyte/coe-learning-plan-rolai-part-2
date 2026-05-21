@@ -1,7 +1,7 @@
 ---
 id: cycle-035
 slug: auth-service-validate-user
-status: pending
+status: done
 source: "AuthService.validateUser(email, password) — finds user by email, bcrypt.compare against hash, returns { id, email, role } or null"
 covers: happy-path
 group: auth-service
