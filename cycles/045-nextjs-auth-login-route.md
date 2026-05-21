@@ -1,7 +1,7 @@
 ---
 id: cycle-045
 slug: nextjs-auth-login-route
-status: pending
+status: done
 source: "Next.js login page at /login — POST to /api/auth/login (Next.js proxy route to NestJS)"
 covers: happy-path
 group: next-auth
