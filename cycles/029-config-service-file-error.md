@@ -1,7 +1,7 @@
 ---
 id: cycle-029
 slug: config-service-file-error
-status: pending
+status: skip
 source: "§7 Config Editor UI — ConfigService.getSpec error path (file not found)"
 covers: error-path
 group: config-editor
