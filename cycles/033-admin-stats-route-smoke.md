@@ -1,7 +1,7 @@
 ---
 id: cycle-033
 slug: admin-stats-route-smoke
-status: pending
+status: done
 source: "§8 Admin Dashboard — GET /api/admin/stats route"
 covers: happy-path
 group: admin-dashboard
