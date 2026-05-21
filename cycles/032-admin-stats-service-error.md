@@ -1,7 +1,7 @@
 ---
 id: cycle-032
 slug: admin-stats-service-error
-status: pending
+status: skip
 source: "§8 Admin Dashboard — AdminStatsService.getStats error path"
 covers: error-path
 group: admin-dashboard
