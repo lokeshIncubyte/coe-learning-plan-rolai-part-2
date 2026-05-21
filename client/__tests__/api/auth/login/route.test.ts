@@ -25,3 +25,21 @@ describe('POST /api/auth/login proxy', () => {
     )
   })
 })
+
+describe('POST /api/auth/login proxy — error path', () => {
+  it('returns 401 when upstream returns 401', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      json: jest.fn().mockResolvedValue({ message: 'Unauthorized' }),
+      status: 401,
+    } as any)
+
+    const req = new Request('http://localhost/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: 'bad@example.com', password: 'wrong' }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const res = await POST(req)
+
+    expect(res.status).toBe(401)
+  })
+})
