@@ -15,7 +15,7 @@ Calls `openai/gpt-4o-mini` via OpenRouter three times — once per story beat (c
 | `error-handling.spec.ts` | Vitest tests for error handling |
 | `meta-directives.ts` | Story universe config (theme, genre, world rules) |
 | `style-guide.ts` | Narrative tone config (voice, format, content to avoid) |
-| `cycles/001-error-handling.md` | TDD spec that drove this module |
+| `cycles/scr-001-error-handling.md` | TDD spec that drove this module |
 
 ## Setup
 

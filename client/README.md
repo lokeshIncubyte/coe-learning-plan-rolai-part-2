@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# client — Narrative Engine UI (Next.js)
 
-## Getting Started
+The frontend for the Progressive Generation Engine. Renders the streaming narrative, choices, custom-action validation, lore upload, and the admin view. Also hosts **BFF proxy routes** under `app/api/*` that attach the bearer token and forward to the NestJS API. See the [root README](../README.md).
 
-First, run the development server:
+> Note: this project tracks a build of Next.js with breaking API changes — see [`AGENTS.md`](./AGENTS.md). Consult `node_modules/next/dist/docs/` before writing code against framework APIs.
+
+## Running
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev   # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Expects the NestJS API on port 3001 and `helper-apis` on 4000 (see root README).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+├── login/                 # auth form
+├── narrative/             # the game loop
+│   ├── components/         # NarrativePanel, ChoiceList, ActionInput, BeatHistory, RetryButton, …
+│   ├── hooks/              # useStream (SSE), useNarrativeHistory, useAuthGuard, …
+│   └── lib/                # stream-event parsing
+├── upload/                # lore upload panel
+├── admin/                 # admin stats page
+└── api/                   # BFF proxy routes → NestJS
+    ├── auth/login/
+    ├── generate/  +  generate/stream/
+    └── admin/stats/
+```
 
-## Learn More
+## Testing
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm test          # component tests (Jest + React Testing Library)
+npm run e2e       # Playwright against a mocked API
+npm run e2e:ui    # Playwright UI mode
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+A **live** e2e suite (`e2e/live.spec.ts`, config `playwright.live.config.ts`) drives the real game loop against a running NestJS + helper-apis + OpenRouter stack — no mocking.
