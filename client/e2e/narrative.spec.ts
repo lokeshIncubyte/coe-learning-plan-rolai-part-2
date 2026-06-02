@@ -63,12 +63,23 @@ async function mockGenerate(page: Page, body: object) {
 // Tests
 // ---------------------------------------------------------------------------
 
+const USER_TOKEN = 'header.eyJyb2xlIjoiVVNFUiJ9.sig'
+
 test.describe('Narrative page — success criteria', () => {
   test.beforeEach(async ({ page }) => {
     // Default: validation endpoint accepts all actions. Tests that need
     // specific validation behaviour (S6b) override this with mockGenerate().
     await mockGenerate(page, {})
+    // Mock the auto-start stream with an instant empty response so the page
+    // settles before per-test route handlers are installed. Without this mock
+    // the auto-start goes to real NestJS and races with test-specific handlers.
+    await mockStream(page, [{ type: 'start' }, { type: 'done' }, { type: 'choices', choices: [] }])
+    // Plant a USER token before the page loads so useAuthGuard() doesn't redirect.
+    await page.addInitScript((token) => localStorage.setItem('accessToken', token), USER_TOKEN)
     await page.goto('/narrative')
+    // Wait for the page to settle: the action textbox re-enables once isStreaming
+    // returns to false after the auto-start stream completes.
+    await page.waitForSelector('[aria-label="Your action"]:not([disabled])', { timeout: 15000 })
   })
 
   // S1 ─────────────────────────────────────────────────────────────────────

@@ -11,13 +11,14 @@ export function useStream(url: string, onEvent: (event: StreamEvent) => void) {
   }, [])
 
   const start = async (body: object) => {
-    controllerRef.current = new AbortController()
+    const controller = new AbortController()
+    controllerRef.current = controller
     setIsStreaming(true)
     try {
       const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(body),
-        signal: controllerRef.current.signal,
+        signal: controller.signal,
       })
       const reader = response.body!.getReader()
       const decoder = new TextDecoder()
@@ -34,7 +35,15 @@ export function useStream(url: string, onEvent: (event: StreamEvent) => void) {
         onEvent({ type: 'error', message: err.message })
       }
     } finally {
-      setIsStreaming(false)
+      // Only clear the streaming flag if this is still the active controller.
+      // In React Strict Mode, the effect fires twice: the first invocation is
+      // aborted (cleanup runs), then a second starts. Without this guard, the
+      // aborted invocation's finally block would set isStreaming=false and
+      // stomp the second invocation's isStreaming=true, keeping the input
+      // enabled for the duration of the real LLM stream.
+      if (controllerRef.current === controller) {
+        setIsStreaming(false)
+      }
     }
   }
 

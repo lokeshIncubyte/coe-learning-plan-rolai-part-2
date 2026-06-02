@@ -97,6 +97,7 @@ function spawnClaude(extraArgs: string[], prompt: string) {
   const claudeBin = process.env.CLAUDE_PATH ?? 'claude';
   const args = [
     '--print',
+    '--no-session-persistence',
     '--tools', '',
     '--permission-mode', 'bypassPermissions',
     ...extraArgs,

@@ -112,8 +112,9 @@ test.describe('Auth — login form & route protection', () => {
     await expect(password).toBeVisible()
     await expect(submit).toBeVisible()
 
-    // No error rendered on initial load.
-    await expect(page.getByRole('alert')).toHaveCount(0)
+    // No error rendered on initial load. Use p[role="alert"] to avoid matching
+    // Next.js's built-in route announcer div which also carries role="alert".
+    await expect(page.locator('p[role="alert"]')).toHaveCount(0)
 
     // Both inputs carry the required attribute.
     await expect(email).toHaveAttribute('required', '')
@@ -160,7 +161,8 @@ test.describe('Auth — login form & route protection', () => {
     await page.locator('#password').fill('wrong-password')
     await page.getByRole('button', { name: 'Sign In' }).click()
 
-    const alert = page.getByRole('alert')
+    // Use p[role="alert"] to avoid matching Next.js's built-in route announcer div.
+    const alert = page.locator('p[role="alert"]')
     await expect(alert).toBeVisible()
     await expect(alert).toHaveText('Invalid email or password')
 

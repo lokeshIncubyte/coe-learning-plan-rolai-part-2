@@ -12,7 +12,7 @@ import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 5 }]),
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: parseInt(process.env['THROTTLE_LIMIT'] ?? '5', 10) }]),
     GenerateModule,
     HistoryModule,
     UploadModule,

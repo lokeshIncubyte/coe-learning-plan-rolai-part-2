@@ -15,7 +15,8 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken') ?? ''
+    const token = localStorage.getItem('accessToken')
+    if (!token) return  // auth guard will redirect; don't race it with a fetch
     fetch('/api/admin/stats', {
       headers: { Authorization: `Bearer ${token}` },
     })
