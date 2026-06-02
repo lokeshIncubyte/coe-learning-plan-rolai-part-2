@@ -256,4 +256,206 @@ test.describe('Admin — stats, guards, and session export', () => {
     expect(exported.status).toBe(200)
     expect(exported.body).toEqual({ id: 'sess-abc', entries: [] })
   })
+
+  // US-U15 ──────────────────────────────────────────────────────────────────
+  test('US-U15: USER cannot read admin stats — GET /api/admin/stats returns 403', async ({ page }) => {
+    // Stay on the /login origin (beforeEach already landed us there). /login has
+    // no auth guard, so a USER token does not trigger a redirect — a safe neutral
+    // origin from which to drive the API-contract fetch. We do NOT navigate to
+    // /admin (which would redirect a USER to /login per useAuthGuard('ADMIN')).
+    await setAccessToken(page, USER_TOKEN)
+
+    // Inline route so we can capture the Authorization header (mockAdminStats
+    // does not expose the request). Clear any prior handler first.
+    let statsCalled = false
+    let authHeader: string | undefined
+    await page.unroute('**/api/admin/stats').catch(() => {})
+    await page.route('**/api/admin/stats', async (route: Route) => {
+      statsCalled = true
+      authHeader = route.request().headers()['authorization']
+      await route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        body: JSON.stringify({ statusCode: 403, message: 'Forbidden' }),
+      })
+    })
+
+    const result = await page.evaluate(async () => {
+      const token = localStorage.getItem('accessToken') ?? ''
+      const res = await fetch('/api/admin/stats', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return { status: res.status, body: await res.json() }
+    })
+
+    expect(statsCalled).toBe(true)
+    expect(authHeader).toBe(`Bearer ${USER_TOKEN}`)
+    expect(result.status).toBe(403)
+    expect(result.body.statusCode).toBe(403)
+    expect(result.body.message).toBe('Forbidden')
+  })
+
+  // US-A05 ──────────────────────────────────────────────────────────────────
+  test('US-A05: ADMIN can update the update-spec — PUT then GET reflects the change', async ({ page }) => {
+    await setAccessToken(page, ADMIN_TOKEN)
+    await mockAdminStats(page, 200, {
+      entityCount: 0, edgeCount: 0, sessionCount: 0, historyCount: 0, latestHistoryAt: null,
+    })
+
+    // Stateful, method-aware mock: a PUT stores the body, a GET returns it.
+    let stored: { version: number } = { version: 1 }
+    let putAuthHeader: string | undefined
+    await page.unroute('**/api/config/update-spec').catch(() => {})
+    await page.route('**/api/config/update-spec', async (route: Route) => {
+      if (route.request().method() === 'PUT') {
+        putAuthHeader = route.request().headers()['authorization']
+        stored = route.request().postDataJSON()
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(stored),
+        })
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(stored),
+        })
+      }
+    })
+
+    await page.goto('/admin')
+    await expect(page.getByRole('heading', { name: 'Admin' })).toBeVisible()
+
+    // Step 1: PUT a new spec body.
+    const putStatus = await page.evaluate(async () => {
+      const token = localStorage.getItem('accessToken') ?? ''
+      const res = await fetch('/api/config/update-spec', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ version: 2 }),
+      })
+      return res.status
+    })
+
+    // Step 2: GET and assert the change is reflected.
+    const got = await page.evaluate(async () => {
+      const token = localStorage.getItem('accessToken') ?? ''
+      const res = await fetch('/api/config/update-spec', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return { status: res.status, body: await res.json() }
+    })
+
+    expect(putStatus).toBe(200)
+    expect(putAuthHeader).toBe(`Bearer ${ADMIN_TOKEN}`)
+    expect(got.status).toBe(200)
+    expect(got.body.version).toBe(2)
+  })
+
+  // US-A06b ─────────────────────────────────────────────────────────────────
+  test('US-A06b: invalid session ID export returns documented error shape (404)', async ({ page }) => {
+    await setAccessToken(page, ADMIN_TOKEN)
+    await mockAdminStats(page, 200, {
+      entityCount: 0, edgeCount: 0, sessionCount: 0, historyCount: 0, latestHistoryAt: null,
+    })
+
+    let exportCalled = false
+    let exportAuthHeader: string | undefined
+    await page.route('**/api/session/does-not-exist/export', async (route: Route) => {
+      exportCalled = true
+      exportAuthHeader = route.request().headers()['authorization']
+      await route.fulfill({
+        status: 404,
+        contentType: 'application/json',
+        body: JSON.stringify({ statusCode: 404, message: 'Session not found' }),
+      })
+    })
+
+    await page.goto('/admin')
+    await expect(page.getByRole('heading', { name: 'Admin' })).toBeVisible()
+
+    const result = await page.evaluate(async () => {
+      const token = localStorage.getItem('accessToken') ?? ''
+      const res = await fetch('/api/session/does-not-exist/export', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return { status: res.status, body: await res.json() }
+    })
+
+    expect(exportCalled).toBe(true)
+    expect(exportAuthHeader).toBe(`Bearer ${ADMIN_TOKEN}`)
+    expect(result.status).toBe(404)
+    expect(result.body.statusCode).toBe(404)
+    expect(result.body.message).toBe('Session not found')
+  })
+
+  // US-A07 ──────────────────────────────────────────────────────────────────
+  // FLAGGED RESIDUAL GAP — API-CONTRACT TEST ONLY.
+  //
+  // A true browser e2e for "upload lore" is NOT possible without app changes:
+  //   • UploadPanel exists only as a component
+  //     (app/upload/components/UploadPanel.tsx) and is mounted on no route —
+  //     there is no app/upload/page.tsx that renders it.
+  //   • There is no client-side /api/upload proxy route under app/api/.
+  // So we cannot click through a real UI flow. Instead we exercise the
+  // documented POST /api/upload contract directly from page.evaluate(fetch),
+  // matching the shape UploadPanel uses (FormData field 'file', accept .pdf/.txt).
+  //
+  // To close this gap with a real browser flow, mount UploadPanel on a page
+  // route (e.g. app/upload/page.tsx) and add the /api/upload proxy.
+  test('US-A07: POST /api/upload returns {entityCount,edgeCount} for .txt and rejects unsupported type', async ({ page }) => {
+    await setAccessToken(page, ADMIN_TOKEN)
+    await mockAdminStats(page, 200, {
+      entityCount: 0, edgeCount: 0, sessionCount: 0, historyCount: 0, latestHistoryAt: null,
+    })
+
+    // Single route branches on the filename present in the raw multipart body.
+    await page.route('**/api/upload', async (route: Route) => {
+      const body = route.request().postData() ?? ''
+      if (body.includes('.txt')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ entityCount: 3, edgeCount: 2 }),
+        })
+      } else {
+        await route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({ statusCode: 400, message: 'Unsupported file type' }),
+        })
+      }
+    })
+
+    await page.goto('/admin')
+    await expect(page.getByRole('heading', { name: 'Admin' })).toBeVisible()
+
+    // .txt → 200 with the documented summary shape.
+    const okResult = await page.evaluate(async () => {
+      const fd = new FormData()
+      fd.append('file', new File(['some lore'], 'lore.txt', { type: 'text/plain' }))
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      return { status: res.status, body: await res.json() }
+    })
+
+    expect(okResult.status).toBe(200)
+    expect(typeof okResult.body.entityCount).toBe('number')
+    expect(typeof okResult.body.edgeCount).toBe('number')
+    expect(okResult.body.edgeCount).toBeGreaterThanOrEqual(0)
+
+    // Unsupported type → rejected (4xx) with an error message.
+    const badResult = await page.evaluate(async () => {
+      const fd = new FormData()
+      fd.append('file', new File(['x'], 'malware.exe', { type: 'application/octet-stream' }))
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      return { status: res.status, body: await res.json() }
+    })
+
+    expect(badResult.status).toBeGreaterThanOrEqual(400)
+    expect(badResult.body.message).toBeTruthy()
+  })
 })

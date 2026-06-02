@@ -227,4 +227,43 @@ test.describe('Auth — login form & route protection', () => {
     await page.waitForURL('**/login')
     expect(new URL(page.url()).pathname).toBe('/login')
   })
+
+  // US-U17 ──────────────────────────────────────────────────────────────────
+  test('US-U17: no stream request is fired before the auth redirect to /login', async ({ page }) => {
+    // localStorage was cleared in beforeEach, so there is no accessToken on this
+    // origin. useAuthGuard() (narrative/page.tsx line 16, no requiredRole) takes
+    // the empty-token branch and calls router.push('/login').
+    //
+    // Ordering nuance: useAuthGuard()'s effect and the auto-start useEffect
+    // (page.tsx lines 37-41 `start({ prompt: 'I enter a cavern.' })`) are BOTH
+    // mount effects and run on the same initial mount before navigation
+    // completes — so start() may still be called even though the guard redirects.
+    // Whether a request actually leaves the browser before unmount is timing-
+    // dependent, which is exactly why this asserts a negative-network boolean
+    // (the stream route never fires) rather than relying on effect ordering.
+    let streamHit = false
+
+    // Install the boolean-flipping handler as the SOLE handler for the stream
+    // glob. Do NOT layer mockNarrativeBackends on top (its own
+    // '**/generate/stream**' route would stack a second matcher and the
+    // boolean handler might not win). The unauthenticated narrative page never
+    // reaches handleSubmit, so the /api/generate validation route is not needed.
+    await page.unroute('**/generate/stream**').catch(() => {})
+    await page.route('**/generate/stream**', async (route: Route) => {
+      streamHit = true
+      await route.fulfill({
+        status: 200,
+        headers: { 'Content-Type': 'text/event-stream; charset=utf-8' },
+        body: 'data: {"type":"start"}\n\ndata: {"type":"done"}\n\n',
+      })
+    })
+
+    await page.goto('/narrative')
+    await page.waitForURL('**/login')
+    // Belt-and-suspenders: give any late stream fire a chance to flip the flag.
+    await page.waitForTimeout(200)
+
+    expect(streamHit).toBe(false)
+    expect(new URL(page.url()).pathname).toBe('/login')
+  })
 })

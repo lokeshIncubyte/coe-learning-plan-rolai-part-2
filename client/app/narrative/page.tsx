@@ -35,6 +35,10 @@ export default function NarrativePage() {
   const { start, isStreaming } = useStream('/api/generate/stream', onEvent)
 
   useEffect(() => {
+    // Don't open the stream for an unauthenticated visitor — useAuthGuard is
+    // redirecting them to /login this same tick, and firing a request before
+    // that redirect would leak a private call (US-U17 / US-G06).
+    if (!localStorage.getItem('accessToken')) return
     dispatch({ type: 'start' })
     start({ prompt: 'I enter a cavern.' })
   // eslint-disable-next-line react-hooks/exhaustive-deps
