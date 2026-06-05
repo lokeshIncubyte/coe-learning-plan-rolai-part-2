@@ -10,9 +10,10 @@ export class HistoryService {
     narrative: string,
     anchor: string,
     deltas: unknown[],
+    choices: unknown[] = [],
   ): Promise<void> {
     await this.prisma.generationHistory.create({
-      data: { sessionId, narrative, anchor, deltas: deltas as any },
+      data: { sessionId, narrative, anchor, deltas: deltas as any, choices: choices as any },
     })
   }
 }

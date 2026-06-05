@@ -44,12 +44,15 @@ export default function NarrativePage() {
         })
         if (!res.ok) return
         const data = await res.json()
-        const restored: Beat[] = (data.history ?? []).map((h: { narrative: string }) => ({
+        const history: Array<{ narrative: string; choices?: Array<{ label: string }> }> = data.history ?? []
+        const restored: Beat[] = history.map((h) => ({
           narrative: h.narrative,
           chosenAction: null,
         }))
         resetBeats(restored)
         setSessionId(latest.id)
+        const lastChoices = history.at(-1)?.choices ?? []
+        if (lastChoices.length) dispatch({ type: 'choices', choices: lastChoices })
       })
       .catch(() => {})
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -84,14 +87,18 @@ export default function NarrativePage() {
     })
     if (!res.ok) return
     const data = await res.json()
-    const restored: Beat[] = (data.history ?? []).map((h: { narrative: string }) => ({
+    const history: Array<{ narrative: string; choices?: Array<{ label: string }> }> = data.history ?? []
+    const restored: Beat[] = history.map((h) => ({
       narrative: h.narrative,
       chosenAction: null,
     }))
     resetBeats(restored)
     setSessionId(id)
     setSidebarOpen(false)
+    // Restore the last beat's choices so the user can continue from where they left off
+    const lastChoices = history.at(-1)?.choices ?? []
     dispatch({ type: 'reset' })
+    if (lastChoices.length) dispatch({ type: 'choices', choices: lastChoices })
   }
 
   const handleNewChat = () => {

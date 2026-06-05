@@ -68,6 +68,7 @@ model GenerationHistory {
   narrative String
   anchor    String
   deltas    Json     @default("[]")
+  choices   Json     @default("[]")
   createdAt DateTime @default(now())
 
   session Session @relation(fields: [sessionId], references: [id])

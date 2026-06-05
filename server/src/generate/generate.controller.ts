@@ -97,8 +97,8 @@ export class GenerateController {
             subscriber.next({ data: { type: 'chunk', content: token } });
           }
           if (!subscriber.closed) {
-            await this.historyService.logEntry(sessionId, fullNarrative, anchorId, []);
             const choices = await this.choiceGeneratorService.generateChoices(fullNarrative, worldContext);
+            await this.historyService.logEntry(sessionId, fullNarrative, anchorId, [], choices);
             subscriber.next({ data: { type: 'done' } });
             subscriber.next({ data: { type: 'choices', choices } });
             subscriber.complete();
@@ -144,7 +144,7 @@ export class GenerateController {
     } catch {
     }
     const choices = await this.choiceGeneratorService.generateChoices(narrative, worldContext);
-    await this.historyService.logEntry(sessionId, narrative, anchorId, body.deltas ?? []);
+    await this.historyService.logEntry(sessionId, narrative, anchorId, body.deltas ?? [], choices);
     return { narrative, choices, sessionId, ...(modifiedAction ? { modifiedAction } : {}) };
   }
 
