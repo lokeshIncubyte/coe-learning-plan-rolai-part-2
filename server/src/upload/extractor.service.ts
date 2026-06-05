@@ -5,9 +5,9 @@ import { GraphService } from '../generate/graph.service';
 import { EmbeddingService } from '../generate/embedding.service';
 
 export type NewEntityDelta = { op: 'new_entity'; identity: { name: string; type: string; archetype?: string; backstory?: string; role?: string; sensoryProfile?: string }; state: Record<string, unknown>; source?: string; sourceChunk?: string };
-export type IdentityShiftDelta = { op: 'identity_shift'; entityId: string; patch: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string; sensoryProfile: string }> };
-export type StateMutationDelta = { op: 'state_mutation'; entityId: string; patch: Record<string, unknown> };
-export type NewEdgeDelta = { op: 'new_edge'; fromId: string; toId: string; type: string; weight?: number; tags?: string[] };
+export type IdentityShiftDelta = { op: 'identity_shift'; entityId?: string; entityName?: string; patch: Partial<{ name: string; type: string; archetype: string; backstory: string; role: string; sensoryProfile: string }> };
+export type StateMutationDelta = { op: 'state_mutation'; entityId?: string; entityName?: string; patch: Record<string, unknown> };
+export type NewEdgeDelta = { op: 'new_edge'; fromId?: string; toId?: string; fromName?: string; toName?: string; type: string; weight?: number; tags?: string[] };
 export type Delta = NewEntityDelta | IdentityShiftDelta | StateMutationDelta | NewEdgeDelta;
 
 const SYSTEM_PROMPT = `Extract entities and relationships from narrative text.
@@ -16,15 +16,17 @@ You MUST respond with ONLY a JSON object using this exact top-level key: { "delt
 
 Each item in "deltas" is one of:
 - { "op": "new_entity", "identity": { "name": "...", "type": "...", "archetype": "...", "backstory": "...", "role": "...", "sensoryProfile": "..." }, "state": { "hp": ..., "location": "...", "mood": "...", "status": "..." } }
-- { "op": "identity_shift", "entityId": "<existing-id>", "patch": { ... } }
-- { "op": "state_mutation", "entityId": "<existing-id>", "patch": { ... } }
-- { "op": "new_edge", "fromId": "<existing-id>", "toId": "<existing-id>", "type": "...", "weight": 0.8 }
+- { "op": "identity_shift", "entityName": "<exact name of existing entity>", "patch": { "archetype": "...", "backstory": "...", "role": "..." } }
+- { "op": "state_mutation", "entityName": "<exact name of existing entity>", "patch": { "hp": ..., "mood": "...", "status": "..." } }
+- { "op": "new_edge", "fromName": "<exact name of entity>", "toName": "<exact name of entity>", "type": "...", "weight": 0.8 }
 
 Example output:
 {
   "deltas": [
     { "op": "new_entity", "identity": { "name": "Aldric", "type": "knight", "archetype": "protector", "backstory": "rose from poverty", "role": "guardian", "sensoryProfile": "auditory+tactile" }, "state": { "hp": 100, "location": "castle gates", "mood": "vigilant", "status": "active" } },
-    { "op": "new_entity", "identity": { "name": "Ironkeep", "type": "location", "archetype": "fortress" }, "state": { "status": "occupied" } }
+    { "op": "new_entity", "identity": { "name": "Ironkeep", "type": "location", "archetype": "fortress" }, "state": { "status": "occupied" } },
+    { "op": "new_edge", "fromName": "Aldric", "toName": "Ironkeep", "type": "guards", "weight": 1.0 },
+    { "op": "state_mutation", "entityName": "Aldric", "patch": { "mood": "weary" } }
   ]
 }
 
@@ -33,8 +35,10 @@ Rules:
 - Identity fields (what it IS): name, type, archetype, backstory, role, sensoryProfile. These are stable and searchable.
 - State fields (current condition): hp, location, mood, inventory, status. These are mutable.
 - sensoryProfile for type: noble→visual, knight→auditory+tactile, peasant→balanced, child→visual+tactile, wildling→olfactory+auditory, scout→auditory+tactile, warg→olfactory.
-- Only use "identity_shift", "state_mutation", "new_edge" for entities that already exist (you have their real IDs).
-- For all new content, use "new_entity".
+- Use "new_entity" for any person, place, object, faction, or rule mentioned in the text that does not already exist.
+- Use "identity_shift" to update WHO or WHAT an entity is (archetype, role, backstory change). Use entityName with the entity's exact name.
+- Use "state_mutation" to update CURRENT CONDITION (hp, mood, location, status change). Use entityName with the entity's exact name.
+- Use "new_edge" to capture a relationship between two entities — use fromName and toName with exact entity names.
 - If nothing can be extracted, return: { "deltas": [] }`;
 
 @Injectable()
@@ -76,30 +80,46 @@ export class ExtractorService {
     return parsed.deltas as Delta[];
   }
 
+  private async resolveEntityName(name: string): Promise<string | null> {
+    return this.graphService.findEntityByName(name);
+  }
+
   async applyDeltas(deltas: Delta[], anchorId?: string): Promise<{ entityCount: number; edgeCount: number }> {
     let entityCount = 0;
     let edgeCount = 0;
 
+    // Pass 1: create new entities first so name resolution works within the same chunk
     for (const delta of deltas) {
-      if (delta.op === 'new_entity') {
-        const facts = { ...(delta.source ? { source: delta.source } : {}) };
-        const { name, type, archetype, backstory, role, sensoryProfile } = delta.identity;
-        const entity = await this.graphService.createEntity({ name, type, archetype, backstory, role, sensoryProfile, state: delta.state ?? {}, facts });
-        await this.embeddingService?.embedEntityIdentity(entity.id);
-        if (anchorId) {
-          await this.graphService.createEdge({ fromId: anchorId, toId: entity.id, type: 'contains', weight: 1.0, tags: [] });
-        }
-        entityCount++;
-      } else if (delta.op === 'identity_shift') {
-        await this.graphService.updateEntityIdentity(delta.entityId, delta.patch);
+      if (delta.op !== 'new_entity') continue;
+      const facts = { ...(delta.source ? { source: delta.source } : {}) };
+      const { name, type, archetype, backstory, role, sensoryProfile } = delta.identity;
+      const entity = await this.graphService.createEntity({ name, type, archetype, backstory, role, sensoryProfile, state: delta.state ?? {}, facts });
+      await this.embeddingService?.embedEntityIdentity(entity.id);
+      if (anchorId) {
+        await this.graphService.createEdge({ fromId: anchorId, toId: entity.id, type: 'contains', weight: 1.0, tags: [] });
+      }
+      entityCount++;
+    }
+
+    // Pass 2: mutations and relationships — resolve names to IDs
+    for (const delta of deltas) {
+      if (delta.op === 'identity_shift') {
+        const id = delta.entityId ?? (delta.entityName ? await this.resolveEntityName(delta.entityName) : null);
+        if (!id) continue;
+        await this.graphService.updateEntityIdentity(id, delta.patch);
       } else if (delta.op === 'state_mutation') {
-        await this.graphService.updateEntityState(delta.entityId, delta.patch);
+        const id = delta.entityId ?? (delta.entityName ? await this.resolveEntityName(delta.entityName) : null);
+        if (!id) continue;
+        await this.graphService.updateEntityState(id, delta.patch);
       } else if (delta.op === 'new_edge') {
         try {
-          await this.graphService.createEdge({ fromId: delta.fromId, toId: delta.toId, type: delta.type, weight: delta.weight ?? 1.0, tags: delta.tags ?? [] });
+          const fromId = delta.fromId ?? (delta.fromName ? await this.resolveEntityName(delta.fromName) : null);
+          const toId = delta.toId ?? (delta.toName ? await this.resolveEntityName(delta.toName) : null);
+          if (!fromId || !toId) continue;
+          await this.graphService.createEdge({ fromId, toId, type: delta.type, weight: delta.weight ?? 1.0, tags: delta.tags ?? [] });
           edgeCount++;
         } catch {
-          // Skip edges whose fromId/toId don't exist yet (LLM may hallucinate entity IDs)
+          // skip edges whose IDs don't exist
         }
       }
     }

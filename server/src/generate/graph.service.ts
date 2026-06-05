@@ -124,4 +124,12 @@ export class GraphService {
   async updateEdgeWeight(id: string, weight: number) {
     return this.prisma.edge.update({ where: { id }, data: { weight } });
   }
+
+  async findEntityByName(name: string): Promise<string | null> {
+    const entity = await this.prisma.entity.findFirst({
+      where: { name },
+      select: { id: true },
+    });
+    return entity?.id ?? null;
+  }
 }

@@ -50,8 +50,8 @@ export class EngineService {
   async processDeltas(deltas: Delta[], spec: UpdateSpec): Promise<{ flaggedForReEmbed: IdentityShiftDelta[] }> {
     const { stateMutations, identityShifts } = this.classifyDeltas(deltas);
     await Promise.all([
-      ...stateMutations.map(d => this.applyStateMutationDelta(d.entityId, d.patch, spec)),
-      ...identityShifts.map(d => this.graphService.updateEntityIdentity(d.entityId, d.patch)),
+      ...stateMutations.filter(d => d.entityId).map(d => this.applyStateMutationDelta(d.entityId!, d.patch, spec)),
+      ...identityShifts.filter(d => d.entityId).map(d => this.graphService.updateEntityIdentity(d.entityId!, d.patch)),
     ]);
     return { flaggedForReEmbed: identityShifts };
   }

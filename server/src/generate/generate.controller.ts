@@ -108,7 +108,7 @@ export class GenerateController {
     if (body.deltas?.length) {
       const { flaggedForReEmbed } = await this.engineService.processDeltas(body.deltas, defaultSpec);
       for (const d of flaggedForReEmbed) {
-        void this.embeddingService.embedEntityIdentity(d.entityId);
+        if (d.entityId) void this.embeddingService.embedEntityIdentity(d.entityId);
       }
     }
     const { ruleContext, worldContext, anchorId } = await this.buildContexts(body.prompt);
