@@ -81,7 +81,7 @@ export function SessionSidebar({
                         ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300'
                         : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300',
                     ].join(' ')}
-                    onClick={() => onSelect(s.id)}
+                    onClick={() => { onSelect(s.id); if (!isCurrent) onRestore(s.id) }}
                   >
                     <span className="block font-medium">
                       {isCurrent ? 'Current session' : 'Session ' + (sessions.length - i)}

@@ -24,6 +24,19 @@ const defaultSpec: UpdateSpec = defaultSpecJson as UpdateSpec;
 export class GenerateRequestDto {
   prompt: string;
   deltas?: Delta[];
+  sessionId?: string;
+}
+
+async function resolveSession(
+  sessionService: SessionService,
+  userId: string | undefined,
+  requestedSessionId: string | undefined,
+): Promise<string> {
+  if (userId && requestedSessionId) {
+    const owned = await sessionService.findSessionForUser(requestedSessionId, userId);
+    if (owned) return requestedSessionId;
+  }
+  return sessionService.createSession(userId);
 }
 
 @Controller('generate')
@@ -46,14 +59,19 @@ export class GenerateController {
 
   @UseGuards(JwtAuthGuard)
   @Sse('stream')
-  stream(@Query() query: { prompt: string }, @Request() req: any): Observable<MessageEvent> {
+  stream(@Query() query: { prompt: string; sessionId?: string }, @Request() req: any): Observable<MessageEvent> {
     return new Observable((subscriber) => {
       const abort = new AbortController();
 
       (async () => {
         try {
           const userId: string = req.user?.id
-          const sessionId = await this.sessionService.createSession(userId);
+          const sessionId = await resolveSession(this.sessionService, userId, query.sessionId);
+
+          // Always emit the resolved sessionId first so the client can pin
+          // subsequent actions to this same session.
+          subscriber.next({ data: { type: 'session', sessionId } });
+
           const { ruleContext, worldContext, anchorId } = await this.buildContexts(query.prompt);
           const outcome = await this.validatorService.validate(query.prompt, ruleContext);
 
@@ -62,8 +80,6 @@ export class GenerateController {
             subscriber.complete();
             return;
           }
-
-          subscriber.next({ data: { type: 'session', sessionId } });
 
           const effectivePrompt = outcome.result === 'modified' && outcome.modifiedAction
             ? outcome.modifiedAction
@@ -103,7 +119,7 @@ export class GenerateController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async generate(@Body() body: GenerateRequestDto, @Request() req: any) {
-    const sessionId = await this.sessionService.createSession(req.user?.id);
+    const sessionId = await resolveSession(this.sessionService, req.user?.id, body.sessionId);
 
     if (body.deltas?.length) {
       const { flaggedForReEmbed } = await this.engineService.processDeltas(body.deltas, defaultSpec);

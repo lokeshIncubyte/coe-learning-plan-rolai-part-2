@@ -18,9 +18,7 @@ import type { Beat } from './hooks/useNarrativeHistory'
 export default function NarrativePage() {
   useAuthGuard()
   const { status, narrativeText, choices, errorMessage, dispatch } = useStreamState()
-  const [initialBeats, setInitialBeats] = useState<Beat[]>([])
-  const [historyLoaded, setHistoryLoaded] = useState(false)
-  const { beats, addBeat, setChosenAction, resetBeats, sessionId, setSessionId } = useNarrativeHistory(initialBeats)
+  const { beats, addBeat, setChosenAction, resetBeats, sessionId, setSessionId } = useNarrativeHistory()
   const { sessions, loading: sessionsLoading, selectedId, selectedBeats, historyLoading, selectSession, fetchSessions } = useSessionList(sessionId)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const narrativeAccumRef = useRef<string>('')
@@ -29,28 +27,31 @@ export default function NarrativePage() {
   const [rejectionReason, setRejectionReason] = useState('')
   const [isValidating, setIsValidating] = useState(false)
 
+  // On mount: restore the latest session's beats and pin its id so the user
+  // continues that session. We do NOT auto-stream any prompt — the user must
+  // initiate the first action, otherwise every page load would create junk
+  // sessions each containing a single beat.
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (!token) return
     fetch('/api/session', { headers: { Authorization: 'Bearer ' + token } })
       .then(r => r.ok ? r.json() : [])
       .then(async (sessions: Array<{ id: string }>) => {
-        if (!sessions.length) { setHistoryLoaded(true); return }
+        if (!sessions.length) return
         const latest = sessions[0]
         const res = await fetch('/api/session/' + latest.id + '/history', {
           headers: { Authorization: 'Bearer ' + token },
         })
-        if (!res.ok) { setHistoryLoaded(true); return }
+        if (!res.ok) return
         const data = await res.json()
         const restored: Beat[] = (data.history ?? []).map((h: { narrative: string }) => ({
           narrative: h.narrative,
           chosenAction: null,
         }))
-        setInitialBeats(restored)
+        resetBeats(restored)
         setSessionId(latest.id)
-        setHistoryLoaded(true)
       })
-      .catch(() => setHistoryLoaded(true))
+      .catch(() => {})
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -70,13 +71,11 @@ export default function NarrativePage() {
 
   const { start, isStreaming } = useStream('/api/generate/stream', onEvent)
 
-  useEffect(() => {
-    if (!historyLoaded) return
-    if (!localStorage.getItem('accessToken')) return
-    dispatch({ type: 'start' })
-    start({ prompt: 'I enter a cavern.' })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [historyLoaded])
+  // Send the prompt while pinning it to the current session (if any) so beats
+  // accumulate in one session instead of spawning a new session per action.
+  const startInSession = (prompt: string) => {
+    start(sessionId ? { prompt, sessionId } : { prompt })
+  }
 
   const handleRestoreSession = async (id: string) => {
     const token = localStorage.getItem('accessToken') ?? ''
@@ -95,12 +94,12 @@ export default function NarrativePage() {
     dispatch({ type: 'reset' })
   }
 
-  const handleRetry = () => { start({ prompt: lastPromptRef.current }) }
+  const handleRetry = () => { startInSession(lastPromptRef.current) }
 
   const handleChoice = (label: string) => {
     setChosenAction(beats.length - 1, label)
     dispatch({ type: 'start' })
-    start({ prompt: label })
+    startInSession(label)
   }
 
   const handleSubmit = async (text: string) => {
@@ -138,7 +137,7 @@ export default function NarrativePage() {
     }
     setChosenAction(beats.length - 1, text)
     dispatch({ type: 'start' })
-    start({ prompt: effectivePrompt })
+    startInSession(effectivePrompt)
   }
 
   return (

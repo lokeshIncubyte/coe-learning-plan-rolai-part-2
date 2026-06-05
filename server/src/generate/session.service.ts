@@ -12,6 +12,15 @@ export class SessionService {
     return session.id
   }
 
+  async findSessionForUser(sessionId: string, userId: string): Promise<boolean> {
+    if (!sessionId || !userId) return false
+    const session = await this.prisma.session.findFirst({
+      where: { id: sessionId, userId },
+      select: { id: true },
+    })
+    return session !== null
+  }
+
   async listForUser(userId: string) {
     return this.prisma.session.findMany({
       where: { userId },
