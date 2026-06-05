@@ -46,10 +46,10 @@ group: embedding-service
     describe('buildIdentityText', () => {
       it('joins name, type, archetype, backstory, role with pipe separator', () => {
         const result = service.buildIdentityText({
-          name: 'Mira', type: 'character', archetype: 'Mage',
+          name: 'TestChar', type: 'character', archetype: 'Mage',
           backstory: 'An ancient sorcerer', role: 'protagonist',
         });
-        expect(result).toBe('Mira | character | Mage | An ancient sorcerer | protagonist');
+        expect(result).toBe('TestChar | character | Mage | An ancient sorcerer | protagonist');
       });
 
       it('omits null and undefined identity fields', () => {
@@ -62,7 +62,7 @@ group: embedding-service
 
       it('does NOT include state or facts in the identity text', () => {
         const result = service.buildIdentityText({
-          name: 'Mira', type: 'character', archetype: 'Mage',
+          name: 'TestChar', type: 'character', archetype: 'Mage',
           backstory: null, role: null,
         });
         expect(result).not.toContain('health');

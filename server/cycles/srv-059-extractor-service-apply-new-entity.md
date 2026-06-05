@@ -20,10 +20,10 @@ group: extractor-apply-deltas
       const mockEmbed = { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) };
       const svc2 = new ExtractorService({} as any, mockGraph as any, mockEmbed as any);
 
-      const delta: NewEntityDelta = { op: 'new_entity', identity: { name: 'Mira', type: 'character' }, state: {} };
+      const delta: NewEntityDelta = { op: 'new_entity', identity: { name: 'TestChar', type: 'character' }, state: {} };
       const result = await svc2.applyDeltas([delta]);
 
-      expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({ name: 'Mira', type: 'character' }));
+      expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({ name: 'TestChar', type: 'character' }));
       expect(mockEmbed.embedEntityIdentity).toHaveBeenCalledWith('e1');
       expect(result.entityCount).toBe(1);
     });

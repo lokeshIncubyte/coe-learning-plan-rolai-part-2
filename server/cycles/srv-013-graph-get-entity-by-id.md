@@ -18,7 +18,7 @@ covers: error-path
 
   describe('getEntityById', () => {
     it('returns the entity when found', async () => {
-      const entity = { id: 'e1', type: 'character', name: 'Mira' };
+      const entity = { id: 'e1', type: 'character', name: 'TestChar' };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(entity);
 
       const result = await service.getEntityById('e1');

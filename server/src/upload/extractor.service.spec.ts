@@ -23,11 +23,11 @@ describe('ExtractorService', () => {
     it('calls LLM with json_object response_format and returns parsed Delta[]', async () => {
       mockCreate.mockResolvedValueOnce({
         choices: [{ message: { content: JSON.stringify({
-          deltas: [{ op: 'new_entity', identity: { name: 'Mira', type: 'character' }, state: {} }]
+          deltas: [{ op: 'new_entity', identity: { name: 'TestChar', type: 'character' }, state: {} }]
         }) } }],
       });
 
-      const result = await svc.extractDeltas('Mira is an ancient mage.');
+      const result = await svc.extractDeltas('TestChar is an ancient mage.');
 
       expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({
         response_format: { type: 'json_object' },
@@ -54,10 +54,10 @@ describe('ExtractorService', () => {
       const mockEmbed = { embedEntityIdentity: jest.fn().mockResolvedValue(undefined) };
       const svc2 = new ExtractorService({} as any, mockGraph as any, mockEmbed as any);
 
-      const delta: NewEntityDelta = { op: 'new_entity', identity: { name: 'Mira', type: 'character' }, state: {} };
+      const delta: NewEntityDelta = { op: 'new_entity', identity: { name: 'TestChar', type: 'character' }, state: {} };
       const result = await svc2.applyDeltas([delta]);
 
-      expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({ name: 'Mira', type: 'character' }));
+      expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({ name: 'TestChar', type: 'character' }));
       expect(mockEmbed.embedEntityIdentity).toHaveBeenCalledWith('e1');
       expect(result.entityCount).toBe(1);
     });
@@ -121,14 +121,14 @@ describe('ExtractorService', () => {
 
       const delta: NewEntityDelta = {
         op: 'new_entity',
-        identity: { name: 'Mira', type: 'character' },
+        identity: { name: 'TestChar', type: 'character' },
         state: {},
-        source: 'Mira is an ancient mage who guards the northern pass.',
+        source: 'TestChar is an ancient mage.',
       };
       await svc2.applyDeltas([delta]);
 
       expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({
-        facts: expect.objectContaining({ source: 'Mira is an ancient mage who guards the northern pass.' }),
+        facts: expect.objectContaining({ source: 'TestChar is an ancient mage.' }),
       }));
     });
   });

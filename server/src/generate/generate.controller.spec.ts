@@ -262,7 +262,7 @@ describe('GenerateController', () => {
     // cycle-050
     it('falls back to getAllEntitiesWithEdges when semanticRecall returns no entities', async () => {
       const getAllEntitiesWithEdges = jest.fn().mockResolvedValue([
-        { id: 'e1', name: 'Mira', type: 'character', state: {}, fromEdges: [], toEdges: [] },
+        { id: 'e1', name: 'TestChar', type: 'character', state: {}, fromEdges: [], toEdges: [] },
       ]);
       const mod = await Test.createTestingModule({
         controllers: [GenerateController],

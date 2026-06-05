@@ -144,11 +144,11 @@ describe('NarrativeGeneratorService', () => {
       const createSpy = jest.spyOn((service as any).client.chat.completions, 'create')
         .mockResolvedValueOnce({ choices: [{ message: { content: 'narrative' } }] } as any);
 
-      await service.generate('test prompt', 'WORLD:\n- Mira (character)');
+      await service.generate('test prompt', 'WORLD:\n- TestChar (character)');
 
       const call = createSpy.mock.calls[0][0] as any;
       const systemMsg = call.messages.find((m: any) => m.role === 'system');
-      expect(systemMsg.content).toContain('Mira');
+      expect(systemMsg.content).toContain('TestChar');
     });
 
     it('does NOT add WORLD CONTEXT when worldContext is empty', async () => {

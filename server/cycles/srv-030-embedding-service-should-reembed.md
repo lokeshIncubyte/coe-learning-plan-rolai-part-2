@@ -16,7 +16,7 @@ group: embedding-service
   ```ts
   describe('shouldReembed', () => {
     const base = {
-      id: 'e1', name: 'Mira', type: 'character',
+      id: 'e1', name: 'TestChar', type: 'character',
       archetype: 'Mage', backstory: 'Ancient sorcerer', role: 'protagonist',
       state: { health: 100 }, facts: { hometown: 'Ashwood' },
     };

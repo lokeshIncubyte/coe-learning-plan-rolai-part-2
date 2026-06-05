@@ -89,10 +89,10 @@ The character's current feeling filters what they notice. Wonder picks out colou
 
 CONTRAST EXAMPLE — child POV, garden scene
 
-BAD: "The garden was beautiful and full of flowers. Mira smelled the lovely scents and felt very happy. Birds were singing and the sun was shining."
+BAD: "The garden was beautiful and full of flowers. The child smelled the lovely scents and felt very happy. Birds were singing and the sun was shining."
 → Fails: mood stated not shown; no dominant sense leads; senses listed generically; no functional detail; inner beat is a flat label; nothing here belongs specifically to a child.
 
-GOOD: "Rain had stopped. Mira caught the bruised-green scent of wet grass before she saw the garden at all — then the colours hit her: copper marigolds, white clover, a bee working the border in long looping passes. Her fingers found the gate latch, cool and a little too high. She could fix this."
+GOOD: "Rain had stopped. The child caught the bruised-green scent of wet grass before she saw the garden at all — then the colours hit her: copper marigolds, white clover, a bee working the border in long looping passes. Her fingers found the gate latch, cool and a little too high. She could fix this."
 → Works: mood is a clause; child POV opens on smell-then-visual with wonder-filtered colour; functional detail (latch too high) belongs to a child; closes on quiet resolve, not a stated emotion.
 
 HARD AVOIDS

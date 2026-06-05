@@ -137,9 +137,9 @@ describe('applyDeltas — name-based resolution', () => {
     }
     const svc2 = new ExtractorService({} as any, mockGraph as any, {} as any)
 
-    await svc2.applyDeltas([{ op: 'identity_shift', entityName: 'King Aldric', patch: { archetype: 'Tyrant' } }])
+    await svc2.applyDeltas([{ op: 'identity_shift', entityName: 'King Rowan', patch: { archetype: 'Tyrant' } }])
 
-    expect(mockGraph.findEntityByName).toHaveBeenCalledWith('King Aldric')
+    expect(mockGraph.findEntityByName).toHaveBeenCalledWith('King Rowan')
     expect(mockGraph.updateEntityIdentity).toHaveBeenCalledWith('resolved-id-1', { archetype: 'Tyrant' })
   })
 
@@ -172,10 +172,10 @@ describe('applyDeltas — name-based resolution', () => {
     const svc2 = new ExtractorService({} as any, mockGraph as any, {} as any)
 
     const result = await svc2.applyDeltas([{
-      op: 'new_edge', fromName: 'Mira', toName: 'Castle Blackthorn', type: 'visits', weight: 0.9,
+      op: 'new_edge', fromName: 'TestChar', toName: 'Castle Blackthorn', type: 'visits', weight: 0.9,
     }])
 
-    expect(mockGraph.findEntityByName).toHaveBeenCalledWith('Mira')
+    expect(mockGraph.findEntityByName).toHaveBeenCalledWith('TestChar')
     expect(mockGraph.findEntityByName).toHaveBeenCalledWith('Castle Blackthorn')
     expect(mockGraph.createEdge).toHaveBeenCalledWith({
       fromId: 'from-id', toId: 'to-id', type: 'visits', weight: 0.9, tags: [],
@@ -375,10 +375,10 @@ Each item in "deltas" is one of:
 Example output:
 {
   "deltas": [
-    { "op": "new_entity", "identity": { "name": "Aldric", "type": "knight", "archetype": "protector", "backstory": "rose from poverty", "role": "guardian", "sensoryProfile": "auditory+tactile" }, "state": { "hp": 100, "location": "castle gates", "mood": "vigilant", "status": "active" } },
+    { "op": "new_entity", "identity": { "name": "Rowan", "type": "knight", "archetype": "protector", "backstory": "rose from poverty", "role": "guardian", "sensoryProfile": "auditory+tactile" }, "state": { "hp": 100, "location": "castle gates", "mood": "vigilant", "status": "active" } },
     { "op": "new_entity", "identity": { "name": "Ironkeep", "type": "location", "archetype": "fortress" }, "state": { "status": "occupied" } },
-    { "op": "new_edge", "fromName": "Aldric", "toName": "Ironkeep", "type": "guards", "weight": 1.0 },
-    { "op": "state_mutation", "entityName": "Aldric", "patch": { "mood": "weary" } }
+    { "op": "new_edge", "fromName": "Rowan", "toName": "Ironkeep", "type": "guards", "weight": 1.0 },
+    { "op": "state_mutation", "entityName": "Rowan", "patch": { "mood": "weary" } }
   ]
 }
 

@@ -16,7 +16,7 @@ group: graph-service-hybrid-vector-graph
   ```ts
   describe('enrichWithState (Phase 2 — graph layer)', () => {
     const base = {
-      id: 'e1', name: 'Mira', type: 'character', archetype: null,
+      id: 'e1', name: 'TestChar', type: 'character', archetype: null,
       backstory: null, role: null, tags: [], facts: {}, state: { health: 100 },
       identity_version: 0, fromEdges: [], toEdges: [],
     };

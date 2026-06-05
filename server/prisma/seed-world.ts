@@ -20,14 +20,6 @@ function identityText(e: { name: string; type: string; archetype?: string; backs
 
 const ENTITIES = [
   {
-    name: 'Mira',
-    type: 'character',
-    archetype: 'child',
-    role: 'wanderer',
-    backstory: 'A curious child who slipped away from the village to explore the old forest paths.',
-    state: { hp: 100, stamina: 100, mood: 'wonder' },
-  },
-  {
     name: 'The Cavern of Echoes',
     type: 'location',
     archetype: 'cave',
@@ -42,14 +34,6 @@ const ENTITIES = [
     role: 'home',
     backstory: 'A small warm village nestled at the forest edge, known for its bread and kindness.',
     state: { population: 120, mood: 'peaceful' },
-  },
-  {
-    name: 'Brother Aldric',
-    type: 'character',
-    archetype: 'peasant',
-    role: 'baker',
-    backstory: 'The village baker whose loaves smell of honey and whose door is always open.',
-    state: { hp: 100, stamina: 80, mood: 'content' },
   },
   {
     name: 'The Hearthstone',
@@ -78,11 +62,7 @@ const ENTITIES = [
 ]
 
 const EDGES = [
-  { from: 'Mira', to: 'Thornwall Village', type: 'lives_in', weight: 1.0 },
-  { from: 'Mira', to: 'The Cavern of Echoes', type: 'exploring', weight: 0.8 },
-  { from: 'Brother Aldric', to: 'Thornwall Village', type: 'lives_in', weight: 1.0 },
   { from: 'The Hearthstone', to: 'The Cavern of Echoes', type: 'located_in', weight: 1.0 },
-  { from: 'Mira', to: 'Brother Aldric', type: 'knows', weight: 0.9 },
 ]
 
 async function main() {

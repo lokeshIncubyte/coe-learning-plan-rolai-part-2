@@ -23,10 +23,10 @@ Each item in "deltas" is one of:
 Example output:
 {
   "deltas": [
-    { "op": "new_entity", "identity": { "name": "Aldric", "type": "knight", "archetype": "protector", "backstory": "rose from poverty", "role": "guardian", "sensoryProfile": "auditory+tactile" }, "state": { "hp": 100, "location": "castle gates", "mood": "vigilant", "status": "active" } },
+    { "op": "new_entity", "identity": { "name": "Rowan", "type": "knight", "archetype": "protector", "backstory": "rose from poverty", "role": "guardian", "sensoryProfile": "auditory+tactile" }, "state": { "hp": 100, "location": "castle gates", "mood": "vigilant", "status": "active" } },
     { "op": "new_entity", "identity": { "name": "Ironkeep", "type": "location", "archetype": "fortress" }, "state": { "status": "occupied" } },
-    { "op": "new_edge", "fromName": "Aldric", "toName": "Ironkeep", "type": "guards", "weight": 1.0 },
-    { "op": "state_mutation", "entityName": "Aldric", "patch": { "mood": "weary" } }
+    { "op": "new_edge", "fromName": "Rowan", "toName": "Ironkeep", "type": "guards", "weight": 1.0 },
+    { "op": "state_mutation", "entityName": "Rowan", "patch": { "mood": "weary" } }
   ]
 }
 

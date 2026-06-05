@@ -17,7 +17,7 @@ group: embedding-service
   describe('embedEntityIdentity', () => {
     it('reads the entity, builds identity text, generates embedding, and writes via $executeRawUnsafe', async () => {
       const entity = {
-        id: 'e1', name: 'Mira', type: 'character',
+        id: 'e1', name: 'TestChar', type: 'character',
         archetype: 'Mage', backstory: null, role: null,
       };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(entity);

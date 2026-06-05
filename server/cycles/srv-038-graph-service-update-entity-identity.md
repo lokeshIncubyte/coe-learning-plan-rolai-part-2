@@ -16,7 +16,7 @@ group: graph-service-hybrid-vector-graph
   ```ts
   describe('updateEntityIdentity', () => {
     it('updates identity fields and calls onEntityWrite hook', async () => {
-      const before = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const before = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null };
       const after  = { ...before, archetype: 'Warrior' };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(before);
       (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce(after);

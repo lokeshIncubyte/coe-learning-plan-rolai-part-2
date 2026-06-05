@@ -30,10 +30,10 @@ covers: happy-path
       }).compile();
       const svc = module.get(ChoiceGeneratorService);
 
-      await svc.generateChoices('The hero stood at the crossroads', 'WORLD:\n- Mira (character)');
+      await svc.generateChoices('The hero stood at the crossroads', 'WORLD:\n- TestChar (character)');
 
       expect(agentMock.generate).toHaveBeenCalledWith(
-        'WORLD:\n- Mira (character)\n\nThe hero stood at the crossroads',
+        'WORLD:\n- TestChar (character)\n\nThe hero stood at the crossroads',
         expect.objectContaining({ structuredOutput: expect.anything() }),
       );
     });

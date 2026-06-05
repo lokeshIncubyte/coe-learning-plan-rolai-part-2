@@ -30,10 +30,10 @@ describe('EmbeddingService', () => {
   describe('buildIdentityText', () => {
     it('joins name, type, archetype, backstory, role with pipe separator', () => {
       const result = service.buildIdentityText({
-        name: 'Mira', type: 'character', archetype: 'Mage',
+        name: 'TestChar', type: 'character', archetype: 'Mage',
         backstory: 'An ancient sorcerer', role: 'protagonist',
       });
-      expect(result).toBe('Mira | character | Mage | An ancient sorcerer | protagonist');
+      expect(result).toBe('TestChar | character | Mage | An ancient sorcerer | protagonist');
     });
 
     it('omits null and undefined identity fields', () => {
@@ -46,7 +46,7 @@ describe('EmbeddingService', () => {
 
     it('does NOT include state or facts in the identity text', () => {
       const result = service.buildIdentityText({
-        name: 'Mira', type: 'character', archetype: 'Mage',
+        name: 'TestChar', type: 'character', archetype: 'Mage',
         backstory: null, role: null,
       });
       expect(result).not.toContain('health');
@@ -57,7 +57,7 @@ describe('EmbeddingService', () => {
   describe('embedEntityIdentity', () => {
     it('reads the entity, builds identity text, generates embedding, and writes via $executeRawUnsafe', async () => {
       const entity = {
-        id: 'e1', name: 'Mira', type: 'character',
+        id: 'e1', name: 'TestChar', type: 'character',
         archetype: 'Mage', backstory: null, role: null,
       };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(entity);
@@ -109,8 +109,8 @@ describe('EmbeddingService', () => {
 
   describe('onEntityWrite', () => {
     it('re-embeds and increments identity_version when an identity field changes', async () => {
-      const before = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null, state: {} };
-      const after  = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Warrior', backstory: null, role: null, state: {} };
+      const before = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null, state: {} };
+      const after  = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Warrior', backstory: null, role: null, state: {} };
 
       (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce({ ...after, identity_version: 1 });
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(after);
@@ -126,7 +126,7 @@ describe('EmbeddingService', () => {
     });
 
     it('does NOT re-embed when only state changes', async () => {
-      const before = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null, state: { health: 100 } };
+      const before = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null, state: { health: 100 } };
       const after  = { ...before, state: { health: 50 } };
 
       await service.onEntityWrite(before, after);
@@ -138,7 +138,7 @@ describe('EmbeddingService', () => {
 
   describe('shouldReembed', () => {
     const base = {
-      id: 'e1', name: 'Mira', type: 'character',
+      id: 'e1', name: 'TestChar', type: 'character',
       archetype: 'Mage', backstory: 'Ancient sorcerer', role: 'protagonist',
       state: { health: 100 }, facts: { hometown: 'Ashwood' },
     };

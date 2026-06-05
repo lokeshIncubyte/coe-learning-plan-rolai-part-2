@@ -75,8 +75,8 @@ describe('GraphService', () => {
     });
 
     it('calls onEntityWrite after state update so the re-embed hook can check for identity shift', async () => {
-      const before = { id: 'e1', state: { health: 100 }, name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null };
-      const after  = { id: 'e1', state: { health: 50 },  name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const before = { id: 'e1', state: { health: 100 }, name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const after  = { id: 'e1', state: { health: 50 },  name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(before);
       (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce(after);
       (mockPrisma.$transaction as jest.Mock).mockImplementation(
@@ -131,7 +131,7 @@ describe('GraphService', () => {
 
   describe('getEntityById', () => {
     it('returns the entity when found', async () => {
-      const entity = { id: 'e1', type: 'character', name: 'Mira' };
+      const entity = { id: 'e1', type: 'character', name: 'TestChar' };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(entity);
 
       const result = await service.getEntityById('e1');
@@ -149,13 +149,13 @@ describe('GraphService', () => {
 
   describe('createEntity', () => {
     it('calls prisma.entity.create with data and returns the result', async () => {
-      const created = { id: 'e1', type: 'character', name: 'Mira', tags: [], facts: {}, state: {} };
+      const created = { id: 'e1', type: 'character', name: 'TestChar', tags: [], facts: {}, state: {} };
       (mockPrisma.entity.create as jest.Mock).mockResolvedValueOnce(created);
 
-      const result = await service.createEntity({ type: 'character', name: 'Mira', tags: [] });
+      const result = await service.createEntity({ type: 'character', name: 'TestChar', tags: [] });
 
       expect(mockPrisma.entity.create).toHaveBeenCalledWith({
-        data: { type: 'character', name: 'Mira', tags: [] },
+        data: { type: 'character', name: 'TestChar', tags: [] },
       });
       expect(result).toEqual(created);
     });
@@ -163,7 +163,7 @@ describe('GraphService', () => {
 
   describe('updateEntityIdentity', () => {
     it('updates identity fields and calls onEntityWrite hook', async () => {
-      const before = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const before = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null };
       const after  = { ...before, archetype: 'Warrior' };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(before);
       (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce(after);
@@ -188,7 +188,7 @@ describe('GraphService', () => {
     it('calls generateEmbedding, findSimilarEntityIds, then enrichWithState and returns entities + scores', async () => {
       const similarIds = [{ id: 'e1', similarity: 0.9 }];
       const enriched = [{
-        id: 'e1', name: 'Mira', type: 'character', archetype: null,
+        id: 'e1', name: 'TestChar', type: 'character', archetype: null,
         backstory: null, role: null, tags: [], facts: {}, state: { health: 100 },
         identity_version: 0, fromEdges: [], toEdges: [],
       }];
@@ -213,7 +213,7 @@ describe('GraphService', () => {
 
   describe('enrichWithState (Phase 2 — graph layer)', () => {
     const base = {
-      id: 'e1', name: 'Mira', type: 'character', archetype: null,
+      id: 'e1', name: 'TestChar', type: 'character', archetype: null,
       backstory: null, role: null, tags: [], facts: {}, state: { health: 100 },
       identity_version: 0, fromEdges: [], toEdges: [],
     };
@@ -263,7 +263,7 @@ describe('GraphService', () => {
   describe('getAllEntitiesWithEdges', () => {
     it('queries for non-rule entities with fromEdges and toEdges included', async () => {
       const entities = [
-        { id: 'e1', type: 'character', name: 'Mira', fromEdges: [], toEdges: [] },
+        { id: 'e1', type: 'character', name: 'TestChar', fromEdges: [], toEdges: [] },
       ];
       (mockPrisma.entity.findMany as jest.Mock).mockResolvedValueOnce(entities);
 

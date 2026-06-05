@@ -38,8 +38,8 @@ group: graph-service-hybrid-vector-graph
 
     // NEW test added in this cycle:
     it('calls onEntityWrite after state update so the re-embed hook can check for identity shift', async () => {
-      const before = { id: 'e1', state: { health: 100 }, name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null };
-      const after  = { id: 'e1', state: { health: 50 },  name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const before = { id: 'e1', state: { health: 100 }, name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null };
+      const after  = { id: 'e1', state: { health: 50 },  name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null };
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(before);
       (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce(after);
       (mockPrisma.$transaction as jest.Mock).mockImplementation(

@@ -27,7 +27,7 @@ group: graph-service-hybrid-vector-graph
     it('calls generateEmbedding, findSimilarEntityIds, then enrichWithState and returns entities + scores', async () => {
       const similarIds = [{ id: 'e1', similarity: 0.9 }];
       const enriched = [{
-        id: 'e1', name: 'Mira', type: 'character', archetype: null,
+        id: 'e1', name: 'TestChar', type: 'character', archetype: null,
         backstory: null, role: null, tags: [], facts: {}, state: { health: 100 },
         identity_version: 0, fromEdges: [], toEdges: [],
       }];

@@ -16,8 +16,8 @@ group: embedding-service
   ```ts
   describe('onEntityWrite', () => {
     it('re-embeds and increments identity_version when an identity field changes', async () => {
-      const before = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null, state: {} };
-      const after  = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Warrior', backstory: null, role: null, state: {} };
+      const before = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null, state: {} };
+      const after  = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Warrior', backstory: null, role: null, state: {} };
 
       (mockPrisma.entity.update as jest.Mock).mockResolvedValueOnce({ ...after, identity_version: 1 });
       (mockPrisma.entity.findUnique as jest.Mock).mockResolvedValueOnce(after);
@@ -32,7 +32,7 @@ group: embedding-service
     });
 
     it('does NOT re-embed when only state changes', async () => {
-      const before = { id: 'e1', name: 'Mira', type: 'character', archetype: 'Mage', backstory: null, role: null, state: { health: 100 } };
+      const before = { id: 'e1', name: 'TestChar', type: 'character', archetype: 'Mage', backstory: null, role: null, state: { health: 100 } };
       const after  = { ...before, state: { health: 50 } };
 
       await service.onEntityWrite(before, after);

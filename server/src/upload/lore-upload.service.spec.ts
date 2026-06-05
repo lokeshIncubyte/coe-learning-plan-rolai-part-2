@@ -56,10 +56,10 @@ describe('LoreUploadService', () => {
 
   describe('chunkIntoUnits', () => {
     it('splits on double-newline, trims whitespace, filters empty segments', () => {
-      const text = 'Mira is a mage.\n\nThe tavern is dark.\n\n  \n\nA sword lies on the table.';
+      const text = 'TestChar is a mage.\n\nThe tavern is dark.\n\n  \n\nA sword lies on the table.';
       const chunks = svc.chunkIntoUnits(text);
       expect(chunks).toEqual([
-        'Mira is a mage.',
+        'TestChar is a mage.',
         'The tavern is dark.',
         'A sword lies on the table.',
       ]);
