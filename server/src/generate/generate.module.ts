@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from '../auth/auth.module';
 import { NarrativeGeneratorService } from './narrative-generator.service';
 import { GraphService } from './graph.service';
 import { EmbeddingService } from './embedding.service';
@@ -16,7 +17,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ExtractorService } from '../upload/extractor.service';
 
 @Module({
-  imports: [ConfigModule, AgentsModule, PrismaModule],
+  imports: [ConfigModule, AgentsModule, PrismaModule, AuthModule],
   controllers: [GenerateController, SessionController],
   providers: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService, ExtractorService],
   exports: [NarrativeGeneratorService, GraphService, EmbeddingService, StateService, EngineService, TraversalService, RuleEvaluatorService, SessionService, HistoryService, ExtractorService],

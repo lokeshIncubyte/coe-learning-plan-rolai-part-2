@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Query, Sse, UseFilters, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Query, Request, Sse, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common';
 import type { MessageEvent } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { NarrativeGeneratorService } from './narrative-generator.service';
@@ -12,6 +12,7 @@ import { EmbeddingService } from './embedding.service';
 import { SessionService } from './session.service';
 import { HistoryService } from './history.service';
 import { ExtractorService } from '../upload/extractor.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { OpenAiExceptionFilter } from './openai-exception.filter';
 import { LoggingInterceptor } from './logging.interceptor';
 import type { Delta } from '../upload/extractor.service';
@@ -43,14 +44,17 @@ export class GenerateController {
     private readonly extractorService: ExtractorService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Sse('stream')
-  stream(@Query() query: { prompt: string }): Observable<MessageEvent> {
+  stream(@Query() query: { prompt: string }, @Request() req: any): Observable<MessageEvent> {
     return new Observable((subscriber) => {
       const abort = new AbortController();
 
       (async () => {
         try {
-          const { ruleContext, worldContext } = await this.buildContexts(query.prompt);
+          const userId: string = req.user?.id
+          const sessionId = await this.sessionService.createSession(userId);
+          const { ruleContext, worldContext, anchorId } = await this.buildContexts(query.prompt);
           const outcome = await this.validatorService.validate(query.prompt, ruleContext);
 
           if (outcome.result === 'rejected') {
@@ -58,6 +62,8 @@ export class GenerateController {
             subscriber.complete();
             return;
           }
+
+          subscriber.next({ data: { type: 'session', sessionId } });
 
           const effectivePrompt = outcome.result === 'modified' && outcome.modifiedAction
             ? outcome.modifiedAction
@@ -75,6 +81,7 @@ export class GenerateController {
             subscriber.next({ data: { type: 'chunk', content: token } });
           }
           if (!subscriber.closed) {
+            await this.historyService.logEntry(sessionId, fullNarrative, anchorId, []);
             const choices = await this.choiceGeneratorService.generateChoices(fullNarrative, worldContext);
             subscriber.next({ data: { type: 'done' } });
             subscriber.next({ data: { type: 'choices', choices } });
@@ -92,10 +99,11 @@ export class GenerateController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(HttpStatus.OK)
-  async generate(@Body() body: GenerateRequestDto) {
-    const sessionId = await this.sessionService.createSession();
+  async generate(@Body() body: GenerateRequestDto, @Request() req: any) {
+    const sessionId = await this.sessionService.createSession(req.user?.id);
 
     if (body.deltas?.length) {
       const { flaggedForReEmbed } = await this.engineService.processDeltas(body.deltas, defaultSpec);
@@ -156,7 +164,9 @@ export class GenerateController {
   private buildWorldContext(entities: any[]): string {
     if (!entities.length) return '';
     return `WORLD:\n${entities.map((e) => {
-      const extras = [e.archetype, e.role, e.state ? JSON.stringify(e.state) : null].filter(Boolean).join(', ');
+      const identity = [e.archetype, e.role, e.backstory, e.sensoryProfile].filter(Boolean).join('; ');
+      const stateStr = e.state && Object.keys(e.state).length ? JSON.stringify(e.state) : null;
+      const extras = [identity, stateStr].filter(Boolean).join(' | ');
       return `- ${e.name} (${e.type})${extras ? `: ${extras}` : ''}`;
     }).join('\n')}`;
   }

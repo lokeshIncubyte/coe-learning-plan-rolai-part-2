@@ -41,7 +41,7 @@ describe('GenerateController', () => {
     const generateMock = service.generate as jest.Mock
     generateMock.mockResolvedValueOnce('Once upon a time...')
 
-    const result = await controller.generate({ prompt: 'Write beat 1' })
+    const result = await controller.generate({ prompt: 'Write beat 1' }, { user: { id: 'test-user' } })
 
     expect(generateMock).toHaveBeenCalledWith('Write beat 1', expect.any(String))
     expect(result).toMatchObject({
@@ -53,7 +53,7 @@ describe('GenerateController', () => {
   it('generate returns sessionId from sessionService', async () => {
     const generateMock = service.generate as jest.Mock
     generateMock.mockResolvedValueOnce('Once upon a time...')
-    const result = await controller.generate({ prompt: 'Write beat 1' })
+    const result = await controller.generate({ prompt: 'Write beat 1' }, { user: { id: 'test-user' } })
     expect(result).toMatchObject({ sessionId: 'sess-test' })
   })
 
@@ -78,7 +78,7 @@ describe('GenerateController', () => {
     const ctrl = mod.get(GenerateController);
     const narrativeSvc = mod.get(NarrativeGeneratorService);
 
-    await ctrl.generate({ prompt: 'dangerous action' });
+    await ctrl.generate({ prompt: 'dangerous action' }, { user: { id: 'test-user' } });
 
     expect(narrativeSvc.generate).toHaveBeenCalledWith('safe action', expect.any(String));
   });
@@ -126,7 +126,7 @@ describe('GenerateController', () => {
         { label: 'Run', entities: [], rules: [] },
       ]);
 
-      const observable = controller.stream({ prompt: 'test' });
+      const observable = controller.stream({ prompt: 'test' }, { user: { id: 'test-user' } });
       const events: any[] = [];
       await new Promise<void>((resolve, reject) => {
         observable.subscribe({
@@ -138,6 +138,7 @@ describe('GenerateController', () => {
 
       expect(choiceGeneratorService.generateChoices).toHaveBeenCalledWith('Hello world', expect.any(String));
       expect(events).toEqual([
+        { type: 'session', sessionId: 'sess-test' },
         { type: 'start' },
         { type: 'chunk', content: 'Hello' },
         { type: 'chunk', content: ' world' },
@@ -153,7 +154,7 @@ describe('GenerateController', () => {
       }
       narrativeService.stream.mockImplementation(() => failingStream());
 
-      const observable = controller.stream({ prompt: 'test' });
+      const observable = controller.stream({ prompt: 'test' }, { user: { id: 'test-user' } });
       const events: any[] = [];
       await new Promise<void>((resolve, reject) => {
         observable.subscribe({
@@ -164,6 +165,7 @@ describe('GenerateController', () => {
       });
 
       expect(events).toEqual([
+        { type: 'session', sessionId: 'sess-test' },
         { type: 'start' },
         { type: 'chunk', content: 'partial' },
         { type: 'error', message: 'OpenAI blew up' },
@@ -187,7 +189,7 @@ describe('GenerateController', () => {
       });
       choiceGeneratorService.generateChoices.mockResolvedValue([]);
 
-      const sub = controller.stream({ prompt: 'test' }).subscribe(() => {});
+      const sub = controller.stream({ prompt: 'test' }, { user: { id: 'test-user' } }).subscribe(() => {});
       await streamEnteredPromise;
       expect(capturedSignal).toBeDefined();
       expect(capturedSignal!.aborted).toBe(false);
@@ -218,7 +220,7 @@ describe('GenerateController', () => {
 
       const events: any[] = [];
       await new Promise<void>((resolve, reject) => {
-        ctrl.stream({ prompt: 'impossible' }).subscribe({ next: (e) => events.push(e.data), error: reject, complete: resolve });
+        ctrl.stream({ prompt: 'impossible' }, { user: { id: 'test-user' } }).subscribe({ next: (e) => events.push(e.data), error: reject, complete: resolve });
       });
 
       expect(events).toEqual([{ type: 'rejected', reason: 'impossible action' }]);
@@ -249,10 +251,11 @@ describe('GenerateController', () => {
 
       const events: any[] = [];
       await new Promise<void>((resolve, reject) => {
-        ctrl.stream({ prompt: 'original prompt' }).subscribe({ next: (e) => events.push(e.data), error: reject, complete: resolve });
+        ctrl.stream({ prompt: 'original prompt' }, { user: { id: 'test-user' } }).subscribe({ next: (e) => events.push(e.data), error: reject, complete: resolve });
       });
 
-      expect(events[0]).toEqual({ type: 'modified', modifiedAction: 'adjusted action' });
+      expect(events[0]).toEqual({ type: 'session', sessionId: 'sess-test' });
+      expect(events[1]).toEqual({ type: 'modified', modifiedAction: 'adjusted action' });
       expect(narrativeSvc.stream).toHaveBeenCalledWith('adjusted action', expect.any(Object), expect.any(String));
     });
 
@@ -282,7 +285,7 @@ describe('GenerateController', () => {
         ],
       }).compile();
 
-      await mod.get(GenerateController).generate({ prompt: 'test' });
+      await mod.get(GenerateController).generate({ prompt: 'test' }, { user: { id: 'test-user' } });
 
       expect(getAllEntitiesWithEdges).toHaveBeenCalled();
     });
@@ -308,7 +311,7 @@ describe('GenerateController', () => {
         ],
       }).compile();
 
-      await mod.get(GenerateController).generate({ prompt: 'test action' });
+      await mod.get(GenerateController).generate({ prompt: 'test action' }, { user: { id: 'test-user' } });
 
       expect(semanticRecall).toHaveBeenCalledWith('test action', 8);
     });
@@ -344,7 +347,7 @@ describe('GenerateController', () => {
       const choiceSvc = mod.get(ChoiceGeneratorService);
 
       await new Promise<void>((resolve, reject) => {
-        ctrl.stream({ prompt: 'test' }).subscribe({ next: () => {}, error: reject, complete: resolve });
+        ctrl.stream({ prompt: 'test' }, { user: { id: 'test-user' } }).subscribe({ next: () => {}, error: reject, complete: resolve });
       });
 
       expect(choiceSvc.generateChoices).toHaveBeenCalledWith('story', expect.stringContaining('Hero'));
@@ -375,7 +378,7 @@ describe('GenerateController', () => {
       mod.get(GenerateController).generate({
         prompt: 'test',
         deltas: [{ op: 'state_mutation', entityId: 'bad-id', patch: { hp: 10 } }],
-      }),
+      }, { user: { id: 'test-user' } }),
     ).rejects.toThrow('engine failure');
   });
 
@@ -400,7 +403,7 @@ describe('GenerateController', () => {
     }).compile();
 
     const delta = { op: 'state_mutation' as const, entityId: 'e1', patch: { hp: 50 } };
-    await mod.get(GenerateController).generate({ prompt: 'test', deltas: [delta] });
+    await mod.get(GenerateController).generate({ prompt: 'test', deltas: [delta] }, { user: { id: 'test-user' } });
 
     expect(processDeltas).toHaveBeenCalledWith([delta], expect.any(Object));
   });
@@ -434,7 +437,7 @@ describe('GenerateController', () => {
     await mod.get(GenerateController).generate({
       prompt: 'test',
       deltas: [{ op: 'identity_shift', entityId: 'e1', patch: { archetype: 'Warrior' } }],
-    });
+    }, { user: { id: 'test-user' } });
 
     expect(embedEntityIdentity).toHaveBeenCalledWith('e1');
     expect(embedEntityIdentity).toHaveBeenCalledWith('e2');
@@ -465,7 +468,7 @@ describe('GenerateController — session + history wiring', () => {
     }).compile()
 
     const controller = module.get(GenerateController)
-    await controller.generate({ prompt: 'I explore.' })
+    await controller.generate({ prompt: 'I explore.' }, { user: { id: 'test-user' } })
 
     expect(createSession).toHaveBeenCalledTimes(1)
     expect(logEntry).toHaveBeenCalledWith('sess-xyz', 'A tale.', 'e1', [])
@@ -500,7 +503,7 @@ describe('GenerateController — extractor write-back', () => {
     }).compile()
 
     const controller = module.get(GenerateController)
-    await controller.generate({ prompt: 'Attack the dragon.' })
+    await controller.generate({ prompt: 'Attack the dragon.' }, { user: { id: 'test-user' } })
 
     expect(extractDeltas).toHaveBeenCalledWith('The hero fights.')
     expect(processDeltas).toHaveBeenCalledTimes(1)
@@ -532,7 +535,7 @@ describe('GenerateController — write-back error skip', () => {
     }).compile()
 
     const controller = module.get(GenerateController)
-    const result = await controller.generate({ prompt: 'Chase it.' })
+    const result = await controller.generate({ prompt: 'Chase it.' }, { user: { id: 'test-user' } })
 
     expect(result).toMatchObject({ narrative: 'The dragon retreats.', choices: ['Pursue', 'Rest'] })
   })
@@ -555,7 +558,7 @@ describe('GenerateController — write-back error skip', () => {
       ],
     }).compile()
     const ctrl = mod.get(GenerateController)
-    const result = await ctrl.generate({ prompt: 'dangerous action' })
+    const result = await ctrl.generate({ prompt: 'dangerous action' }, { user: { id: 'test-user' } })
     expect(result).toMatchObject({ modifiedAction: 'safe action' })
   })
 })
