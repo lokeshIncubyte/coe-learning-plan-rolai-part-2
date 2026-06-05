@@ -34,11 +34,11 @@ covers: happy-path
       it('calls LLM with json_object response_format and returns parsed Delta[]', async () => {
         mockCreate.mockResolvedValueOnce({
           choices: [{ message: { content: JSON.stringify({
-            deltas: [{ op: 'new_entity', identity: { name: 'Elara', type: 'character' }, state: {} }]
+            deltas: [{ op: 'new_entity', identity: { name: 'Mira', type: 'character' }, state: {} }]
           }) } }],
         });
 
-        const result = await svc.extractDeltas('Elara is an ancient mage.');
+        const result = await svc.extractDeltas('Mira is an ancient mage.');
 
         expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({
           response_format: { type: 'json_object' },

@@ -26,11 +26,11 @@ group: narrative-generator-world-context
       const createSpy = jest.spyOn((service as any).client.chat.completions, 'create')
         .mockResolvedValueOnce({ choices: [{ message: { content: 'narrative' } }] } as any);
 
-      await service.generate('test prompt', 'WORLD:\n- Elara (character)');
+      await service.generate('test prompt', 'WORLD:\n- Mira (character)');
 
       const call = createSpy.mock.calls[0][0] as any;
       const systemMsg = call.messages.find((m: any) => m.role === 'system');
-      expect(systemMsg.content).toContain('Elara');
+      expect(systemMsg.content).toContain('Mira');
     });
 
     it('does NOT add WORLD CONTEXT when worldContext is empty', async () => {

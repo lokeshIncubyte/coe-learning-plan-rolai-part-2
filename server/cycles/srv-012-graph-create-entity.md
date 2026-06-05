@@ -45,7 +45,7 @@ covers: happy-path
         const created = {
           id: 'e1',
           type: 'character',
-          name: 'Elara',
+          name: 'Mira',
           tags: [],
           facts: {},
           state: {},
@@ -56,16 +56,16 @@ covers: happy-path
 
         const result = await service.createEntity({
           type: 'character',
-          name: 'Elara',
+          name: 'Mira',
           tags: [],
         });
 
         expect(mockPrisma.entity.create).toHaveBeenCalledWith({
-          data: { type: 'character', name: 'Elara', tags: [] },
+          data: { type: 'character', name: 'Mira', tags: [] },
         });
         expect(result).toEqual(created);
         expect(result.id).toBe('e1');
-        expect(result.name).toBe('Elara');
+        expect(result.name).toBe('Mira');
       });
     });
   });

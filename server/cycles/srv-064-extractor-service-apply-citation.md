@@ -23,14 +23,14 @@ When a `new_entity` delta includes a `source` string, `applyDeltas` merges `{ so
 
     const delta: NewEntityDelta = {
       op: 'new_entity',
-      identity: { name: 'Elara', type: 'character' },
+      identity: { name: 'Mira', type: 'character' },
       state: {},
-      source: 'Elara is an ancient mage who guards the northern pass.',
+      source: 'Mira is an ancient mage who guards the northern pass.',
     };
     await svc2.applyDeltas([delta]);
 
     expect(mockGraph.createEntity).toHaveBeenCalledWith(expect.objectContaining({
-      facts: expect.objectContaining({ source: 'Elara is an ancient mage who guards the northern pass.' }),
+      facts: expect.objectContaining({ source: 'Mira is an ancient mage who guards the northern pass.' }),
     }));
   });
   ```

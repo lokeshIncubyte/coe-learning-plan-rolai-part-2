@@ -17,7 +17,7 @@ group: graph-service-hybrid-vector-graph
   describe('getAllEntitiesWithEdges', () => {
     it('queries for non-rule entities with fromEdges and toEdges included', async () => {
       const entities = [
-        { id: 'e1', type: 'character', name: 'Elara', fromEdges: [], toEdges: [] },
+        { id: 'e1', type: 'character', name: 'Mira', fromEdges: [], toEdges: [] },
       ];
       (mockPrisma.entity.findMany as jest.Mock).mockResolvedValueOnce(entities);
 

@@ -20,7 +20,7 @@ function identityText(e: { name: string; type: string; archetype?: string; backs
 
 const ENTITIES = [
   {
-    name: 'Elara',
+    name: 'Mira',
     type: 'character',
     archetype: 'child',
     role: 'wanderer',
@@ -78,11 +78,11 @@ const ENTITIES = [
 ]
 
 const EDGES = [
-  { from: 'Elara', to: 'Thornwall Village', type: 'lives_in', weight: 1.0 },
-  { from: 'Elara', to: 'The Cavern of Echoes', type: 'exploring', weight: 0.8 },
+  { from: 'Mira', to: 'Thornwall Village', type: 'lives_in', weight: 1.0 },
+  { from: 'Mira', to: 'The Cavern of Echoes', type: 'exploring', weight: 0.8 },
   { from: 'Brother Aldric', to: 'Thornwall Village', type: 'lives_in', weight: 1.0 },
   { from: 'The Hearthstone', to: 'The Cavern of Echoes', type: 'located_in', weight: 1.0 },
-  { from: 'Elara', to: 'Brother Aldric', type: 'knows', weight: 0.9 },
+  { from: 'Mira', to: 'Brother Aldric', type: 'knows', weight: 0.9 },
 ]
 
 async function main() {
