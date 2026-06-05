@@ -94,6 +94,13 @@ export default function NarrativePage() {
     dispatch({ type: 'reset' })
   }
 
+  const handleNewChat = () => {
+    resetBeats([])
+    setSessionId(null)
+    setSidebarOpen(false)
+    dispatch({ type: 'reset' })
+  }
+
   const handleRetry = () => { startInSession(lastPromptRef.current) }
 
   const handleChoice = (label: string) => {
@@ -151,6 +158,7 @@ export default function NarrativePage() {
         currentSessionId={sessionId}
         onSelect={selectSession}
         onRestore={handleRestoreSession}
+        onNewChat={handleNewChat}
         selectedBeats={selectedBeats}
         historyLoading={historyLoading}
       />
