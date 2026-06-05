@@ -10,6 +10,7 @@ type Props = {
   selectedId: string | null
   currentSessionId: string | null
   onSelect: (id: string) => void
+  onRestore: (id: string) => void
   selectedBeats: SessionBeat[]
   historyLoading: boolean
 }
@@ -28,6 +29,7 @@ export function SessionSidebar({
   selectedId,
   currentSessionId,
   onSelect,
+  onRestore,
   selectedBeats,
   historyLoading,
 }: Props) {
@@ -96,7 +98,17 @@ export function SessionSidebar({
 
         {selectedId && (
           <div className="border-t border-slate-100 dark:border-slate-800 flex-1 min-h-0 overflow-y-auto max-h-72">
-            <p className="px-4 py-2 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Preview</p>
+            <div className="flex items-center justify-between px-4 py-2">
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Preview</p>
+              {selectedId !== currentSessionId && (
+                <button
+                  onClick={() => onRestore(selectedId)}
+                  className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                >
+                  Load session
+                </button>
+              )}
+            </div>
             {historyLoading && <p className="px-4 pb-2 text-xs text-slate-400">Loading…</p>}
             {!historyLoading && selectedBeats.length === 0 && (
               <p className="px-4 pb-2 text-xs text-slate-400">No beats recorded.</p>

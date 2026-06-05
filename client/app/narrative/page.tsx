@@ -20,7 +20,7 @@ export default function NarrativePage() {
   const { status, narrativeText, choices, errorMessage, dispatch } = useStreamState()
   const [initialBeats, setInitialBeats] = useState<Beat[]>([])
   const [historyLoaded, setHistoryLoaded] = useState(false)
-  const { beats, addBeat, setChosenAction, sessionId, setSessionId } = useNarrativeHistory(initialBeats)
+  const { beats, addBeat, setChosenAction, resetBeats, sessionId, setSessionId } = useNarrativeHistory(initialBeats)
   const { sessions, loading: sessionsLoading, selectedId, selectedBeats, historyLoading, selectSession, fetchSessions } = useSessionList(sessionId)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const narrativeAccumRef = useRef<string>('')
@@ -78,6 +78,23 @@ export default function NarrativePage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [historyLoaded])
 
+  const handleRestoreSession = async (id: string) => {
+    const token = localStorage.getItem('accessToken') ?? ''
+    const res = await fetch('/api/session/' + id + '/history', {
+      headers: { Authorization: 'Bearer ' + token },
+    })
+    if (!res.ok) return
+    const data = await res.json()
+    const restored: Beat[] = (data.history ?? []).map((h: { narrative: string }) => ({
+      narrative: h.narrative,
+      chosenAction: null,
+    }))
+    resetBeats(restored)
+    setSessionId(id)
+    setSidebarOpen(false)
+    dispatch({ type: 'reset' })
+  }
+
   const handleRetry = () => { start({ prompt: lastPromptRef.current }) }
 
   const handleChoice = (label: string) => {
@@ -134,6 +151,7 @@ export default function NarrativePage() {
         selectedId={selectedId}
         currentSessionId={sessionId}
         onSelect={selectSession}
+        onRestore={handleRestoreSession}
         selectedBeats={selectedBeats}
         historyLoading={historyLoading}
       />

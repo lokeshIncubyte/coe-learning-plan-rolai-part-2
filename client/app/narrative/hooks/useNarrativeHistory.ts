@@ -14,5 +14,7 @@ export function useNarrativeHistory(initialBeats: Beat[] = []) {
       prev.map((beat, i) => (i === index ? { ...beat, chosenAction: action } : beat))
     )
 
-  return { beats, addBeat, setChosenAction, sessionId, setSessionId }
+  const resetBeats = (newBeats: Beat[]) => setBeats(newBeats)
+
+  return { beats, addBeat, setChosenAction, resetBeats, sessionId, setSessionId }
 }

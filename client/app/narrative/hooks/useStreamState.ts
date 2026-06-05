@@ -29,6 +29,8 @@ function reducer(state: State, action: StreamEvent): State {
       return { ...state, choices: action.choices as { label: string }[] }
     case 'error':
       return { ...state, status: 'error', errorMessage: action.message as string }
+    case 'reset':
+      return initialState
     default:
       return state
   }
