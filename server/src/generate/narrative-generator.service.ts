@@ -51,7 +51,16 @@ export class NarrativeGeneratorService {
 
   private buildSystemPrompt(worldContext?: string): string {
     const worldBlock = worldContext?.trim()
-      ? `\n\nWORLD CONTEXT — you MUST ground the narrative in the entities named below. Reuse their names verbatim; do not invent replacement characters or places when one is supplied here:\n${worldContext}`
+      ? `\n\nWORLD CONTEXT — HARD CONSTRAINTS. Every entity listed below is present in this beat. You MUST:
+1. Use their names verbatim — never invent replacement characters or places.
+2. [CURRENT STATE — ...] fields are ground truth. Rules:
+   - EMOTIONAL STATE → the character's every gesture, posture, and reaction must carry that weight. Never contradict it.
+   - PHYSICAL STATUS: wounded/injured → show pain, strain, or limitation — bandages, limping, catching breath, trembling.
+   - hp critically low → visible physical strain; do not describe the character as energetic or composed.
+   - temperature: cold / status: abandoned → the space is cold and still; do not describe warmth, fire, or active use.
+3. Use the location field as the scene's actual physical setting.
+
+${worldContext}`
       : '';
     return `You write story beats for a warm fantasy world. Your style is George R. R. Martin's technique (tight internal focalization, sensory layering, functional detail) applied to upbeat content (kindness, wonder, hope). Every beat is a small camera mounted behind one character's eyes — never a narrator floating above the scene.
 

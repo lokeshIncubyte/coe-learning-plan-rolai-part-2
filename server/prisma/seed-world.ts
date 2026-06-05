@@ -59,10 +59,19 @@ const ENTITIES = [
     backstory: 'Any conflict in this world can be resolved through kindness or cleverness. Violence is a last resort and always has a gentler outcome.',
     state: {},
   },
+  {
+    name: 'Gareth the Scout',
+    type: 'scout',
+    archetype: 'ranger',
+    role: 'guide',
+    backstory: 'A wiry young scout who knows every trail between Thornwall and the Cavern of Echoes. Usually confident and light-footed, quick to laugh — but he stumbled back from the forest edge at dusk, arrow-grazed and shaken, barely making it to the tree line.',
+    state: { hp: 15, mana: 40, mood: 'shaken', location: 'forest trail', status: 'injured' },
+  },
 ]
 
 const EDGES = [
   { from: 'The Hearthstone', to: 'The Cavern of Echoes', type: 'located_in', weight: 1.0 },
+  { from: 'Gareth the Scout', to: 'Thornwall Village', type: 'belongs_to', weight: 0.9 },
 ]
 
 async function main() {

@@ -130,6 +130,55 @@ Rate limiting is global via `@nestjs/throttler` (configurable with `THROTTLE_LIM
 
 ---
 
+## Demo scenarios
+
+The `demos/` directory contains three self-contained scenarios for live presentations.
+Each scenario seeds specific entities with known stats, then tests that the narrative
+reflects those stats correctly.
+
+### Seed a scenario for the chat
+
+```bash
+# List all available scenarios and currently seeded entities
+node demos/seed-scenario.mjs list
+
+# Seed a scenario (cleans previous demo entities first)
+node demos/seed-scenario.mjs seed 01-injured-healer   # Lady Vethara, hp:20, desperate
+node demos/seed-scenario.mjs seed 02-stat-update      # Gareth the Scout, hp:15, shaken
+node demos/seed-scenario.mjs seed 03-new-location     # The Amber Forge, abandoned
+
+# Remove all demo entities (leaves seed world intact)
+node demos/seed-scenario.mjs clean
+```
+
+After seeding, open the chat at http://localhost:3000 and try the suggested prompts:
+
+| Scenario | Suggested prompt |
+|----------|-----------------|
+| `01-injured-healer` | `Lady Vethara calls out from the healer's tent` |
+| `02-stat-update` | `Gareth the Scout limps out from the tree line` |
+| `03-new-location` | `I push open the door of the Amber Forge` |
+
+### Run the automated test loop
+
+The test loop injects an entity, generates narratives, checks assertions, then cleans up —
+repeating up to 3 times until all assertions pass.
+
+```bash
+# Default scenario (injured healer)
+node demos/test-loop.mjs
+
+# Specific scenario
+node demos/test-loop.mjs demos/01-injured-healer.mjs
+node demos/test-loop.mjs demos/02-stat-update.mjs
+node demos/test-loop.mjs demos/03-new-location.mjs
+```
+
+See [`GENERATION-FLOW.md`](./GENERATION-FLOW.md) for a full ASCII flowchart of how
+player input becomes a narrative beat and choices.
+
+---
+
 ## Testing
 
 ```bash

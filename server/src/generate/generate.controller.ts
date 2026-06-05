@@ -122,10 +122,9 @@ export class GenerateController {
     const sessionId = await resolveSession(this.sessionService, req.user?.id, body.sessionId);
 
     if (body.deltas?.length) {
-      const { flaggedForReEmbed } = await this.engineService.processDeltas(body.deltas, defaultSpec);
-      for (const d of flaggedForReEmbed) {
-        if (d.entityId) void this.embeddingService.embedEntityIdentity(d.entityId);
-      }
+      // applyDeltas handles all op types (new_entity, new_edge, identity_shift, state_mutation)
+      // and embeds new entities; engineService.processDeltas only handles mutations/shifts
+      await this.extractorService.applyDeltas(body.deltas);
     }
     const { ruleContext, worldContext, anchorId } = await this.buildContexts(body.prompt);
 
@@ -177,11 +176,40 @@ export class GenerateController {
     return { ruleContext, worldContext, anchorId };
   }
 
+  private formatStateForNarrative(state: Record<string, unknown> | null | undefined): string | null {
+    if (!state || !Object.keys(state).length) return null;
+    const parts: string[] = [];
+
+    // Mood and status lead — they are the strongest narrative signals
+    if (state['mood']) parts.push(`EMOTIONAL STATE: ${state['mood']}`);
+    if (state['status'] && state['status'] !== 'active') parts.push(`PHYSICAL STATUS: ${state['status']}`);
+
+    if ('hp' in state && typeof state['hp'] === 'number') {
+      const hp = state['hp'] as number;
+      const level = hp <= 20 ? 'critically low — showing visible physical strain' : hp <= 50 ? 'low — showing fatigue' : hp <= 80 ? 'moderate' : 'healthy';
+      parts.push(`hp: ${hp}/100 (${level})`);
+    }
+    if ('mana' in state && typeof state['mana'] === 'number') {
+      const mana = state['mana'] as number;
+      const level = mana <= 20 ? 'depleted' : mana <= 60 ? 'low' : 'sufficient';
+      parts.push(`mana: ${mana} (${level})`);
+    }
+    if (state['location']) parts.push(`location: ${state['location']}`);
+
+    // Any remaining fields
+    for (const [key, val] of Object.entries(state)) {
+      if (['mood', 'status', 'hp', 'mana', 'location'].includes(key)) continue;
+      if (val !== null && val !== undefined) parts.push(`${key}: ${val}`);
+    }
+
+    return parts.length ? `[CURRENT STATE — ${parts.join(' | ')}]` : null;
+  }
+
   private buildWorldContext(entities: any[]): string {
     if (!entities.length) return '';
     return `WORLD:\n${entities.map((e) => {
       const identity = [e.archetype, e.role, e.backstory, e.sensoryProfile].filter(Boolean).join('; ');
-      const stateStr = e.state && Object.keys(e.state).length ? JSON.stringify(e.state) : null;
+      const stateStr = this.formatStateForNarrative(e.state);
       const extras = [identity, stateStr].filter(Boolean).join(' | ');
       return `- ${e.name} (${e.type})${extras ? `: ${extras}` : ''}`;
     }).join('\n')}`;

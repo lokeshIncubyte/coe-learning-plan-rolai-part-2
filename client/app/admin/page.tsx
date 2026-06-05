@@ -21,6 +21,9 @@ export default function AdminPage() {
   const [saved, setSaved] = useState(false)
   const [specError, setSpecError] = useState<string | null>(null)
   const [saveJsonError, setSaveJsonError] = useState(false)
+  const [deltaText, setDeltaText] = useState<string>('[]')
+  const [deltaError, setDeltaError] = useState<string | null>(null)
+  const [deltaApplied, setDeltaApplied] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
@@ -81,6 +84,64 @@ export default function AdminPage() {
       <section className="mt-8">
         <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Lore Upload</h2>
         <UploadPanel />
+      </section>
+      <section className="mt-8">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Inject Graph Deltas</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+          Paste a JSON array of delta objects to apply directly to the graph. Each object must have an <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">op</code> field
+          (<code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">new_entity</code>, <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">identity_shift</code>,{' '}
+          <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">state_mutation</code>, <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">new_edge</code>).
+          This <strong>adds</strong> — it never replaces existing entities.
+        </p>
+        <textarea
+          aria-label="Graph delta JSON"
+          className="w-full h-48 font-mono text-sm border rounded p-2 dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
+          value={deltaText}
+          onChange={(e) => { setDeltaText(e.target.value); setDeltaError(null) }}
+        />
+        <div className="mt-2 flex items-center gap-4">
+          <button
+            className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700"
+            onClick={async () => {
+              setDeltaError(null)
+              let parsed: unknown[]
+              try {
+                parsed = JSON.parse(deltaText)
+                if (!Array.isArray(parsed)) throw new Error('Must be a JSON array')
+                if (parsed.length === 0) throw new Error('Array must not be empty')
+              } catch (e) {
+                setDeltaError(e instanceof Error ? e.message : 'Invalid JSON')
+                return
+              }
+              const token = localStorage.getItem('accessToken') ?? ''
+              try {
+                const res = await fetch('/api/generate', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({ prompt: '', deltas: parsed }),
+                })
+                if (res.ok) {
+                  setDeltaApplied(true)
+                  setTimeout(() => setDeltaApplied(false), 3000)
+                  fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } })
+                    .then(r => r.json()).then(setStats)
+                } else {
+                  const err = await res.json().catch(() => ({}))
+                  setDeltaError((err as any).message ?? `Server error (${res.status})`)
+                }
+              } catch (e) {
+                setDeltaError(e instanceof Error ? e.message : 'Network error — is the server running?')
+              }
+            }}
+          >
+            Apply Deltas
+          </button>
+          {deltaError && <span className="text-red-600 text-sm">{deltaError}</span>}
+          {deltaApplied && <span className="text-emerald-600 text-sm">Applied!</span>}
+        </div>
       </section>
       <section className="mt-8">
         <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">Update Spec</h2>
