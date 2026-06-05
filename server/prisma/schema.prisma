@@ -13,6 +13,7 @@ datasource db {
 
 model Session {
   id        String              @id @default(cuid())
+  userId    String?
   createdAt DateTime            @default(now())
   history   GenerationHistory[]
 }
@@ -30,6 +31,7 @@ model Entity {
   archetype        String?
   backstory        String?
   role             String?
+  sensoryProfile   String?
   identity_version Int     @default(0)
   embedding        Unsupported("vector(384)")?
 

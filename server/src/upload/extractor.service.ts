@@ -10,20 +10,32 @@ export type StateMutationDelta = { op: 'state_mutation'; entityId: string; patch
 export type NewEdgeDelta = { op: 'new_edge'; fromId: string; toId: string; type: string; weight?: number; tags?: string[] };
 export type Delta = NewEntityDelta | IdentityShiftDelta | StateMutationDelta | NewEdgeDelta;
 
-const SYSTEM_PROMPT = `Extract entities and relationships from narrative text as JSON: { "deltas": Delta[] }.
+const SYSTEM_PROMPT = `Extract entities and relationships from narrative text.
 
-Ops:
-- "new_entity": identity { name, type, archetype?, backstory?, role?, sensoryProfile? } + state { ...mutable }. Identity embeds for search; state never embeds.
-- "identity_shift": entityId + identity patch.
-- "state_mutation": entityId + state patch.
-- "new_edge": fromId, toId, type, weight (0-1).
+You MUST respond with ONLY a JSON object using this exact top-level key: { "deltas": [...] }
+
+Each item in "deltas" is one of:
+- { "op": "new_entity", "identity": { "name": "...", "type": "...", "archetype": "...", "backstory": "...", "role": "...", "sensoryProfile": "..." }, "state": { "hp": ..., "location": "...", "mood": "...", "status": "..." } }
+- { "op": "identity_shift", "entityId": "<existing-id>", "patch": { ... } }
+- { "op": "state_mutation", "entityId": "<existing-id>", "patch": { ... } }
+- { "op": "new_edge", "fromId": "<existing-id>", "toId": "<existing-id>", "type": "...", "weight": 0.8 }
+
+Example output:
+{
+  "deltas": [
+    { "op": "new_entity", "identity": { "name": "Aldric", "type": "knight", "archetype": "protector", "backstory": "rose from poverty", "role": "guardian", "sensoryProfile": "auditory+tactile" }, "state": { "hp": 100, "location": "castle gates", "mood": "vigilant", "status": "active" } },
+    { "op": "new_entity", "identity": { "name": "Ironkeep", "type": "location", "archetype": "fortress" }, "state": { "status": "occupied" } }
+  ]
+}
 
 Rules:
-- Identity (what it IS): name, type, archetype, backstory, role, sensoryProfile.
-- sensoryProfile = dominant perceptual mode inferred from type (noble→visual, knight→auditory+tactile, peasant→balanced, child→visual+tactile, wildling→olfactory+auditory, scout→auditory+tactile, warg→olfactory).
-- State (current condition): hp, location, mood, inventory, status.
-- Never mix identity and state fields.
-- Return JSON only, no markdown.`;
+- ALWAYS use the "deltas" key at the top level — never use "entities", "result", or any other key.
+- Identity fields (what it IS): name, type, archetype, backstory, role, sensoryProfile. These are stable and searchable.
+- State fields (current condition): hp, location, mood, inventory, status. These are mutable.
+- sensoryProfile for type: noble→visual, knight→auditory+tactile, peasant→balanced, child→visual+tactile, wildling→olfactory+auditory, scout→auditory+tactile, warg→olfactory.
+- Only use "identity_shift", "state_mutation", "new_edge" for entities that already exist (you have their real IDs).
+- For all new content, use "new_entity".
+- If nothing can be extracted, return: { "deltas": [] }`;
 
 @Injectable()
 export class ExtractorService {
@@ -31,14 +43,11 @@ export class ExtractorService {
   private readonly model: string;
 
   constructor(private readonly config: ConfigService, private readonly graphService: GraphService, private readonly embeddingService?: EmbeddingService) {
-    const helperApisUrl = config?.get?.('HELPER_APIS_URL');
-    if (helperApisUrl) {
-      this.client = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });
-      this.model = 'anthropic/claude-sonnet-4-6';
-    } else {
-      this.client = new OpenAI({ apiKey: config?.get?.('OPENROUTER_API_KEY') ?? 'local', baseURL: 'https://openrouter.ai/api/v1' });
-      this.model = 'openai/gpt-4o-mini';
-    }
+    this.client = new OpenAI({
+      apiKey: config?.getOrThrow?.('MISTRAL_API_KEY') ?? '',
+      baseURL: 'https://api.mistral.ai/v1',
+    });
+    this.model = 'mistral-small-latest';
   }
 
   async extractDeltas(chunk: string): Promise<Delta[]> {
@@ -53,8 +62,18 @@ export class ExtractorService {
       ],
     });
     const raw = response.choices[0].message.content ?? '{"deltas":[]}';
-    const parsed = JSON.parse(raw);
-    return parsed.deltas ?? [];
+    let parsed: Record<string, unknown>;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      console.warn('[ExtractorService] LLM returned non-JSON. Raw:', raw.slice(0, 200));
+      return [];
+    }
+    if (!Array.isArray(parsed.deltas)) {
+      console.warn('[ExtractorService] LLM response missing "deltas" array. Raw:', raw.slice(0, 200));
+      return [];
+    }
+    return parsed.deltas as Delta[];
   }
 
   async applyDeltas(deltas: Delta[], anchorId?: string): Promise<{ entityCount: number; edgeCount: number }> {
@@ -64,7 +83,8 @@ export class ExtractorService {
     for (const delta of deltas) {
       if (delta.op === 'new_entity') {
         const facts = { ...(delta.source ? { source: delta.source } : {}) };
-        const entity = await this.graphService.createEntity({ ...delta.identity, state: delta.state ?? {}, facts });
+        const { name, type, archetype, backstory, role, sensoryProfile } = delta.identity;
+        const entity = await this.graphService.createEntity({ name, type, archetype, backstory, role, sensoryProfile, state: delta.state ?? {}, facts });
         await this.embeddingService?.embedEntityIdentity(entity.id);
         if (anchorId) {
           await this.graphService.createEdge({ fromId: anchorId, toId: entity.id, type: 'contains', weight: 1.0, tags: [] });

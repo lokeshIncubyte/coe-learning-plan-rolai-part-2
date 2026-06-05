@@ -15,8 +15,8 @@ export class ActionValidatorService {
   constructor(@Inject('ACTION_VALIDATOR_AGENT') private readonly agent: Agent) {}
 
   async validate(action: string, ruleContext = ''): Promise<ValidationOutcome> {
-    const prompt = ruleContext ? `${ruleContext}\n\n${action}` : action;
-    const result = await this.agent.generate(prompt, { structuredOutput: { schema: ValidationOutcomeSchema } });
+    if (!ruleContext) return { result: 'accepted', reason: 'No world rules to validate against.' };
+    const result = await this.agent.generate(`${ruleContext}\n\n${action}`, { structuredOutput: { schema: ValidationOutcomeSchema } });
     return result.object as ValidationOutcome;
   }
 }

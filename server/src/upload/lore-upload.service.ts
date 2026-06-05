@@ -29,15 +29,17 @@ export class LoreUploadService {
   }
 
   async extractAndPersist(chunks: string[], anchorId?: string): Promise<{ entityCount: number; edgeCount: number; chunkCount: number }> {
+    // Extract all chunks in parallel — each LLM call is independent.
+    const deltasBatch = await Promise.all(chunks.map(c => this.extractorService.extractDeltas(c)));
+
     let entityCount = 0;
     let edgeCount = 0;
 
-    for (let i = 0; i < chunks.length; i++) {
-      const deltas = await this.extractorService.extractDeltas(chunks[i]);
-      const counts = await this.extractorService.applyDeltas(deltas, anchorId);
+    for (let i = 0; i < deltasBatch.length; i++) {
+      const counts = await this.extractorService.applyDeltas(deltasBatch[i], anchorId);
       entityCount += counts.entityCount;
       edgeCount += counts.edgeCount;
-      await this.historyService.logUploadDeltas?.(i, deltas);
+      await this.historyService.logUploadDeltas?.(i, deltasBatch[i]);
     }
 
     return { entityCount, edgeCount, chunkCount: chunks.length };

@@ -1,4 +1,8 @@
+import { Test } from '@nestjs/testing'
+import { ConfigService } from '@nestjs/config'
 import { ExtractorService, type NewEntityDelta, type IdentityShiftDelta, type StateMutationDelta, type NewEdgeDelta } from './extractor.service';
+import { GraphService } from '../generate/graph.service';
+import { EmbeddingService } from '../generate/embedding.service';
 
 const mockCreate = jest.fn();
 jest.mock('openai', () => ({
@@ -129,3 +133,52 @@ describe('ExtractorService', () => {
     });
   });
 });
+
+describe('ExtractorService — OpenRouter-only chat routing', () => {
+  // openai is mocked at module level above, so we inspect the constructor call args
+  const OpenAIMock = (jest.requireMock('openai') as { default: jest.Mock }).default
+
+  beforeEach(() => { OpenAIMock.mockClear() })
+
+  it('constructs OpenAI client with OpenRouter baseURL even when HELPER_APIS_URL is set', async () => {
+    const mod = await Test.createTestingModule({
+      providers: [
+        ExtractorService,
+        { provide: GraphService, useValue: {} },
+        { provide: EmbeddingService, useValue: {} },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('http://localhost:4000'),
+            getOrThrow: jest.fn().mockReturnValue('test-or-key'),
+          },
+        },
+      ],
+    }).compile()
+    mod.get(ExtractorService)
+    expect(OpenAIMock).toHaveBeenCalledWith(expect.objectContaining({
+      baseURL: 'https://api.mistral.ai/v1',
+    }))
+  })
+
+  it('constructs OpenAI client with MISTRAL_API_KEY even when HELPER_APIS_URL is set', async () => {
+    const mod = await Test.createTestingModule({
+      providers: [
+        ExtractorService,
+        { provide: GraphService, useValue: {} },
+        { provide: EmbeddingService, useValue: {} },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn().mockReturnValue('http://localhost:4000'),
+            getOrThrow: jest.fn().mockReturnValue('or-key-xyz'),
+          },
+        },
+      ],
+    }).compile()
+    mod.get(ExtractorService)
+    expect(OpenAIMock).toHaveBeenCalledWith(expect.objectContaining({
+      apiKey: 'or-key-xyz',
+    }))
+  })
+})
