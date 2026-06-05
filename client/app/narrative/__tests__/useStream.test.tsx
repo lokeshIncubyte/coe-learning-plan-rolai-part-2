@@ -73,7 +73,7 @@ describe('useStream — fetch error', () => {
 
 describe('useStream — abort on unmount', () => {
   it('aborts the in-flight fetch when unmounted', () => {
-    let capturedSignal: AbortSignal | undefined
+    let capturedSignal: AbortSignal | null | undefined
 
     global.fetch = jest.fn().mockImplementation((_url: string, opts?: RequestInit) => {
       capturedSignal = opts?.signal

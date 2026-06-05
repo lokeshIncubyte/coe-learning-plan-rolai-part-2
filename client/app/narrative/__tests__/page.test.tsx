@@ -23,6 +23,9 @@ jest.mock('../hooks/useAuthGuard', () => ({
   useAuthGuard: () => undefined,
 }))
 
+const mockPush = jest.fn()
+jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }))
+
 const narrativeHistoryState = {
   beats: [] as { narrative: string; chosenAction: string | null }[],
   addBeat: jest.fn(),

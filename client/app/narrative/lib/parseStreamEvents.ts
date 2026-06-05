@@ -1,4 +1,6 @@
-export type StreamEvent = { type: string; [key: string]: unknown }
+export type StreamEvent =
+  | { type: 'session'; sessionId: string }
+  | { type: string; [key: string]: unknown }
 
 export function parseStreamEvents(chunk: string): StreamEvent[] {
   return chunk
