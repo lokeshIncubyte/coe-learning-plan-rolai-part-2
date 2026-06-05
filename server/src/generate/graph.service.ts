@@ -71,7 +71,7 @@ export class GraphService {
   async findSimilarEntityIds(
     queryEmbedding: number[],
     limit: number,
-    threshold = 0.7,
+    threshold = 0.35,
   ): Promise<Array<{ id: string; similarity: number }>> {
     const embeddingStr = `[${queryEmbedding.join(',')}]`;
     return this.prisma.$queryRawUnsafe<Array<{ id: string; similarity: number }>>(

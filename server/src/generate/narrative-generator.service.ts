@@ -20,7 +20,7 @@ export class NarrativeGeneratorService {
     const response = await this.client.chat.completions.create({
       model: this.model,
       temperature: 0.8,
-      max_tokens: 200,
+      max_tokens: 450,
       messages: [
         { role: 'system', content: this.buildSystemPrompt(worldContext) },
         { role: 'user', content: prompt },
@@ -34,7 +34,7 @@ export class NarrativeGeneratorService {
       {
         model: this.model,
         temperature: 0.8,
-        max_tokens: 200,
+        max_tokens: 450,
         stream: true,
         messages: [
           { role: 'system', content: this.buildSystemPrompt(worldContext) },

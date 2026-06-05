@@ -148,19 +148,20 @@ export class GenerateController {
   }
 
   private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string; anchorId: string }> {
-    const { entities, scores } = await this.graphService.semanticRecall(prompt, 8);
-    let allEntities = entities;
-    const phase1Scores = scores;
-    if (allEntities.length === 0) {
-      allEntities = await this.graphService.getAllEntitiesWithEdges();
-    }
-    const anchorId = allEntities[0]?.id ?? '';
+    // Semantic recall to find the most relevant anchor entity and score map.
+    const { entities: recalled, scores } = await this.graphService.semanticRecall(prompt, 8);
+
+    // Always traverse the FULL graph — recalled entities only set the anchor and boost scores.
+    // Without this, entities uploaded in isolation (no edges to seed entities) are invisible
+    // when the prompt doesn't clear the similarity threshold.
+    const allEntities = await this.graphService.getAllEntitiesWithEdges();
+    const anchorId = recalled[0]?.id ?? allEntities[0]?.id ?? '';
 
     const traversed = this.traversalService.traverse(anchorId, allEntities, 2);
     const toRank = traversed.length
       ? traversed
       : allEntities.map((e: any) => ({ ...e, proximityScore: 1, combinedScore: 1 }));
-    const ranked = this.traversalService.scoreWithSemantics(toRank, phase1Scores);
+    const ranked = this.traversalService.scoreWithSemantics(toRank, scores);
 
     const rules = await this.graphService.getEntitiesByType('rule') as any[];
     const activeRules = this.ruleEvaluator.evaluateRules(allEntities, rules);
