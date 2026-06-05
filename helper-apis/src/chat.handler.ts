@@ -30,17 +30,29 @@ const Body = z.object({
 
 type Message = z.infer<typeof MessageSchema>;
 
-/**
- * Build extra system prompt instructions for structured output.
- * When response_format (json_schema/json_object) or tools are present,
- * inject a strict JSON instruction so Claude produces parseable output.
- */
+const CLAUDE_BIN = process.env.CLAUDE_PATH ?? 'claude';
+const CLAUDE_MODEL = 'claude-haiku-4-5-20251001';
+
+function spawnClaude(stdinContent: string) {
+  const child = spawn(CLAUDE_BIN, [
+    '--print', '--no-session-persistence', '--permission-mode', 'bypassPermissions',
+    '--model', CLAUDE_MODEL,
+    '--output-format', 'json',
+  ], {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: process.env as NodeJS.ProcessEnv,
+  });
+  // Write stdin immediately — must arrive within claude's 3s stdin timeout.
+  child.stdin.write(stdinContent, 'utf8');
+  child.stdin.end();
+  return child;
+}
+
 function buildJsonInstruction(body: z.infer<typeof Body>): string {
   const rf = body.response_format as Record<string, unknown> | undefined;
   const tools = body.tools;
   const toolChoice = body.tool_choice as Record<string, unknown> | undefined;
 
-  // tool_choice forcing a specific function → return a tool_calls array
   if (tools && tools.length > 0 && toolChoice && toolChoice.type === 'function') {
     const forcedName = (toolChoice.function as { name: string })?.name;
     const tool = tools.find(t => t.function.name === forcedName) ?? tools[0];
@@ -51,13 +63,11 @@ function buildJsonInstruction(body: z.infer<typeof Body>): string {
     );
   }
 
-  // json_schema response_format
   if (rf && rf['type'] === 'json_schema') {
     const schema = (rf['json_schema'] as Record<string, unknown>)?.['schema'];
     return `\n\nYou MUST respond with ONLY a valid JSON object matching this schema (no markdown, no explanation):\n${JSON.stringify(schema, null, 2)}`;
   }
 
-  // json_object response_format
   if (rf && rf['type'] === 'json_object') {
     return '\n\nYou MUST respond with ONLY a valid JSON object (no markdown, no explanation).';
   }
@@ -65,7 +75,6 @@ function buildJsonInstruction(body: z.infer<typeof Body>): string {
   return '';
 }
 
-/** Extract JSON from a response that may contain markdown fences or extra text */
 function extractJson(text: string): string {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
   if (fenced) return fenced[1].trim();
@@ -75,42 +84,22 @@ function extractJson(text: string): string {
   return text.trim();
 }
 
-function buildPrompt(messages: Message[], extraSystemInstruction: string): { systemPrompt: string | null; userPrompt: string } {
+function buildStdin(messages: Message[], extraSystemInstruction: string): string {
   const system = messages.filter(m => m.role === 'system').map(m => m.content).join('\n\n');
   const convo = messages.filter(m => m.role !== 'system');
-  const fullSystem = (system + extraSystemInstruction).trim() || null;
+  const fullSystem = (system + extraSystemInstruction).trim();
 
-  // Single user message — pass directly
+  let userContent: string;
   if (convo.length === 1 && convo[0].role === 'user') {
-    return { systemPrompt: fullSystem, userPrompt: convo[0].content };
+    userContent = convo[0].content;
+  } else {
+    userContent = convo.map(m => `${m.role === 'user' ? 'Human' : 'Assistant'}: ${m.content}`).join('\n\n');
   }
 
-  // Multi-turn — flatten into Human/Assistant transcript
-  const transcript = convo
-    .map(m => `${m.role === 'user' ? 'Human' : 'Assistant'}: ${m.content}`)
-    .join('\n\n');
-
-  return { systemPrompt: fullSystem, userPrompt: transcript };
-}
-
-function spawnClaude(extraArgs: string[], prompt: string) {
-  const claudeBin = process.env.CLAUDE_PATH ?? 'claude';
-  const args = [
-    '--print',
-    '--no-session-persistence',
-    '--tools', '',
-    '--permission-mode', 'bypassPermissions',
-    ...extraArgs,
-  ];
-
-  const child = spawn(claudeBin, args, {
-    stdio: ['pipe', 'pipe', 'pipe'],
-    env: process.env as NodeJS.ProcessEnv,
-  });
-
-  child.stdin.write(prompt, 'utf8');
-  child.stdin.end();
-  return child;
+  if (fullSystem) {
+    return `<system>\n${fullSystem}\n</system>\n\n${userContent}`;
+  }
+  return userContent;
 }
 
 export async function handleChatCompletions(req: Request, res: Response): Promise<void> {
@@ -123,19 +112,15 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
   const body = parsed.data;
   const { messages, model, stream } = body;
   const jsonInstruction = buildJsonInstruction(body);
-  const { systemPrompt, userPrompt } = buildPrompt(messages, jsonInstruction);
+  const stdinContent = buildStdin(messages, jsonInstruction);
   const id = `chatcmpl-${randomUUID()}`;
   const created = Math.floor(Date.now() / 1000);
   const needsJson = jsonInstruction.length > 0;
 
-  // Strip provider prefix (e.g. "openai/sonnet" → "sonnet") before passing to claude CLI
-  const claudeModel = model.includes('/') ? model.split('/').pop()! : model;
-  const baseArgs = ['--model', claudeModel];
-  if (systemPrompt) baseArgs.push('--system-prompt', systemPrompt);
+  const t0 = Date.now();
+  console.log(`[chat] ${stream ? 'stream' : 'non-stream'} — model: ${CLAUDE_MODEL}, messages: ${messages.length}`);
 
-  // ── Streaming ────────────────────────────────────────────────────────────
-  // Claude CLI doesn't emit partial-message events reliably via --print,
-  // so we run non-streaming, then chunk the full response for realistic SSE output.
+  // ── Streaming ─────────────────────────────────────────────────────────────
   if (stream) {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -143,8 +128,7 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
     res.flushHeaders();
 
     const sse = (obj: unknown) => res.write(`data: ${JSON.stringify(obj)}\n\n`);
-    const args = [...baseArgs, '--output-format', 'json'];
-    const child = spawnClaude(args, userPrompt);
+    const child = spawnClaude(stdinContent);
     let stdout = '';
     let stderr = '';
 
@@ -152,10 +136,11 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
     child.stderr.on('data', (c: Buffer) => { stderr += c.toString('utf8'); });
 
     child.on('close', code => {
+      console.log(`[chat/stream] claude exited ${code} in ${Date.now() - t0}ms`);
       if (code !== 0) {
-        console.error('[stream/claude] exit', code, 'stdout:', stdout.slice(0, 200), 'stderr:', stderr.slice(0, 200));
+        console.error('[stream/claude] exit', code, 'stderr:', stderr.slice(0, 300), 'stdout:', stdout.slice(0, 300));
         sse({ id, object: 'chat.completion.chunk', created, model,
-          choices: [{ index: 0, delta: { content: `[error: ${stderr.trim()}]` }, finish_reason: null }] });
+          choices: [{ index: 0, delta: { content: `[error: ${stderr.trim() || `exit ${code}`}]` }, finish_reason: null }] });
         res.write('data: [DONE]\n\n');
         res.end();
         return;
@@ -167,7 +152,6 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
       } catch {
         // ignore parse error — still close cleanly
       }
-      // Drip content in small chunks with a delay to simulate real token streaming
       const chunkSize = 12;
       const intervalMs = 18;
       const chunks: string[] = [];
@@ -187,16 +171,13 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
       }, intervalMs);
     });
 
-    // Kill child only if client disconnects before we finish
     res.on('close', () => { if (!res.writableEnded) child.kill(); });
     return;
   }
 
-  // ── Non-streaming ────────────────────────────────────────────────────────
-  const args = [...baseArgs, '--output-format', 'json'];
-
+  // ── Non-streaming ──────────────────────────────────────────────────────────
   return new Promise<void>(resolve => {
-    const child = spawnClaude(args, userPrompt);
+    const child = spawnClaude(stdinContent);
     let stdout = '';
     let stderr = '';
 
@@ -204,10 +185,11 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
     child.stderr.on('data', (c: Buffer) => { stderr += c.toString('utf8'); });
 
     child.on('close', code => {
+      console.log(`[chat/non-stream] claude exited ${code} in ${Date.now() - t0}ms`);
       if (code !== 0) {
-        console.error('[chat/claude] exit', code, stderr);
+        console.error('[chat/claude] exit', code, 'stderr:', stderr.slice(0, 300), 'stdout:', stdout.slice(0, 300));
         res.status(500).json({
-          error: { message: stderr.trim() || `claude exited with code ${code}`, type: 'server_error' },
+          error: { message: stderr.trim() || stdout.trim() || `claude exited with code ${code}`, type: 'server_error' },
         });
         resolve();
         return;
@@ -218,19 +200,14 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
         let content: string = result.result ?? '';
         const usage = result.usage ?? {};
 
-        // For tool_calls responses, wrap in the expected format
         if (needsJson && body.tools && body.tools.length > 0 && body.tool_choice) {
           const jsonStr = extractJson(content);
           try {
-            const parsed = JSON.parse(jsonStr);
-            // If Claude returned tool_calls structure, surface it
-            if (parsed.tool_calls) {
-              // Ensure arguments are stringified if they came back as objects
-              const normalised = parsed.tool_calls.map((tc: Record<string, unknown>) => {
+            const parsedTool = JSON.parse(jsonStr);
+            if (parsedTool.tool_calls) {
+              const normalised = parsedTool.tool_calls.map((tc: Record<string, unknown>) => {
                 const fn = tc.function as Record<string, unknown>;
-                if (fn && typeof fn.arguments !== 'string') {
-                  fn.arguments = JSON.stringify(fn.arguments);
-                }
+                if (fn && typeof fn.arguments !== 'string') fn.arguments = JSON.stringify(fn.arguments);
                 return { ...tc, type: 'function' };
               });
               res.json({
@@ -241,7 +218,6 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
               resolve();
               return;
             }
-            // Claude returned the function args directly — wrap them
             const tool = body.tools![0];
             res.json({
               id, object: 'chat.completion', created, model,
@@ -255,14 +231,10 @@ export async function handleChatCompletions(req: Request, res: Response): Promis
           }
         }
 
-        // For json_schema / json_object, strip markdown fences
         if (needsJson) content = extractJson(content);
 
         res.json({
-          id,
-          object: 'chat.completion',
-          created,
-          model,
+          id, object: 'chat.completion', created, model,
           choices: [{ index: 0, message: { role: 'assistant', content }, finish_reason: 'stop' }],
           usage: {
             prompt_tokens: usage.input_tokens ?? 0,

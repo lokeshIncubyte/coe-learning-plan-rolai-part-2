@@ -45,7 +45,7 @@ describe('NarrativeGeneratorService', () => {
     })
   })
 
-  it('initialises when OPENROUTER_API_KEY is present', async () => {
+  it('initialises when MISTRAL_API_KEY is present', async () => {
     const module = await Test.createTestingModule({
       providers: [
         NarrativeGeneratorService,
@@ -56,7 +56,7 @@ describe('NarrativeGeneratorService', () => {
     expect(module.get(NarrativeGeneratorService)).toBeDefined()
   })
 
-  it('throws on init when OPENROUTER_API_KEY is missing', async () => {
+  it('throws on init when MISTRAL_API_KEY is missing', async () => {
     await expect(
       Test.createTestingModule({
         providers: [
@@ -64,12 +64,12 @@ describe('NarrativeGeneratorService', () => {
           {
             provide: ConfigService,
             useValue: makeConfigMock(() => {
-              throw new Error('Config validation error: OPENROUTER_API_KEY is missing')
+              throw new Error('Config validation error: MISTRAL_API_KEY is missing')
             }),
           },
         ],
       }).compile(),
-    ).rejects.toThrow('OPENROUTER_API_KEY')
+    ).rejects.toThrow('MISTRAL_API_KEY')
   })
 
   describe('stream', () => {
@@ -169,5 +169,41 @@ describe('NarrativeGeneratorService', () => {
       expect(systemMsg.content).not.toContain('WORLD CONTEXT');
     });
   });
+
+  describe('OpenRouter-only chat routing', () => {
+    it('uses OpenRouter baseURL even when HELPER_APIS_URL is set', async () => {
+      const mod = await Test.createTestingModule({
+        providers: [
+          NarrativeGeneratorService,
+          {
+            provide: ConfigService,
+            useValue: {
+              get: jest.fn().mockReturnValue('http://localhost:4000'),
+              getOrThrow: jest.fn().mockReturnValue('test-or-key'),
+            },
+          },
+        ],
+      }).compile()
+      const svc = mod.get(NarrativeGeneratorService)
+      expect((svc as any).client.baseURL).toContain('mistral.ai')
+    })
+
+    it('uses MISTRAL_API_KEY even when HELPER_APIS_URL is set', async () => {
+      const mod = await Test.createTestingModule({
+        providers: [
+          NarrativeGeneratorService,
+          {
+            provide: ConfigService,
+            useValue: {
+              get: jest.fn().mockReturnValue('http://localhost:4000'),
+              getOrThrow: jest.fn().mockReturnValue('or-key-xyz'),
+            },
+          },
+        ],
+      }).compile()
+      const svc = mod.get(NarrativeGeneratorService)
+      expect((svc as any).client.apiKey).toBe('or-key-xyz')
+    })
+  })
 })
 

@@ -9,14 +9,11 @@ export class NarrativeGeneratorService {
   private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    const helperApisUrl = config.get<string>('HELPER_APIS_URL');
-    if (helperApisUrl) {
-      this.client = new OpenAI({ apiKey: 'local', baseURL: `${helperApisUrl}/v1` });
-      this.model = 'anthropic/claude-sonnet-4-6';
-    } else {
-      this.client = new OpenAI({ apiKey: config.getOrThrow<string>('OPENROUTER_API_KEY'), baseURL: 'https://openrouter.ai/api/v1' });
-      this.model = 'openai/gpt-4o-mini';
-    }
+    this.client = new OpenAI({
+      apiKey: config.getOrThrow<string>('MISTRAL_API_KEY'),
+      baseURL: 'https://api.mistral.ai/v1',
+    });
+    this.model = 'mistral-small-latest';
   }
 
   async generate(prompt: string, worldContext?: string): Promise<string> {
@@ -57,6 +54,9 @@ export class NarrativeGeneratorService {
       ? `\n\nWORLD CONTEXT — you MUST ground the narrative in the entities named below. Reuse their names verbatim; do not invent replacement characters or places when one is supplied here:\n${worldContext}`
       : '';
     return `You write story beats for a warm fantasy world. Your style is George R. R. Martin's technique (tight internal focalization, sensory layering, functional detail) applied to upbeat content (kindness, wonder, hope). Every beat is a small camera mounted behind one character's eyes — never a narrator floating above the scene.
+
+INPUT CONTRACT
+The user message is the player's chosen action or intent for this beat — even if it reads like a title, a fragment, or a poetic phrase (e.g. "Stone's Cold Answer", "The Echo Calls"). Never ask the player to clarify, never offer a menu of interpretations, never address the player directly. Always interpret the message as something the POV character does, notices, or decides, and write the resulting beat. If the phrase is abstract, choose the most fitting concrete action it implies and narrate that.
 
 WORLD AND TONE
 - Theme: ${metaDirectives.theme}
