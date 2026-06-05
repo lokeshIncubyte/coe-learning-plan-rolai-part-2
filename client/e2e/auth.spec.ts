@@ -44,7 +44,8 @@ async function mockLogin(page: Page, status: number, body: object) {
 }
 
 /** Mock GET /api/admin/stats with a stub 200 response (so the admin page
- *  can render after a successful redirect). */
+ *  can render after a successful redirect). The admin page also fetches
+ *  /api/config/update-spec on mount, so stub that too. */
 async function mockAdminStats(page: Page, body: object = {}) {
   await page.unroute('**/api/admin/stats').catch(() => {})
   await page.route('**/api/admin/stats', async (route: Route) => {
@@ -52,6 +53,14 @@ async function mockAdminStats(page: Page, body: object = {}) {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify(body),
+    })
+  })
+  await page.unroute('**/api/config/update-spec').catch(() => {})
+  await page.route('**/api/config/update-spec', async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ version: 1 }),
     })
   })
 }
