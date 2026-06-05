@@ -35,10 +35,9 @@ export default function LoginPage() {
           <label htmlFor="email">Email</label>
           <input
             id="email"
-            type="email"
+            type="text"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            required
           />
         </div>
         <div className="flex flex-col gap-1">
