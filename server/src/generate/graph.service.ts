@@ -132,4 +132,28 @@ export class GraphService {
     });
     return entity?.id ?? null;
   }
+
+  async getNeighborhood(entityIds: string[]): Promise<EnrichedEntity[]> {
+    if (entityIds.length === 0) return [];
+    const seeds = await this.prisma.entity.findMany({
+      where: { id: { in: entityIds }, type: { not: 'rule' } },
+      include: { fromEdges: true, toEdges: true },
+    }) as unknown as EnrichedEntity[];
+
+    const neighborIds = new Set<string>();
+    for (const e of seeds) {
+      for (const edge of e.fromEdges as any[]) neighborIds.add(edge.toId);
+      for (const edge of e.toEdges as any[]) neighborIds.add(edge.fromId);
+    }
+    for (const id of entityIds) neighborIds.delete(id);
+
+    if (neighborIds.size === 0) return seeds;
+
+    const neighbors = await this.prisma.entity.findMany({
+      where: { id: { in: Array.from(neighborIds) }, type: { not: 'rule' } },
+      include: { fromEdges: true, toEdges: true },
+    }) as unknown as EnrichedEntity[];
+
+    return [...seeds, ...neighbors];
+  }
 }

@@ -148,23 +148,30 @@ export class GenerateController {
   }
 
   private async buildContexts(prompt: string): Promise<{ ruleContext: string; worldContext: string; anchorId: string }> {
-    // Semantic recall to find the most relevant anchor entity and score map.
     const { entities: recalled, scores } = await this.graphService.semanticRecall(prompt, 8);
+    const anchorId = recalled[0]?.id ?? '';
 
-    // Always traverse the FULL graph — recalled entities only set the anchor and boost scores.
-    // Without this, entities uploaded in isolation (no edges to seed entities) are invisible
-    // when the prompt doesn't clear the similarity threshold.
-    const allEntities = await this.graphService.getAllEntitiesWithEdges();
-    const anchorId = recalled[0]?.id ?? allEntities[0]?.id ?? '';
+    // Scope the traversal pool to recalled entities + their direct graph neighbors.
+    // This isolates each chat's world — unrelated entities in other world clusters
+    // never enter the candidate set, even if they exist in the DB.
+    const entityPool = recalled.length > 0
+      ? await this.graphService.getNeighborhood(recalled.map(e => e.id))
+      : [];
 
-    const traversed = this.traversalService.traverse(anchorId, allEntities, 2);
+    const traversed = entityPool.length > 0
+      ? this.traversalService.traverse(anchorId, entityPool, 2)
+      : [];
+
     const toRank = traversed.length
       ? traversed
-      : allEntities.map((e: any) => ({ ...e, proximityScore: 1, combinedScore: 1 }));
-    const ranked = this.traversalService.scoreWithSemantics(toRank, scores);
+      : entityPool.map((e: any) => ({ ...e, proximityScore: 1, combinedScore: 1 }));
+
+    const ranked = toRank.length > 0
+      ? this.traversalService.scoreWithSemantics(toRank, scores)
+      : [];
 
     const rules = await this.graphService.getEntitiesByType('rule') as any[];
-    const activeRules = this.ruleEvaluator.evaluateRules(allEntities, rules);
+    const activeRules = this.ruleEvaluator.evaluateRules(entityPool, rules);
     const ruleContext = activeRules.length
       ? `RULES:\n${activeRules.map((r) => {
           const conflicts = r.conflictsWith?.length ? ` [conflicts: ${r.conflictsWith.join(', ')}]` : '';
