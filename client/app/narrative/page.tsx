@@ -25,12 +25,9 @@ export default function NarrativePage() {
   const lastPromptRef = useRef<string>('')
   const [validationStatus, setValidationStatus] = useState<'accepted' | 'modified' | 'rejected' | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
-  const [isValidating, setIsValidating] = useState(false)
 
   // On mount: restore the latest session's beats and pin its id so the user
-  // continues that session. We do NOT auto-stream any prompt — the user must
-  // initiate the first action, otherwise every page load would create junk
-  // sessions each containing a single beat.
+  // continues that session without auto-streaming a new beat.
   useEffect(() => {
     const token = localStorage.getItem('accessToken')
     if (!token) return
@@ -45,10 +42,7 @@ export default function NarrativePage() {
         if (!res.ok) return
         const data = await res.json()
         const history: Array<{ narrative: string; choices?: Array<{ label: string }> }> = data.history ?? []
-        const restored: Beat[] = history.map((h) => ({
-          narrative: h.narrative,
-          chosenAction: null,
-        }))
+        const restored: Beat[] = history.map((h) => ({ narrative: h.narrative, chosenAction: null }))
         resetBeats(restored)
         setSessionId(latest.id)
         const lastChoices = history.at(-1)?.choices ?? []
@@ -60,9 +54,15 @@ export default function NarrativePage() {
 
   const onEvent = (event: { type: string; [key: string]: unknown }) => {
     if (event.type === 'session') {
-      const sid = event.sessionId as string
-      setSessionId(sid)
+      setSessionId(event.sessionId as string)
       fetchSessions()
+    } else if (event.type === 'rejected') {
+      setValidationStatus('rejected')
+      setRejectionReason(event.reason as string ?? '')
+    } else if (event.type === 'modified') {
+      setValidationStatus('modified')
+    } else if (event.type === 'start') {
+      setValidationStatus('accepted')
     } else if (event.type === 'chunk') {
       narrativeAccumRef.current += (event.content as string) ?? ''
     } else if (event.type === 'done') {
@@ -74,8 +74,9 @@ export default function NarrativePage() {
 
   const { start, isStreaming } = useStream('/api/generate/stream', onEvent)
 
-  // Send the prompt while pinning it to the current session (if any) so beats
-  // accumulate in one session instead of spawning a new session per action.
+  // Pin all actions to the current session so beats accumulate in one session.
+  // When sessionId is null (New Chat), the server creates a fresh session and
+  // echoes it back via the 'session' event, which we pin for subsequent calls.
   const startInSession = (prompt: string) => {
     start(sessionId ? { prompt, sessionId } : { prompt })
   }
@@ -88,16 +89,14 @@ export default function NarrativePage() {
     if (!res.ok) return
     const data = await res.json()
     const history: Array<{ narrative: string; choices?: Array<{ label: string }> }> = data.history ?? []
-    const restored: Beat[] = history.map((h) => ({
-      narrative: h.narrative,
-      chosenAction: null,
-    }))
+    const restored: Beat[] = history.map((h) => ({ narrative: h.narrative, chosenAction: null }))
     resetBeats(restored)
     setSessionId(id)
     setSidebarOpen(false)
-    // Restore the last beat's choices so the user can continue from where they left off
-    const lastChoices = history.at(-1)?.choices ?? []
+    setValidationStatus(null)
+    setRejectionReason('')
     dispatch({ type: 'reset' })
+    const lastChoices = history.at(-1)?.choices ?? []
     if (lastChoices.length) dispatch({ type: 'choices', choices: lastChoices })
   }
 
@@ -105,53 +104,33 @@ export default function NarrativePage() {
     resetBeats([])
     setSessionId(null)
     setSidebarOpen(false)
+    setValidationStatus(null)
+    setRejectionReason('')
+    narrativeAccumRef.current = ''
     dispatch({ type: 'reset' })
   }
 
-  const handleRetry = () => { startInSession(lastPromptRef.current) }
+  const handleRetry = () => {
+    setValidationStatus(null)
+    startInSession(lastPromptRef.current)
+  }
 
   const handleChoice = (label: string) => {
     setChosenAction(beats.length - 1, label)
+    setValidationStatus(null)
     dispatch({ type: 'start' })
     startInSession(label)
   }
 
-  const handleSubmit = async (text: string) => {
+  // No pre-flight POST — validation happens inside the stream.
+  // The stream emits 'rejected' or 'modified' events which onEvent handles.
+  const handleSubmit = (text: string) => {
     lastPromptRef.current = text
-    let effectivePrompt = text
-    setIsValidating(true)
-    try {
-      const token = localStorage.getItem('accessToken') ?? ''
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: 'Bearer ' + token } : {}),
-        },
-        body: JSON.stringify({ prompt: text }),
-      })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.rejected) {
-          setValidationStatus('rejected')
-          setRejectionReason(data.reason ?? '')
-          return
-        }
-        if (data.modifiedAction) {
-          setValidationStatus('modified')
-          effectivePrompt = data.modifiedAction
-        } else {
-          setValidationStatus('accepted')
-        }
-      }
-    } catch {
-      // validation unavailable — proceed to stream
-    } finally {
-      setIsValidating(false)
-    }
+    setValidationStatus(null)
+    setRejectionReason('')
     setChosenAction(beats.length - 1, text)
     dispatch({ type: 'start' })
-    startInSession(effectivePrompt)
+    startInSession(text)
   }
 
   return (
@@ -187,7 +166,9 @@ export default function NarrativePage() {
             </div>
             <BeatHistory beats={beats} />
             {status === 'streaming' && <StreamingText text={narrativeText} isStreaming={isStreaming} />}
-            {choices.length > 0 && <ChoiceList choices={choices} onSelect={handleChoice} disabled={isValidating || isStreaming} />}
+            {choices.length > 0 && status !== 'streaming' && (
+              <ChoiceList choices={choices} onSelect={handleChoice} disabled={isStreaming} />
+            )}
             {status === 'error' && (
               <div className="rounded-md border border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30 p-4 space-y-2">
                 <p className="text-red-600 dark:text-red-400 text-sm">{errorMessage}</p>
@@ -199,7 +180,7 @@ export default function NarrativePage() {
         <div data-testid="input-area" className="flex-shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-4 sm:px-6 py-4">
           <div className="mx-auto w-full max-w-2xl space-y-2">
             <ValidationFeedback status={validationStatus} reason={rejectionReason} />
-            <ActionInput onSubmit={handleSubmit} disabled={isStreaming || isValidating} isValidating={isValidating} />
+            <ActionInput onSubmit={handleSubmit} disabled={isStreaming} isValidating={false} />
           </div>
         </div>
       </div>
